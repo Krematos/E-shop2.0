@@ -12,35 +12,40 @@ import java.util.List;
 @Table(name = "orders")
 public class Order {
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id; // ID objednávky
+
+    @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private User user; // Uživatel, který vytvořil objednávku
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "order_date", nullable = false)
-    private LocalDateTime orderDate;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "id", nullable = false)
-    private Product product;
+    @ManyToOne
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product; // Produkt, který je objednán
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItem> orderItems = new ArrayList<>();
+    private List<OrderItem> orderItems = new ArrayList<>(); // Položky objednávky
+    @Column(name = "product_name", nullable = false)
+    private LocalDateTime orderDate; // Datum a čas vytvoření objednávky
+    private int quantity; // Množství objednaného produktu
+    private double totalPrice; // Celková cena objednávky
 
-    private Long id;
-    private String productName;
-    private int quantity;
-    private double totalPrice;
+    public Order() {
+    }
 
     public void setOrderItems(List<OrderItem> orderItems) {
         this.orderItems = orderItems;
         for (OrderItem item : orderItems) {
-            item.setOrder(this);
+            item.setOrder(this); // nastaví zpětnou vazbu
         }
     }
 
     // Getters and Setters
 
+    public List<OrderItem> getOrderItems() {
+        return orderItems;
+    }
     public User getUser() {
         return user;
     }
@@ -65,12 +70,12 @@ public class Order {
         this.id = id;
     }
 
-    public String getProductName() {
-        return productName;
+    public Product getProduct() {
+        return product;
     }
 
-    public void setProductName(String productName) {
-        this.productName = productName;
+    public void setProduct(Product product) {
+        this.product = product;
     }
 
     public int getQuantity() {

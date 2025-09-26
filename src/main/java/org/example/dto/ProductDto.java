@@ -14,6 +14,10 @@ public class ProductDto {
     private String description;
     private Double price;
 
+    public ProductDto(Long id, String name, String description, double price) {
+
+    }
+
     public Long getId() {
         return id;
     }

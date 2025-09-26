@@ -1,9 +1,7 @@
 package org.example.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import org.springframework.data.annotation.Id;
+import jakarta.persistence.*;
+
 
 
 @Entity
@@ -11,7 +9,7 @@ import org.springframework.data.annotation.Id;
 public class Product  {
 
     @Id
-    @Column(name = "id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "name", nullable = false, unique = true)
     private String name;
@@ -22,8 +20,15 @@ public class Product  {
     @Column(name = "price", nullable = false)
     private double price;
 
-    @Column(name = "total_price", nullable = false)
-    private double totalPrice;
+    public Product() {
+    }
+
+    public Product(Long id, String name, String description, double price) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.price = price;
+    }
 
 
     // Getters and Setters
@@ -59,13 +64,7 @@ public class Product  {
         this.price = price;
     }
 
-    public double getTotalPrice() {
-        return totalPrice;
-    }
 
-    public void setTotalPrice(double totalPrice) {
-        this.totalPrice = totalPrice;
-    }
 
 
 }

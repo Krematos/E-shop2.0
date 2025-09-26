@@ -31,11 +31,11 @@ public class OrderController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('USER' , 'ADMIN')") // Pouze uživatelé a admini mohou vytvářet objednávky
+    @PreAuthorize("hasAnyRole('USER' , 'ADMIN')") // Pouze uživatelé a admini mohou vytvářet objednávky
     public ResponseEntity<OrderDto> createOrder(@Valid @RequestBody OrderDto orderDto, @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.findUserByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("Uživatel nenalezen: " + userDetails.getUsername()));
-        Order newOder = orderService.createOrder(orderDto.getProductName(), orderDto.getQuantity(), orderDto.getPrice(),  currentUser);
+        Order newOder = orderService.createOrder(orderDto.getProduct(), orderDto.getQuantity(), orderDto.getPrice(),  currentUser);
         return new ResponseEntity<>(convertToDto(newOder), HttpStatus.CREATED);
     }
     /**
@@ -94,7 +94,7 @@ public class OrderController {
     private OrderDto convertToDto(Order order) {
         OrderDto orderDto = new OrderDto();
         orderDto.setId(order.getId());
-        orderDto.setProductName(order.getProductName());
+        orderDto.setProduct(order.getProduct().getName());
         orderDto.setQuantity(order.getQuantity());
         orderDto.setTotalPrice(order.getTotalPrice());
         return orderDto;

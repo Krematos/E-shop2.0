@@ -30,14 +30,18 @@ import org.example.security.JwtAuthenticationFilter;
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
     private final UserService userService;
 
 
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, UserService UserService) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    public SecurityConfig( UserService UserService) {
         this.userService = UserService;
+    }
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter(UserDetailsService userDetailsService) {
+        return new JwtAuthenticationFilter(userDetailsService);
     }
 
     @Bean
@@ -85,7 +89,8 @@ public class SecurityConfig {
             )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Použije stateless session management
             .authenticationProvider(authenticationProvider()) // Nastaví vlastní autentizační poskytovatele
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // Přidá JWT autentizační filtr
+            .addFilterBefore(jwtAuthenticationFilter(userDetailsService(userService)),
+                    UsernamePasswordAuthenticationFilter.class);  // Přidá JWT autentizační filtr
         return http.build();
     }
 }

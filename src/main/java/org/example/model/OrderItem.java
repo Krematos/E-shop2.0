@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 public class OrderItem {
 
     @Id
-    @Column(name = "id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "order_id", nullable = false)

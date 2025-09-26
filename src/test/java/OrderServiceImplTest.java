@@ -37,7 +37,7 @@ public class OrderServiceImplTest {
          User user = new User();
          user.setUsername("John Doe");
          Order order = new Order();
-         order.setProductName("Test Product");
+      //   order.setProduct("Test Product");
          order.setQuantity(2);
          order.setTotalPrice(100.0);
          order.setUser(user);
@@ -49,7 +49,7 @@ public class OrderServiceImplTest {
 
          // Assert
         assertNotNull(createdOrder);
-        assertEquals("Test Product", createdOrder.getProductName());
+        assertEquals("Test Product", createdOrder.getProduct());
         assertEquals(2, createdOrder.getQuantity());
          assertEquals(100.0, createdOrder.getTotalPrice());
          assertEquals(user, createdOrder.getUser());

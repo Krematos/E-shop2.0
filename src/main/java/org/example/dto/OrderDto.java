@@ -26,11 +26,11 @@ public class OrderDto {
         this.id = id;
     }
 
-    public String getProductName() {
+    public String getProduct() {
         return productName;
     }
 
-    public void setProductName(String productName) {
+    public void setProduct(String productName) {
         this.productName = productName;
     }
 
