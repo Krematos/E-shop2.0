@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,8 +16,8 @@ public class OrderDto {
     private String productName;
     private int quantity;
 
-    public double Price;
-    private double totalPrice;
+    public BigDecimal Price;
+    private BigDecimal totalPrice;
 
     // Getters and Setters
     public Long getId() {
@@ -42,19 +44,19 @@ public class OrderDto {
         this.quantity = quantity;
     }
 
-    public double getTotalPrice() {
+    public BigDecimal getTotalPrice() {
         return totalPrice;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(BigDecimal price) {
         this.Price = price;
     }
 
-    public double getPrice() {
+    public BigDecimal getPrice() {
         return Price;
     }
 
-    public void setTotalPrice(double totalPrice) {
+    public void setTotalPrice(BigDecimal totalPrice) {
         this.totalPrice = totalPrice;
     }
 }

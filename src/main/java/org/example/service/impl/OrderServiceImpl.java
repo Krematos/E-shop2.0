@@ -13,6 +13,7 @@ import org.example.service.OrderService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -42,7 +43,7 @@ public class OrderServiceImpl implements OrderService {
 
      @Override
      @Transactional
-    public Order createOrder(String productName, int quantity, double price, User user) {
+    public Order createOrder(String productName, int quantity, BigDecimal price, User user) {
          Product product = productRepository.findByName(productName)
                  .orElseThrow(() -> new IllegalArgumentException("Produkt nebyl nalezen: " + productName));
 
@@ -54,7 +55,7 @@ public class OrderServiceImpl implements OrderService {
             orderItem.setProductName(product.getName());
             orderItem.setQuantity(quantity);
             orderItem.setPrice(price);
-            orderItem.setTotalPrice(price * quantity);
+            orderItem.setTotalPrice(price.multiply(BigDecimal.valueOf(quantity)));
             orderItem.setOrder(order);
 
         order.setOrderItems(Collections.singletonList(orderItem));
@@ -67,7 +68,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<Order> findOrdersByUser(String userName) {
-        return orderRepository.findByUserName(userName);
+        return orderRepository.findByUser_Username(userName);
     }
 
     @Override

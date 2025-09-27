@@ -3,7 +3,8 @@ package org.example.model;
 
 import jakarta.persistence.*;
 
-import java.sql.Time;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,10 +27,11 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>(); // Položky objednávky
-    @Column(name = "product_name", nullable = false)
+    @Column(name = "order_date", nullable = false)
     private LocalDateTime orderDate; // Datum a čas vytvoření objednávky
     private int quantity; // Množství objednaného produktu
-    private double totalPrice; // Celková cena objednávky
+    @Column(name = "total_price", nullable = false, precision = 10, scale = 2)
+    private BigDecimal totalPrice; // Celková cena objednávky
 
     public Order() {
     }
@@ -86,11 +88,11 @@ public class Order {
         this.quantity = quantity;
     }
 
-    public double getTotalPrice() {
+    public BigDecimal getTotalPrice() {
         return totalPrice;
     }
 
-    public void setTotalPrice(double totalPrice) {
+    public void setTotalPrice(BigDecimal totalPrice) {
         this.totalPrice = totalPrice;
     }
 }

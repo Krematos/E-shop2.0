@@ -2,6 +2,7 @@ package org.example.service;
 
 import org.example.model.User;
 import org.example.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Autowired
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder){
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -32,6 +34,8 @@ public class UserService {
         user.setRole(String.valueOf(Collections.singleton(User.Role.ROLE_USER))); // Výchozí role
         return userRepository.save(user);
     }
+
+    // getters, setters, další metody...
 
     public void DeleteUserById(Long userId) {
         userRepository.deleteById(userId);

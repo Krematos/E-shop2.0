@@ -2,6 +2,8 @@ package org.example.model;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "order_items")
 public class OrderItem {
@@ -9,9 +11,6 @@ public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "order_id", nullable = false)
-    private Long orderId; // Foreign key to Order
 
     @Column(name = "product_id", nullable = false)
     private Long productId; // Foreign key to Product
@@ -23,10 +22,10 @@ public class OrderItem {
     private String productName; // Name of the product
 
     @Column(name = "total_price", nullable = false)
-    private double totalPrice; // Total price for this item
+    private BigDecimal totalPrice; // Total price for this item
 
     @Column(name = "price", nullable = false)
-    private double price;
+    private BigDecimal price;
 
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
@@ -37,7 +36,7 @@ public class OrderItem {
     // Getters and Setters
 
     public void setOrder(Order order) {
-        this.orderId = order.getId();
+        this.order = order;
     }
 
     public Order getOrder() {
@@ -61,21 +60,15 @@ public class OrderItem {
         this.id = id;
     }
 
-    public double getTotalPrice() {
+    public BigDecimal getTotalPrice() {
         return totalPrice;
     }
 
-    public void setTotalPrice(double totalPrice) {
+    public void setTotalPrice(BigDecimal totalPrice) {
         this.totalPrice = totalPrice;
     }
 
-    public Long getOrderId() {
-        return orderId;
-    }
 
-    public void setOrderId(Long orderId) {
-        this.orderId = orderId;
-    }
 
     public Long getProductId() {
         return productId;
@@ -93,11 +86,11 @@ public class OrderItem {
         this.quantity = quantity;
     }
 
-    public double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 

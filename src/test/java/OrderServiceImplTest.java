@@ -37,7 +37,7 @@ public class OrderServiceImplTest {
          User user = new User();
          user.setUsername("John Doe");
          Order order = new Order();
-      //   order.setProduct("Test Product");
+         order.setProduct("Test Product");
          order.setQuantity(2);
          order.setTotalPrice(100.0);
          order.setUser(user);

@@ -5,12 +5,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
+
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    List<Order> findByUserName(String userName);
+    List<Order> findByUser_Username(String username); // Assuming Order has a field 'user' with a 'username' property
 
-    List<Order> findByProductName(String productName);
+    List<Order> findByProductName(String name); // Assuming Order has a field 'product' with a 'name' property
 
 }

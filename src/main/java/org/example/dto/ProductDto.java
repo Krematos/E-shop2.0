@@ -1,9 +1,11 @@
 package org.example.dto;
 
-import org.example.model.Product;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
 
 @Data
 @AllArgsConstructor
@@ -12,11 +14,9 @@ public class ProductDto {
     private Long id;
     private String name;
     private String description;
-    private Double price;
+    private BigDecimal price;
 
-    public ProductDto(Long id, String name, String description, double price) {
-
-    }
+    // Getters and Setters
 
     public Long getId() {
         return id;
@@ -40,10 +40,10 @@ public class ProductDto {
         this.description = description;
     }
 
-    public Double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
-    public void setPrice(Double price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 }
