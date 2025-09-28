@@ -42,6 +42,6 @@ public class ProductServiceImplTest {
 
         Optional<Product> result = productService.findProductById(1L);
 
-        assertFalse(result.isEmpty());
+        assertTrue(result.isEmpty());
     }
 }

@@ -1,12 +1,14 @@
+import org.example.dto.RegisterDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import static org.junit.jupiter.api.Assertions.*;
 import org.mockito.Mock;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 @ExtendWith(MockitoExtension.class)
-public class RegisterDto {
+public class RegisterDtoTest {
 
     @Mock
     private RegisterDto registerDto;
@@ -16,7 +18,7 @@ public class RegisterDto {
         registerDto = new RegisterDto();
     }
 
-    /*@Test
+    @Test
     void testGetUsername() {
         registerDto.setUsername("testUser");
         assertEquals("testUser", registerDto.getUsername());
@@ -26,5 +28,5 @@ public class RegisterDto {
     void testGetPassword() {
         registerDto.setPassword("testPass");
         assertEquals("testPass", registerDto.getPassword());
-    }*/
+    }
 }
