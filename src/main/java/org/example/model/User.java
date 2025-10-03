@@ -10,12 +10,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", schema = "public")
 public class User {
 
 
     @Id
-    @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false, unique = true)
     @Size(min = 3, max = 30)
@@ -83,6 +83,7 @@ public class User {
 
     public void setRole(String role) {
         if (role != null && !role.isEmpty()) {
+            String normalizedRole = role.startsWith("ROLE_") ? role : "ROLE_" + role;
             this.roles = Set.of(Role.valueOf(role));
         } else {
             this.roles = Set.of(Role.ROLE_USER); // Default role
