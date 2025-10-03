@@ -1,0 +1,177 @@
+* --- Základní layout --- */
+.login-container {
+    display: flex;
+    min-height: 100vh; /* Zajišťuje plnou výšku */
+    font-family: Arial, sans-serif; /* Může být tvoje značkové písmo */
+}
+
+/* --- Vizuální/Desktop část (Skrytá na mobilu) --- */
+.login-visual-side {
+    flex: 1;
+    background-color: #f0f2f5; /* Světle šedé pozadí */
+    color: #333;
+    display: none; /* Skryjeme na mobilu */
+    padding: 40px;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+}
+
+.login-visual-side .logo {
+    color: var(--primary-color, #007bff); /* Použij primární barvu z tématiky */
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+
+/* --- Formulářová část --- */
+.login-form-side {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 30px; /* Větší padding pro mobil */
+    width: 100%;
+    max-width: 450px; /* Omezení šířky formuláře */
+    margin: 0 auto;
+}
+
+.login-title {
+    font-size: 2rem;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.login-subtitle {
+    color: #666;
+    margin-bottom: 30px;
+}
+
+/* --- Formulářové prvky --- */
+.login-form {
+    width: 100%;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px; /* Moderní zakulacené rohy */
+    box-sizing: border-box;
+    font-size: 1rem;
+}
+
+/* --- Tlačítka --- */
+.btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-top: 10px;
+    transition: background-color 0.2s;
+}
+
+/* Primární CTA tlačítko */
+.btn-primary {
+    background-color: var(--accent-color, #ff6b00); /* Zde zadej svou akcentní barvu */
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #e65c00;
+}
+
+/* Tlačítka pro sociální sítě */
+.social-login {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.btn-social {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+.btn-social i {
+    font-style: normal; /* Aby se 'G' nebo 'f' zobrazil správně */
+    margin-right: 10px;
+    font-size: 1.2rem;
+}
+
+.btn-google { border-color: #db4437; color: #db4437; }
+.btn-facebook { border-color: #4267B2; color: #4267B2; }
+
+
+/* --- Drobné odkazy a oddělovače --- */
+.forgot-password {
+    text-align: right;
+    margin-bottom: 20px;
+}
+
+.forgot-password a, .register-link a {
+    color: var(--primary-color, #007bff);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.divider {
+    text-align: center;
+    margin: 25px 0;
+    position: relative;
+    color: #aaa;
+}
+
+.divider span {
+    background-color: #fff;
+    padding: 0 10px;
+    position: relative;
+    z-index: 2;
+}
+
+.divider::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: #eee;
+    z-index: 1;
+}
+
+/* --- MEDIA QUERIES pro Desktop --- */
+@media (min-width: 768px) {
+    .login-container {
+        /* Layout se rozdělí na dvě části */
+        flex-direction: row;
+    }
+
+    .login-visual-side {
+        display: flex; /* Zobrazíme na desktopu */
+    }
+
+    .login-form-side {
+        padding: 60px; /* Větší padding na desktopu */
+    }
+}

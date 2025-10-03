@@ -6,6 +6,10 @@ import Menu from './components/Menu';
 import Header from './components/Header';
 import ProductList from './components/ProductList';
 import Login from './components/Login';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import ProductPage from './pages/ProductPage';
+
 
 function App() {
   return (
@@ -13,8 +17,11 @@ function App() {
           <Header />
           <Menu />
           <main>
-            <h2>Vítejte v e-shopu</h2>
-            <p>Zde budou produkty…</p>
+            <Routes>
+              <Route path="/" element={<ProductPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+            </Routes>
           </main>
         </Container>
   );

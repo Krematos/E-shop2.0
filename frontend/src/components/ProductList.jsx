@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
 import { fetchProducts } from "../api/productService";
 
@@ -23,7 +23,7 @@ const ProductList = () => {
       }
 
       return (
-        <div className="flex flex-wrap gap-6 justify-center mt-6">
+        <div className="grid grid-cols-4 gap-6 p-6">
           {products.map((p) => (
             <ProductCard
               key={p.id}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from "react-router-dom";
 
 const headerStyle = {
   display: "flex",
@@ -34,8 +35,8 @@ const Header = () => {
                     </div>
 
           <nav style={navStyle}>
-            <a href="#" style={{ padding: "10px", textDecoration: "none", color: "black" }}>Login</a>
-            <a href="#" style={{ padding: "10px",  borderLeft: "3px solid #ddd", textDecoration: "none", color: "black" }}>Registrace</a>
+            <Link to="/login" style={{ padding: "10px", textDecoration: "none", color: "black" }}>Přihlášení</Link>
+            <Link to="/register" style={{ padding: "10px",  borderLeft: "3px solid #ddd", textDecoration: "none", color: "black" }}>Registrace</Link>
             <a href="#" style={{ padding: "10px",  borderRadius: "15px", background: "#f4f4f4", textDecoration: "none", color: "black" }}>🛒 Košík</a>
           </nav>
 
