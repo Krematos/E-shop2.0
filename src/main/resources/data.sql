@@ -5,5 +5,5 @@ ON CONFLICT (username) DO NOTHING;
 ON CONFLICT (email) DO NOTHING;
 
 -- Role pro admina
-INSERT INTO public.user_roles (user_id, roles)
+INSERT INTO user_roles (user_id, roles)
 VALUES ((SELECT id FROM users WHERE username = 'admin'), 'ROLE_ADMIN');

@@ -1,15 +1,23 @@
 import React, { useState } from 'react';
-import './LoginPage.css'; // Importujeme styly
+import { login } from "../api.js";
+import './LoginPage.css'; // Importuje styly
 
-const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+function LoginPage() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Zde by proběhla logická validace a přihlášení
-    console.log('Přihlašovací údaje:', { email, password });
-  };
+  const handleLogin = async (e) => {
+      e.preventDefault();
+      try {
+        const data = await login(email, password);
+        console.log("Přihlášen:", data);
+        alert("Přihlášení úspěšné ✅");
+      } catch (err) {
+        setError("Neplatné přihlašovací údaje");
+        console.error(err);
+      }
+    };
 
   return (
     <div className="login-container">

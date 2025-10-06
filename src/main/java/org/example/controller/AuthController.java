@@ -13,10 +13,9 @@ import org.springframework.security.authentication.AuthenticationManager; // Imp
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken; // Importy pro autentizaci uživatele pomocí jména a hesla
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder; // Importy pro správu kontextu bezpečnosti
-import org.springframework.web.bind.annotation.PostMapping; // Importy pro HTTP POST metody
-import org.springframework.web.bind.annotation.RequestBody; // Importy pro tělo požadavku
-import org.springframework.web.bind.annotation.RequestMapping; // Importy pro mapování cest
-import org.springframework.web.bind.annotation.RestController; // Importy pro REST kontroler
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Set;
 
 @RestController // Označuje, že tato třída je REST kontroler
 @RequestMapping("/api/auth") // Definuje základní cestu pro všechny metody v tomto kontroleru
@@ -39,6 +38,7 @@ public class AuthController {
             newUser.setUsername(registrationDto.getUsername());
             newUser.setPassword(registrationDto.getPassword()); // Bude zahešováno v UserService
             newUser.setEmail(registrationDto.getEmail());
+            newUser.setRoles(Set.of(User.Role.ROLE_USER)); // Nově registrovaní uživatelé mají roli USER
             userService.registerNewUser(newUser);
             return new ResponseEntity<>("Uživatel úspěšně zaregistrován", HttpStatus.CREATED);
         }

@@ -8,8 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
+
 
 @Service
 public class UserService {
@@ -31,7 +32,7 @@ public class UserService {
             throw new IllegalArgumentException("Email již existuje");
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRole(String.valueOf(Collections.singleton(User.Role.ROLE_USER))); // Výchozí role
+        user.setRoles(Set.of(User.Role.ROLE_USER)); // Výchozí role
         return userRepository.save(user);
     }
 

@@ -70,6 +70,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorize -> authorize
                     .requestMatchers("/api/auth/**").permitAll() // Veřejné endpointy pro autentizaci
                     .requestMatchers(HttpMethod.GET, "/api/products/**").authenticated() // Ochrání endpointy pro produkty
+                    .requestMatchers("/actuator/health").permitAll() // Povolit přístup k actuator health endpointu
                     .requestMatchers(HttpMethod.POST, "/api/products/**").hasRole("ADMIN") // Pouze admin může přidávat produkty
                     .requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN") // Pouze admin může aktualizovat produkty
                     .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("ADMIN") // Pouze admin může mazat produkty
