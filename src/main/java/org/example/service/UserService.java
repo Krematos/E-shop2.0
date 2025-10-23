@@ -1,11 +1,13 @@
 package org.example.service;
 
+
 import org.example.model.User;
 import org.example.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.List;
 import java.util.Optional;
@@ -17,11 +19,15 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    private final EmailService emailService;
+
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder){
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, EmailService emailService){
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
+
 
     @Transactional
     public User registerNewUser(User user){
@@ -33,8 +39,19 @@ public class UserService {
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRoles(Set.of(User.Role.ROLE_USER)); // Výchozí role
-        return userRepository.save(user);
+
+        User savedUser = userRepository.save(user);
+
+        // Odeslání uvítacího emailu
+        emailService.sendWelcomeEmail(savedUser.getEmail(), savedUser.getUsername());
+
+        return savedUser;
     }
+
+
+
+
+
 
     // getters, setters, další metody...
 

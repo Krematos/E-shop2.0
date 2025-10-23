@@ -78,6 +78,17 @@
             <version>5.10.0</version>
             <scope>test</scope>
         </dependency>
+        <!-- Odesílání e-mailů -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
+        <!-- Šablonovací engine pro HTML e-maily -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

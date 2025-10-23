@@ -5,7 +5,6 @@ import Container from './components/Container';
 import Menu from './components/Menu';
 import Header from './components/Header';
 import ProductList from './components/ProductList';
-import Login from './components/Login';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProductPage from './pages/ProductPage';

@@ -3,21 +3,22 @@ import { login } from "../api.js";
 import './LoginPage.css'; // Importuje styly
 
 function LoginPage() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
 
-  const handleLogin = async (e) => {
+    const handleLogin = async (e) => {
       e.preventDefault();
       try {
         const data = await login(email, password);
         console.log("Přihlášen:", data);
         alert("Přihlášení úspěšné ✅");
       } catch (err) {
-        setError("Neplatné přihlašovací údaje");
+        setError("Chyba při přihlášení ❌");
         console.error(err);
       }
     };
+
 
   return (
     <div className="login-container">
@@ -66,6 +67,7 @@ function LoginPage() {
           <button type="submit" className="btn btn-primary">
             Přihlásit se
           </button>
+          {error && <p>{error}</p>}
         </form>
 
         <div className="divider">

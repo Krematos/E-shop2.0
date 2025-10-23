@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="cs" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Vítejte v SecondEL</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px; }
+        .container { background: white; padding: 20px; border-radius: 8px; }
+        h1 { color: #333; }
+        p { color: #555; }
+        .footer { margin-top: 20px; font-size: 12px; color: #888; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Vítejte, <span th:text="${username}">uživateli</span> 👋</h1>
+    <p>Děkujeme za registraci v našem e-shopu <strong>SecondEL</strong>.</p>
+    <p>Váš účet byl úspěšně vytvořen. Nyní se můžete přihlásit a začít nakupovat.</p>
+
+    <p class="footer">Tým SecondEL &copy; 2025</p>
+</div>
+</body>
+</html>
