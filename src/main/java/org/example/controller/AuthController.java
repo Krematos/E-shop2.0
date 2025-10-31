@@ -1,69 +1,107 @@
 package org.example.controller;
 
 
-import jakarta.validation.Valid; // Importy pro validaci
-import org.example.dto.LoginDto; // DTO pro přihlášení uživatele
-import org.example.dto.RegisterDto; // DTO pro registraci uživatele
-import org.example.dto.UserDto;
-import org.example.model.User;  // Model uživatele
-import org.example.service.UserService; // Služba pro správu uživatelů
-import org.springframework.http.HttpStatus;  // Importy pro HTTP statusy
-import org.springframework.http.ResponseEntity; // Importy pro odpovědi REST API
-import org.springframework.security.authentication.AuthenticationManager; // Importy pro správu autentizace
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken; // Importy pro autentizaci uživatele pomocí jména a hesla
+
+
+import org.example.model.User;
+import org.example.security.JwtUtil;
+import org.example.service.UserService;
+import org.example.service.impl.UserDetailsImpl;
+import org.example.service.impl.UserDetailsServiceImpl;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder; // Importy pro správu kontextu bezpečnosti
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.Set;
 
 @RestController // Označuje, že tato třída je REST kontroler
 @RequestMapping("/api/auth") // Definuje základní cestu pro všechny metody v tomto kontroleru
 public class AuthController {
 
-    private final UserService userService; // Služba pro správu uživatelů
-    private final AuthenticationManager authenticationManager; // Správce autentizace pro ověřování uživatelů
+    private final AuthenticationManager authenticationManager;
+    private final UserService userService;
+    private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
+    private final UserDetailsServiceImpl userDetailsService;
 
-    // Konstruktor pro injektování závislostí
-    public AuthController(UserService userService, AuthenticationManager authenticationManager) {
-        this.userService = userService;
+    public AuthController(AuthenticationManager authenticationManager,
+                          UserService userService,
+                          JwtUtil jwtUtil,
+                          PasswordEncoder passwordEncoder,
+                          UserDetailsServiceImpl userDetailsService) {
         this.authenticationManager = authenticationManager;
+        this.userService = userService;
+        this.jwtUtil = jwtUtil;
+        this.passwordEncoder = passwordEncoder;
+        this.userDetailsService = userDetailsService;
     }
 
-    // Metoda pro registraci nového uživatele
+    // ✅ Registrace nového uživatele
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@Valid @RequestBody RegisterDto registrationDto) {
-        try{
-            User newUser = new User();
-            newUser.setUsername(registrationDto.getUsername());
-            newUser.setPassword(registrationDto.getPassword()); // Bude zahešováno v UserService
-            newUser.setEmail(registrationDto.getEmail());
-            newUser.setRoles(Set.of(User.Role.ROLE_USER)); // Nově registrovaní uživatelé mají roli USER
-            userService.registerNewUser(newUser);
-            return new ResponseEntity<>("Uživatel úspěšně zaregistrován", HttpStatus.CREATED);
-        }
-        catch (Exception e) {
-            return new ResponseEntity<>("Chyba při registraci uživatele: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+    public ResponseEntity<?> registerUser(@RequestBody User user) {
+        try {
+            User newUser = userService.registerNewUser(user);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Registrace proběhla úspěšně",
+                    "username", newUser.getUsername(),
+                    "email", newUser.getEmail()
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
-
-
+    // ✅ Přihlášení a vydání JWT tokenu
     @PostMapping("/login")
-    public ResponseEntity<String> authenticateUser(@Valid @RequestBody LoginDto loginDto) {
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
-        SecurityContextHolder.getContext().setAuthentication(auth);
-        return new ResponseEntity<>("Uživatel úspěšně přihlášen", HttpStatus.OK);
+    public ResponseEntity<?> authenticateUser(@RequestBody Map<String, String> credentials) {
+        String username = credentials.get("username");
+        String password = credentials.get("password");
+
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username, password)
+            );
+
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            String token = jwtUtil.generateToken(userDetails.getUsername());
+
+            return ResponseEntity.ok(Map.of(
+                    "token", token,
+                    "username", userDetails.getUsername(),
+                    "roles", userDetails.getAuthorities()
+            ));
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(401).body(Map.of("error", "Neplatné přihlašovací údaje"));
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Chyba při autentizaci"));
+        }
     }
 
-    @PostMapping("/logout") // Metoda pro odhlášení uživatele
-    public ResponseEntity<String> logoutUser() {
-        SecurityContextHolder.clearContext(); // Vymaže kontext bezpečnosti, čímž se uživatel odhlásí
-        return new ResponseEntity<>("Uživatel úspěšně odhlášen", HttpStatus.OK);
+    // ✅ Ověření JWT tokenu (např. pro FE)
+    @GetMapping("/validate")
+    public ResponseEntity<?> validateToken(@RequestHeader("Authorization") String tokenHeader) {
+        if (tokenHeader == null || !tokenHeader.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Chybí token"));
+        }
+
+        String token = tokenHeader.substring(7);
+        try {
+            String username = jwtUtil.extractUsername(token);
+            boolean valid = jwtUtil.validateToken(token, username);
+            return ResponseEntity.ok(Map.of(
+                    "valid", valid,
+                    "username", username
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(Map.of("error", "Neplatný token: " + e.getMessage()));
+        }
     }
-
-
 
 
 

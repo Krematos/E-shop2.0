@@ -1,11 +1,17 @@
 package org.example.model;
 
 import jakarta.persistence.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
 @Entity
+@Getter
+@Setter
 @Table(name = "order_items")
+@Builder
 public class OrderItem {
 
     @Id
@@ -13,86 +19,23 @@ public class OrderItem {
     private Long id;
 
     @Column(name = "product_id", nullable = false)
-    private Long productId; // Foreign key to Product
+    private Long productId; // ID produktu
 
     @Column(name = "quantity", nullable = false)
-    private int quantity;
+    private int quantity; // Množství produktu
 
     @Column(name = "product_name", nullable = false)
-    private String productName; // Name of the product
+    private String productName; // Jméno produktu
 
     @Column(name = "total_price", nullable = false)
-    private BigDecimal totalPrice; // Total price for this item
+    private BigDecimal totalPrice; // celková cena položky
 
     @Column(name = "price", nullable = false)
-    private BigDecimal price;
+    private BigDecimal price; // cena za jednotku
 
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
-    private Order order;
-
-
-
-    // Getters and Setters
-
-    public void setOrder(Order order) {
-        this.order = order;
-    }
-
-    public Order getOrder() {
-        return order;
-    }
-
-
-
-    public String getProductName() {
-        return productName;
-    }
-
-    public void setProductName(String productName) {
-        this.productName = productName;
-    }
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public BigDecimal getTotalPrice() {
-        return totalPrice;
-    }
-
-    public void setTotalPrice(BigDecimal totalPrice) {
-        this.totalPrice = totalPrice;
-    }
-
-
-
-    public Long getProductId() {
-        return productId;
-    }
-
-    public void setProductId(Long productId) {
-        this.productId = productId;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
+    private Order order; // Související objednávka
 
 
 }

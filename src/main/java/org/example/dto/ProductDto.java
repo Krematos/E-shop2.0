@@ -1,49 +1,36 @@
 package org.example.dto;
 
 
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class ProductDto {
     private Long id;
+
+    @NotBlank(message = "Název produktu je povinný")
+    @Size(min = 2, max = 100, message = "Název musí mít 2–100 znaků")
     private String name;
+
+    @NotBlank(message = "Popis produktu je povinný")
+    @Size(max = 1000, message = "Popis nesmí překročit 1000 znaků")
     private String description;
+
+    @NotNull(message = "Cena je povinná")
+    @DecimalMin(value = "0.01", message = "Cena musí být větší než 0")
+    @Digits(integer = 10, fraction = 2, message = "Neplatný formát ceny")
     private BigDecimal price;
 
-    // Getters and Setters
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
 }

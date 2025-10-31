@@ -1,62 +1,34 @@
 package org.example.dto;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import org.example.model.Order;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class OrderDto {
     private Long id;
-
+    @NotBlank(message = "Název produktu nesmí být prázdný")
     private String productName;
-    private int quantity;
 
+    @NotNull(message = "Množství je povinné")
+    @Min(value = 1, message = "Množství musí být alespoň 1")
+    private Integer quantity;
+    @NotNull(message = "Cena je povinná ")
+    @Min(value = 0, message = "Cena nesmí být záporná")
     public BigDecimal Price;
     private BigDecimal totalPrice;
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
+    private LocalDateTime createdAt;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getProduct() {
-        return productName;
-    }
-
-    public void setProduct(String productName) {
-        this.productName = productName;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-    public BigDecimal getTotalPrice() {
-        return totalPrice;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.Price = price;
-    }
-
-    public BigDecimal getPrice() {
-        return Price;
-    }
-
-    public void setTotalPrice(BigDecimal totalPrice) {
-        this.totalPrice = totalPrice;
-    }
 }

@@ -1,10 +1,13 @@
 package org.example.controller;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.example.mapper.OrderMapper;
 import org.example.model.User;
 import org.example.service.OrderService;
 import org.example.dto.OrderDto;
 import org.example.model.Order;
+import org.example.mapper.OrderMapper;
 import org.example.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,85 +21,77 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/orders")
+@RequiredArgsConstructor
 public class OrderController {
 
     private final OrderService orderService;
     private final UserService userService;
+    private final OrderMapper orderMapper;
 
-
-
-    public OrderController(OrderService orderService, UserService userService) {
-        this.orderService = orderService;
-        this.userService = userService;
-    }
-
+    // ✅ Vytvoření nové objednávky
     @PostMapping
-    @PreAuthorize("hasAnyRole('USER' , 'ADMIN')") // Pouze uživatelé a admini mohou vytvářet objednávky
-    public ResponseEntity<OrderDto> createOrder(@Valid @RequestBody OrderDto orderDto, @AuthenticationPrincipal UserDetails userDetails) {
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<OrderDto> createOrder(
+            @Valid @RequestBody OrderDto orderDto,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
         User currentUser = userService.findUserByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("Uživatel nenalezen: " + userDetails.getUsername()));
-        Order newOder = orderService.createOrder(orderDto.getProduct(), orderDto.getQuantity(), orderDto.getPrice(),  currentUser);
-        return new ResponseEntity<>(convertToDto(newOder), HttpStatus.CREATED);
+                .orElseThrow(() -> new IllegalStateException("Uživatel nenalezen: " + userDetails.getUsername()));
+
+        Order createdOrder = orderService.createOrder(
+                orderDto.getProductName(),
+                orderDto.getQuantity(),
+                orderDto.getPrice(),
+                currentUser
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderMapper.toDto(createdOrder));
     }
-    /**
-     * Zobrazí všechny objednávky pro administrátora.
-     * Vyžaduje ROLE_ADMIN.
-     * @return Seznam OrderDto.
-     */
+
+    // ✅ Získání všech objednávek (ADMIN)
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
-    public List<OrderDto> getAllOrders() {
-        return orderService.findAllOrders().stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+    public ResponseEntity<List<OrderDto>> getAllOrders() {
+        return ResponseEntity.ok(
+                orderService.findAllOrders()
+                        .stream()
+                        .map(orderMapper::toDto)
+                        .collect(Collectors.toList())
+        );
     }
 
-    /**
-     * Zobrazí objednávky pro přihlášeného uživatele.
-     * Vyžaduje ROLE_USER nebo ROLE_ADMIN.
-     * @param userDetails Aktuálně přihlášený uživatel.
-     * @return Seznam OrderDto.
-     */
+    // ✅ Získání objednávek přihlášeného uživatele
     @GetMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public List<OrderDto> getUserOrders(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<List<OrderDto>> getUserOrders(@AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.findUserByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("Uživatel nebyl nalezen po autentizaci."));
+                .orElseThrow(() -> new IllegalStateException("Uživatel nebyl nalezen po autentizaci."));
 
-        return orderService.findOrdersByUser(currentUser.getUsername()).stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+        return ResponseEntity.ok(
+                orderService.findOrdersByUser(currentUser.getUsername())
+                        .stream()
+                        .map(orderMapper::toDto)
+                        .collect(Collectors.toList())
+        );
     }
 
-    /**
-     * Zobrazí detail konkrétní objednávky.
-     * Uživatel může vidět pouze své objednávky, admin jakoukoli.
-     * @param orderId ID objednávky.
-     * @param userDetails Aktuálně přihlášený uživatel.
-     * @return OrderDto.
-     */
+    // ✅ Detail objednávky podle ID
     @GetMapping("/{orderId}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<OrderDto> getOrderById(@PathVariable Long orderId,
-                                                 @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<OrderDto> getOrderById(
+            @PathVariable Long orderId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
         User currentUser = userService.findUserByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("Uživatel nebyl nalezen po autentizaci."));
+                .orElseThrow(() -> new IllegalStateException("Uživatel nebyl nalezen po autentizaci."));
+
+        boolean isAdmin = userDetails.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
         return orderService.findOrderById(orderId)
-                .filter(order -> order.getUser().getId().equals(currentUser.getId()) || userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")))
-                .map(this::convertToDto)
+                .filter(order -> isAdmin || order.getUser().getId().equals(currentUser.getId()))
+                .map(orderMapper::toDto)
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-
-    // --- Pomocné metody pro konverzi mezi entitou a DTO ---
-    private OrderDto convertToDto(Order order) {
-        OrderDto orderDto = new OrderDto();
-        orderDto.setId(order.getId());
-        orderDto.setProduct(order.getProduct().getName());
-        orderDto.setQuantity(order.getQuantity());
-        orderDto.setTotalPrice(order.getTotalPrice());
-        return orderDto;
-    }
 }
