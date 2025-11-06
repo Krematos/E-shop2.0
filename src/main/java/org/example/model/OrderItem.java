@@ -1,17 +1,17 @@
 package org.example.model;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
 
 import java.math.BigDecimal;
 
-@Entity
 @Getter
 @Setter
-@Table(name = "order_items")
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
+@Entity@Table(name = "order_items")
 public class OrderItem {
 
     @Id
@@ -36,6 +36,8 @@ public class OrderItem {
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
     private Order order; // Související objednávka
+
+
 
 
 }

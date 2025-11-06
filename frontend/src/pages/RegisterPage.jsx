@@ -1,55 +1,91 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { register } from '../services/authService';
 import './LoginPage.css';
 
 const RegisterPage = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (password !== passwordConfirm) {
-      alert('Hesla se neshodují!');
+    setError('');
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Hesla se neshodují');
       return;
     }
-    try {
-        const response = await fetch("http://localhost:8080/api/auth/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, password })
-        });
 
-        if (response.ok) {
-          alert("Registrace proběhla úspěšně ✅");
-        } else {
-          const err = await response.json();
-          alert("Chyba: " + err.message);
-        }
-      } catch (error) {
-        console.error("Chyba při registraci:", error);
-        alert("Nepodařilo se spojit s backendem ❌");
-      }
-    };
+    if (formData.password.length < 6) {
+      setError('Heslo musí mít alespoň 6 znaků');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await register({
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+      });
+      alert('Registrace proběhla úspěšně! Nyní se můžete přihlásit.');
+      navigate('/login');
+    } catch (error) {
+      setError(
+        error.response?.data?.error || 'Chyba při registraci. Zkuste to znovu.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="login-container">
       {/* Vizuální strana - stejná pro konzistenci */}
       <div className="login-visual-side">
-        <h1 className="logo">SecondEL</h1>
+        <h1 className="logo">E-Shop</h1>
         <p>Začněte nakupovat dnes! Rychlá registrace a spousta výhod.</p>
       </div>
 
-      {/* Formulářová část - Rejstřík */}
+      {/* Formulářová část - Registrace */}
       <div className="login-form-side">
         <h2 className="login-title">Vytvořit účet</h2>
+        <p className="login-subtitle">Rychlá registrace bez zbytečných polí.</p>
+
+        {error && (
+          <div style={{
+            backgroundColor: '#fee',
+            color: '#c33',
+            padding: '12px',
+            borderRadius: '8px',
+            marginBottom: '20px',
+            fontSize: '0.9rem'
+          }}>
+            {error}
+          </div>
+        )}
 
         {/* Přihlášení přes sociální sítě - před formulářem pro rychlost */}
         <div className="social-login" style={{ marginBottom: '30px' }}>
-          <button className="btn btn-social btn-google">
+          <button type="button" className="btn btn-social btn-google">
             <i className="icon-google">G</i> Registrovat se přes Google
           </button>
-          <button className="btn btn-social btn-facebook">
+          <button type="button" className="btn btn-social btn-facebook">
             <i className="icon-facebook">f</i> Registrovat se přes Facebook
           </button>
         </div>
@@ -61,71 +97,84 @@ const RegisterPage = () => {
         {/* Formulář */}
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
-            <label htmlFor="name">Jméno</label>
+            <label htmlFor="username">Uživatelské jméno</label>
             <input
               type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Jan Novák"
+              id="username"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              placeholder="Uživatelské jméno"
               required
+              disabled={loading}
             />
           </div>
-
 
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <input
               type="email"
               id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
               placeholder="vasedres@email.cz"
               required
+              disabled={loading}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Heslo (min. 8 znaků)</label>
+            <label htmlFor="password">Heslo (min. 6 znaků)</label>
             <input
               type="password"
               id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
               placeholder="••••••••"
-              minLength="8"
+              minLength="6"
               required
+              disabled={loading}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="password-confirm">Potvrzení hesla</label>
+            <label htmlFor="confirmPassword">Potvrzení hesla</label>
             <input
               type="password"
-              id="password-confirm"
-              value={passwordConfirm}
-              onChange={(e) => setPasswordConfirm(e.target.value)}
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
               placeholder="••••••••"
               required
+              disabled={loading}
             />
           </div>
 
-          {/* Checkbox pro souhlas s podmínkami - klíčový právní prvek */}
-          <div className="form-group terms-checkbox">
-            <input type="checkbox" id="terms" required />
-            <label htmlFor="terms" style={{ display: 'inline', marginLeft: '10px' }}>
-              Souhlasím s <a href="/terms" target="_blank">Obchodními podmínkami</a> a <a href="/privacy" target="_blank">Zásadami ochrany osobních údajů</a>.
+          {/* Checkbox pro souhlas s podmínkami */}
+          <div className="form-group" style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '20px' }}>
+            <input 
+              type="checkbox" 
+              id="terms" 
+              required 
+              style={{ marginTop: '5px', marginRight: '10px' }}
+              disabled={loading}
+            />
+            <label htmlFor="terms" style={{ display: 'inline', fontWeight: 'normal', fontSize: '0.9rem' }}>
+              Souhlasím s <a href="/terms" target="_blank" rel="noopener noreferrer">Obchodními podmínkami</a> a <a href="/privacy" target="_blank" rel="noopener noreferrer">Zásadami ochrany osobních údajů</a>.
             </label>
           </div>
 
           {/* Hlavní CTA - akcentní barva */}
-          <button type="submit" className="btn btn-primary">
-            Registrovat se
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? 'Registrace...' : 'Registrovat se'}
           </button>
         </form>
 
-        <div className="register-link" style={{ marginTop: '20px' }}>
-          Už máte účet? <a href="/login">Přihlaste se</a>
+        <div className="register-link" style={{ marginTop: '20px', textAlign: 'center' }}>
+          Už máte účet? <Link to="/login">Přihlaste se</Link>
         </div>
       </div>
     </div>

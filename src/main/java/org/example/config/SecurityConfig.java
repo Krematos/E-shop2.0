@@ -38,8 +38,10 @@ public class SecurityConfig {
         return http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll() // registrace, login
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/auth/**").permitAll() // registrace, login - opraveno na /api/auth/**
+                        .requestMatchers("GET", "/api/products").permitAll() // Zobrazení produktů bez přihlášení
+                        .requestMatchers("GET", "/api/products/**").permitAll() // Detail produktu bez přihlášení
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

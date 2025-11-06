@@ -7,16 +7,16 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-@Table(name = "orders")
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Entity
+@Table(name = "orders")
 public class Order {
 
     @Id
@@ -32,7 +32,7 @@ public class Order {
     private Product product; // Produkt, který je objednán
     // Položky objednávky
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItem> orderItems = new ArrayList<>();
+    private List<OrderItem> orderItems;
     @Column(name = "order_date", nullable = false)
     private LocalDateTime orderDate; // Datum a čas vytvoření objednávky
     private int quantity; // Množství objednaného produktu

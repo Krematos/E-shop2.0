@@ -3,6 +3,7 @@ package org.example.controller;
 
 
 
+import lombok.extern.slf4j.Slf4j;
 import org.example.model.User;
 import org.example.security.JwtUtil;
 import org.example.service.UserService;
@@ -18,8 +19,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
-import java.util.Set;
 
+@Slf4j
 @RestController // Označuje, že tato třída je REST kontroler
 @RequestMapping("/api/auth") // Definuje základní cestu pro všechny metody v tomto kontroleru
 public class AuthController {

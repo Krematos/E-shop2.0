@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Citlivé soubory
+.env
+ENV_EXAMPLE.txt
+

@@ -1,30 +1,38 @@
-import React, { useState } from 'react';
-import { login } from "../api.js";
-import './LoginPage.css'; // Importuje styly
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import './LoginPage.css';
 
-function LoginPage() {
-  const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
+const LoginPage = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-    const handleLogin = async (e) => {
-      e.preventDefault();
-      try {
-        const data = await login(email, password);
-        console.log("Přihlášen:", data);
-        alert("Přihlášení úspěšné ✅");
-      } catch (err) {
-        setError("Chyba při přihlášení ❌");
-        console.error(err);
-      }
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
 
+    try {
+      await login(username, password);
+      navigate('/');
+    } catch (error) {
+      setError(
+        error.response?.data?.error || 'Chyba při přihlašování. Zkuste to znovu.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="login-container">
       {/* Vlevo jen logo/obrázek na desktopu, na mobilu pryč */}
       <div className="login-visual-side">
-        <h1 className="logo">SecondEL</h1>
+        <h1 className="logo">E-Shop</h1>
         <p>Vítejte zpět! Nakupování nebylo nikdy jednodušší.</p>
       </div>
 
@@ -33,17 +41,31 @@ function LoginPage() {
         <h2 className="login-title">Přihlášení</h2>
         <p className="login-subtitle">Prosím, zadejte své údaje.</p>
 
+        {error && (
+          <div style={{
+            backgroundColor: '#fee',
+            color: '#c33',
+            padding: '12px',
+            borderRadius: '8px',
+            marginBottom: '20px',
+            fontSize: '0.9rem'
+          }}>
+            {error}
+          </div>
+        )}
+
         {/* Formulář */}
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="username">Uživatelské jméno</label>
             <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="vasedres@email.cz"
+              type="text"
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Uživatelské jméno"
               required
+              disabled={loading}
             />
           </div>
 
@@ -56,6 +78,7 @@ function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
+              disabled={loading}
             />
           </div>
 
@@ -64,10 +87,9 @@ function LoginPage() {
           </div>
 
           {/* Hlavní CTA - výrazné */}
-          <button type="submit" className="btn btn-primary">
-            Přihlásit se
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? 'Přihlašování...' : 'Přihlásit se'}
           </button>
-          {error && <p>{error}</p>}
         </form>
 
         <div className="divider">
@@ -76,16 +98,16 @@ function LoginPage() {
 
         {/* Přihlášení přes sociální sítě */}
         <div className="social-login">
-          <button className="btn btn-social btn-google">
+          <button type="button" className="btn btn-social btn-google">
             <i className="icon-google">G</i> Přihlásit se přes Google
           </button>
-          <button className="btn btn-social btn-facebook">
+          <button type="button" className="btn btn-social btn-facebook">
             <i className="icon-facebook">f</i> Přihlásit se přes Facebook
           </button>
         </div>
 
-        <div className="register-link">
-          Nemáte účet? <a href="/register">Registrujte se</a>
+        <div className="register-link" style={{ marginTop: '20px', textAlign: 'center' }}>
+          Nemáte účet? <Link to="/register">Registrujte se</Link>
         </div>
       </div>
     </div>

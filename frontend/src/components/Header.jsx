@@ -1,48 +1,103 @@
-import React from 'react';
-import { Link } from "react-router-dom";
-
-const headerStyle = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "10px 20px"
-};
-
-const logoStyle = {
-  fontSize: "44px",
-  fontWeight: "bold",
-   color: "#191970"
-};
-
-const navStyle = {
-  display: "flex",
-  gap: "15px",
-  fontSize: "20px",
-};
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 
 const Header = () => {
+  const { user, logout, isAuthenticated } = useAuth();
+  const { getTotalItems } = useCart();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
   return (
-    <header style={headerStyle}>
-          <h1 style={logoStyle}>SecondEL</h1>
+    <header className="bg-white shadow-md sticky top-0 z-50">
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex items-center justify-between">
+          <Link to="/" className="text-2xl font-bold text-primary-600">
+            E-Shop
+          </Link>
 
-          <div style={{ textAlign: "center", margin: "20px" }}>
-                      <input
-                        type="text"
-                        placeholder="Hledat produkty..."
-                        style={{ width: "300px", padding: "8px" }}
-                      />
-                      <button style={{ marginLeft: "10px", padding: "8px 15px" }}>Hledat</button>
-                    </div>
-
-          <nav style={navStyle}>
-            <Link to="/login" style={{ padding: "10px", textDecoration: "none", color: "black" }}>Přihlášení</Link>
-            <Link to="/register" style={{ padding: "10px",  borderLeft: "3px solid #ddd", textDecoration: "none", color: "black" }}>Registrace</Link>
-            <a href="#" style={{ padding: "10px",  borderRadius: "15px", background: "#f4f4f4", textDecoration: "none", color: "black" }}>🛒 Košík</a>
+          <nav className="hidden md:flex items-center space-x-6">
+            <Link to="/" className="text-gray-700 hover:text-primary-600 transition-colors">
+              Domů
+            </Link>
+            <Link to="/products" className="text-gray-700 hover:text-primary-600 transition-colors">
+              Produkty
+            </Link>
+            {isAuthenticated() && (
+              <>
+                <Link to="/cart" className="text-gray-700 hover:text-primary-600 transition-colors relative">
+                  Košík
+                  {getTotalItems() > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {getTotalItems()}
+                    </span>
+                  )}
+                </Link>
+                <Link to="/profile" className="text-gray-700 hover:text-primary-600 transition-colors">
+                  Profil
+                </Link>
+                {user && user.roles && user.roles.some(
+                  (r) => r.authority === 'ROLE_ADMIN' || r === 'ROLE_ADMIN'
+                ) && (
+                  <Link to="/admin" className="text-gray-700 hover:text-primary-600 transition-colors">
+                    Administrace
+                  </Link>
+                )}
+              </>
+            )}
           </nav>
 
+          <div className="flex items-center space-x-4">
+            {isAuthenticated() ? (
+              <>
+                <span className="text-gray-700 hidden md:inline">
+                  {user?.username}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="btn-secondary text-sm"
+                >
+                  Odhlásit se
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="btn-secondary text-sm">
+                  Přihlásit se
+                </Link>
+                <Link to="/register" className="btn-primary text-sm">
+                  Registrovat se
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
 
-        </header>
-
+        {/* Mobile menu */}
+        <nav className="md:hidden mt-4 flex flex-wrap gap-2">
+          <Link to="/" className="text-sm text-gray-700 hover:text-primary-600">
+            Domů
+          </Link>
+          <Link to="/products" className="text-sm text-gray-700 hover:text-primary-600">
+            Produkty
+          </Link>
+          {isAuthenticated() && (
+            <>
+              <Link to="/cart" className="text-sm text-gray-700 hover:text-primary-600 relative">
+                Košík ({getTotalItems()})
+              </Link>
+              <Link to="/profile" className="text-sm text-gray-700 hover:text-primary-600">
+                Profil
+              </Link>
+            </>
+          )}
+        </nav>
+      </div>
+    </header>
   );
 };
 

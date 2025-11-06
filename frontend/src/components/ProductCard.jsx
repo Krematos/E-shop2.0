@@ -1,14 +1,47 @@
-import React from "react";
+import { Link } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
 
-const ProductCard = ({ name, description, price, image }) => {
+const ProductCard = ({ product }) => {
+  const { addToCart } = useCart();
+
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    addToCart(product, 1);
+  };
+
+  const price = typeof product.price === 'string' 
+    ? parseFloat(product.price) 
+    : product.price;
+
   return (
-    <div className="border rounded-lg shadow-md p-4 w-60 bg-white hover:shadow-lg transition">
-      <img src={image} alt={name} className="w-full h-40 object-cover rounded-md" />
-      <h2 className="text-lg font-bold mt-2">{name}</h2>
-      <p className="text-sm text-gray-600">{description}</p>
-      <p className="text-blue-600 font-semibold mt-2">{price} Kč</p>
-      <button className="mt-3 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-        Přidat do košíku 🛒
+    <div className="card hover:shadow-lg transition-shadow duration-200">
+      <Link to={`/products/${product.id}`}>
+        <div className="aspect-square bg-gray-200 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+          {product.image ? (
+            <img
+              src={product.image}
+              alt={product.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="text-gray-400 text-4xl">📦</div>
+          )}
+        </div>
+        <h3 className="text-xl font-semibold mb-2 line-clamp-2">{product.name}</h3>
+        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+          {product.description}
+        </p>
+        <div className="flex items-center justify-between">
+          <span className="text-2xl font-bold text-primary-600">
+            {price?.toFixed(2) || '0.00'} Kč
+          </span>
+        </div>
+      </Link>
+      <button
+        onClick={handleAddToCart}
+        className="btn-primary w-full mt-4"
+      >
+        Přidat do košíku
       </button>
     </div>
   );

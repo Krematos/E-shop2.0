@@ -2,7 +2,6 @@ package org.example.controller;
 
 
 import org.example.dto.UserUpdateDto;
-import org.example.repository.UserRepository;
 import jakarta.validation.Valid;
 import org.example.dto.UserDto;
 import org.example.model.User;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -24,8 +22,6 @@ import java.util.stream.Collectors;
 public class UserController {
 
     private final UserService userService;
-
-    private Set<String> roles;
 
     public UserController(UserService userService) {
         this.userService = userService;
@@ -37,6 +33,18 @@ public class UserController {
         return userService.findAllUsers().stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Získání informací o přihlášeném uživateli
+     */
+    @GetMapping("/me")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<UserDto> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
+        return userService.findUserByUsername(userDetails.getUsername())
+                .map(this::convertToDto)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     @GetMapping("/{userId}")

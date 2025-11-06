@@ -12,7 +12,7 @@ import java.util.Optional;
 @Service
 public interface OrderService {
 
-    Order createOrder(String productName, int quantity, BigDecimal Price, User user);
+    Order createOrder(String productName, int quantity, BigDecimal price, User user);
     List<OrderDto> findAllOrders();
 
     Optional<OrderDto> findOrderById(Long id);

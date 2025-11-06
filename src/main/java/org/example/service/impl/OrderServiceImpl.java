@@ -15,8 +15,7 @@ import org.example.mapper.OrderMapper;
 import org.example.repository.OrderRepository;
 import org.example.repository.ProductRepository;
 import org.example.service.OrderService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -32,16 +31,12 @@ import java.util.Optional;
 @Transactional
 public class OrderServiceImpl implements OrderService {
 
-
+    @Autowired
     private final OrderMapper orderMapper;
 
      private final OrderRepository orderRepository;
 
      private final ProductRepository productRepository;
-
-
-
-
 
         /**
         * Vytvoří novou objednávku.
@@ -63,21 +58,26 @@ public class OrderServiceImpl implements OrderService {
 
          Product product = productRepository.findByName(productName)
                  .orElseThrow(() -> new IllegalArgumentException("Produkt nebyl nalezen: " + productName));
-        // Vytvoření položky objednávky
-         OrderItem orderItem = new OrderItem();
-         orderItem.setProductName(product.getName());
-         orderItem.setQuantity(quantity);
-         orderItem.setPrice(price);
-         orderItem.setTotalPrice(price.multiply(BigDecimal.valueOf(quantity)));
-         orderItem.setCreatedAt(LocalDateTime.now());
-         orderItem.setProduct(product);
+
+         // Vytvoření položky objednávky
+         OrderItem orderItem = OrderItem.builder()
+                 .productId(product.getId())
+                 .productName(productName)
+                 .quantity(quantity)
+                 .price(price)
+                 .totalPrice(price.multiply(BigDecimal.valueOf(quantity)))
+                 .build();
             log.info("Vytvořena položka objednávky: {} x {} za cenu {}", quantity, productName, orderItem.getTotalPrice());
+
             // Vytvoření objednávky
-         Order order = new Order();
-         order.setOrderDate(LocalDateTime.now());
-         order.setUser(user);
-         order.setOrderItems(List.of(orderItem));
-         order.setTotalPrice(orderItem.getTotalPrice());
+         Order order = Order.builder()
+                 .user(user)
+                 .product(product)
+                 .orderDate(LocalDateTime.now())
+                 .quantity(quantity)
+                 .totalPrice(orderItem.getTotalPrice())
+                 .build();
+
          orderItem.setOrder(order); // vazba zpět na objednávku (1:N vztah)
 
          order.setOrderItems(List.of(orderItem));
@@ -88,7 +88,6 @@ public class OrderServiceImpl implements OrderService {
 
          return savedOrder;
      }
-
 
     /**
      * Najde všechny objednávky uživatele s cachováním.

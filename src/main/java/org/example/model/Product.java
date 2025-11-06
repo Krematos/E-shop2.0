@@ -12,10 +12,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 
-@Entity
-@Table(name = "products", indexes = {
-        @Index(name = "idx_product_name", columnList = "name")
-})
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,6 +20,10 @@ import java.time.LocalDateTime;
 @Builder
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Entity
+@Table(name = "products", indexes = {
+        @Index(name = "idx_product_name", columnList = "name")
+})
 public class Product  {
 
     @Id

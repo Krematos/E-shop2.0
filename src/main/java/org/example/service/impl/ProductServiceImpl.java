@@ -9,16 +9,16 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.example.repository.ProductRepository;
 import org.example.service.ProductService;
-import org.example.mapper.ProductMapper;
+import org.example.dto.ProductDto;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
-@Slf4j
 public class ProductServiceImpl implements ProductService {
 
 
@@ -27,9 +27,6 @@ public class ProductServiceImpl implements ProductService {
     private final ProductMapper productMapper;
 
 
-    public ProductServiceImpl(ProductRepository productRepository) {
-        this.productRepository = productRepository;
-    }
     /**
      * Vrátí produkt podle ID, s cachováním.
      */
@@ -77,5 +74,21 @@ public class ProductServiceImpl implements ProductService {
     @Cacheable(value = "allProducts")
     public List<Product> findAllProducts() {
         return productRepository.findAll();
+    }
+
+    /**
+     * Vytvoří nový produkt z DTO.
+     */
+    @Override
+    @Transactional
+    @CacheEvict(value = {"productsByID", "allProducts"}, allEntries = true)
+    public ProductDto createProduct(ProductDto productDto) {
+        if (productDto == null) {
+            throw new IllegalArgumentException("ProductDto nesmí být null");
+        }
+        Product product = productMapper.toEntity(productDto);
+        Product saved = productRepository.save(product);
+        log.info("Vytvořen nový produkt s ID {}", saved.getId());
+        return productMapper.toDto(saved);
     }
 }

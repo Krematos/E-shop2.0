@@ -2,12 +2,12 @@ package org.example.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.mapper.OrderMapper;
 import org.example.model.User;
 import org.example.service.OrderService;
 import org.example.dto.OrderDto;
 import org.example.model.Order;
-import org.example.mapper.OrderMapper;
 import org.example.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +16,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
@@ -35,13 +36,18 @@ public class OrderController {
             @Valid @RequestBody OrderDto orderDto,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
+        log.info("Uživatel {} vytváří novou objednávku.", userDetails.getUsername());
+
         User currentUser = userService.findUserByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new IllegalStateException("Uživatel nenalezen: " + userDetails.getUsername()));
 
+        // Použijeme price z DTO (s @JsonProperty("Price") pro kompatibilitu s frontendem)
+        BigDecimal price = orderDto.getPrice() != null ? orderDto.getPrice() : orderDto.getTotalPrice();
+        
         Order createdOrder = orderService.createOrder(
                 orderDto.getProductName(),
                 orderDto.getQuantity(),
-                orderDto.getPrice(),
+                price,
                 currentUser
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(orderMapper.toDto(createdOrder));
@@ -51,12 +57,9 @@ public class OrderController {
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<OrderDto>> getAllOrders() {
-        return ResponseEntity.ok(
-                orderService.findAllOrders()
-                        .stream()
-                        .map(orderMapper::toDto)
-                        .collect(Collectors.toList())
-        );
+        log.info("Admin požadoval seznam všech objednávek.");
+        List<OrderDto> orders = orderService.findAllOrders();
+        return ResponseEntity.ok(orders);
     }
 
     // ✅ Získání objednávek přihlášeného uživatele
@@ -66,12 +69,8 @@ public class OrderController {
         User currentUser = userService.findUserByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new IllegalStateException("Uživatel nebyl nalezen po autentizaci."));
 
-        return ResponseEntity.ok(
-                orderService.findOrdersByUser(currentUser.getUsername())
-                        .stream()
-                        .map(orderMapper::toDto)
-                        .collect(Collectors.toList())
-        );
+        List<OrderDto> orders = orderService.findOrdersByUser(currentUser.getUsername());
+        return ResponseEntity.ok(orders);
     }
 
     // ✅ Detail objednávky podle ID
@@ -81,15 +80,32 @@ public class OrderController {
             @PathVariable Long orderId,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
+        String username = userDetails.getUsername();
+        log.info("Uživatel {} požaduje detail objednávky s ID {}.", username, orderId);
+
         User currentUser = userService.findUserByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new IllegalStateException("Uživatel nebyl nalezen po autentizaci."));
 
         boolean isAdmin = userDetails.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
+        // Získáme OrderDto z service
         return orderService.findOrderById(orderId)
-                .filter(order -> isAdmin || order.getUser().getId().equals(currentUser.getId()))
-                .map(orderMapper::toDto)
+                .map(orderDto -> {
+                    // Pro kontrolu oprávnění potřebujeme Order entitu
+                    // Pokud není admin, ověříme že objednávka patří uživateli
+                    // (toto ověření by mělo být v service vrstvě, ale pro teď to necháme zde)
+                    if (!isAdmin) {
+                        // Zkontrolujeme, zda objednávka patří uživateli přes service
+                        List<OrderDto> userOrders = orderService.findOrdersByUser(currentUser.getUsername());
+                        boolean belongsToUser = userOrders.stream()
+                                .anyMatch(o -> o.getId().equals(orderId));
+                        if (!belongsToUser) {
+                            return null; // Vrátíme null, což způsobí 404
+                        }
+                    }
+                    return orderDto;
+                })
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
