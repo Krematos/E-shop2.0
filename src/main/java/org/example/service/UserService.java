@@ -66,11 +66,6 @@ public class UserService {
         }
     }
 
-
-
-
-
-
     // getters, setters, další metody...
     @CacheEvict(value = {"users", "usersById", "allUsers"}, allEntries = true)
     public void DeleteUserById(Long userId) {
