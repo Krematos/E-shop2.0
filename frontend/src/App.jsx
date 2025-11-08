@@ -18,19 +18,19 @@ function App() {
       <CartProvider>
         <Router>
           <div className="flex flex-col min-h-screen">
-            <Header />
+          <Header />
             <main className="flex-grow">
-              <Routes>
+            <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/products" element={<ProductListPage />} />
                 <Route path="/products/:id" element={<ProductDetailPage />} />
                 <Route path="/cart" element={<CartPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/admin" element={<AdminPage />} />
-              </Routes>
-            </main>
+            </Routes>
+          </main>
             <Footer />
           </div>
         </Router>
