@@ -3,6 +3,7 @@ package org.example.controller;
 
 
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.model.User;
 import org.example.security.JwtUtil;
@@ -23,6 +24,7 @@ import java.util.Map;
 @Slf4j
 @RestController // Označuje, že tato třída je REST kontroler
 @RequestMapping("/api/auth") // Definuje základní cestu pro všechny metody v tomto kontroleru
+@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
@@ -31,17 +33,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final UserDetailsServiceImpl userDetailsService;
 
-    public AuthController(AuthenticationManager authenticationManager,
-                          UserService userService,
-                          JwtUtil jwtUtil,
-                          PasswordEncoder passwordEncoder,
-                          UserDetailsServiceImpl userDetailsService) {
-        this.authenticationManager = authenticationManager;
-        this.userService = userService;
-        this.jwtUtil = jwtUtil;
-        this.passwordEncoder = passwordEncoder;
-        this.userDetailsService = userDetailsService;
-    }
+
 
     // ✅ Registrace nového uživatele
     @PostMapping("/register")

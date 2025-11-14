@@ -57,8 +57,6 @@ public class User {
     }
 
 
-
-
     public String getRole() {
         return roles.stream()
                 .findFirst()
@@ -74,11 +72,6 @@ public class User {
             this.roles = Set.of(Role.ROLE_USER); // Default role
         }
     }
-
-
-
-
-
 
 
     @Override

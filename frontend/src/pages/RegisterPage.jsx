@@ -56,11 +56,6 @@ const RegisterPage = () => {
 
   return (
     <div className="login-container">
-      {/* Vizuální strana - stejná pro konzistenci */}
-      <div className="login-visual-side">
-        <h1 className="logo">E-Shop</h1>
-        <p>Začněte nakupovat dnes! Rychlá registrace a spousta výhod.</p>
-      </div>
 
       {/* Formulářová část - Registrace */}
       <div className="login-form-side">

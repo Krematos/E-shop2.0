@@ -1,3 +1,5 @@
+import lombok.extern.slf4j.Slf4j;
+import org.example.mapper.OrderMapper;
 import org.example.model.Order;
 import org.example.model.Product;
 import org.example.model.User;
@@ -16,12 +18,10 @@ import org.mockito.Mock;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+@Slf4j
 @ExtendWith(MockitoExtension.class)
 public class OrderServiceImplTest {
-        private static final Logger log = LoggerFactory.getLogger(OrderServiceImplTest.class);
+
         @Mock
         private OrderRepository orderRepository;
 
@@ -30,17 +30,20 @@ public class OrderServiceImplTest {
         @Mock
         private ProductRepository productRepository;
 
+        @Mock
+        private OrderMapper orderMapper;
+
 
 
         @BeforeEach
         void setUp() {
-            orderService = new OrderServiceImpl(orderRepository, productRepository);
+            orderService = new OrderServiceImpl(orderMapper, orderRepository, productRepository);
         }
 
      @Test
      void testCreateOrder() {
          log.info("Start testCreateOrder");
-         orderService = new OrderServiceImpl(orderRepository, productRepository);
+         orderService = new OrderServiceImpl(orderMapper, orderRepository, productRepository);
          User user = new User();
          user.setUsername("John Doe");
          Product product = new Product();

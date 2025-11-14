@@ -10,7 +10,8 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Getter
@@ -46,6 +47,17 @@ public class Product  {
     @Digits(integer = 10, fraction = 2, message = "Cena produktu musí mít maximálně 10 číslic před desetinnou čárkou a 2 číslice za ní")
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
+
+    @NotBlank(message = "Kategorie produktu nesmí být prázdná")
+    @Column(name = "category", nullable = false)
+    private String category;
+
+    private String currency;
+
+    @ElementCollection
+    private List<String> images = new ArrayList<>();
+
+    private boolean active = true;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

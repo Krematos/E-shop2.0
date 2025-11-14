@@ -52,3 +52,32 @@ export const validateToken = async () => {
   }
 };
 
+/**
+    * Získání role uživatele
+    */
+export const getUserRole = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        throw new Error('No token found');
+    }
+    try {
+        const response = await api.get('/auth/role', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        return response.data.role;
+    } catch (error) {
+        console.error('Error fetching user role:', error);
+        throw error;
+    }
+};
+
+export default {
+    register,
+    login,
+    logout,
+    validateToken,
+    getUserRole,
+};
+

@@ -1,9 +1,10 @@
 package org.example.service;
 
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.model.User;
 import org.example.repository.UserRepository;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -15,42 +16,33 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import org.slf4j.Logger;
 
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
-    private static final Logger log = LoggerFactory.getLogger(UserService.class);
     private final UserRepository userRepository;
+
     private final PasswordEncoder passwordEncoder;
 
     private final EmailService emailService;
-
-    @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, EmailService emailService){
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.emailService = emailService;
-    }
 
 
     @Transactional
     @CacheEvict(value = {"users", "usersById", "allUsers"}, allEntries = true)
     public User registerNewUser(User user){
-        if(userRepository.existsByUsername(user.getUsername())){
-            throw new IllegalArgumentException("Uživatelské jméno již existuje");
-        }
-        if(userRepository.existsByEmail(user.getEmail())){
-            throw new IllegalArgumentException("Email již existuje");
-        }
+        validateUser(user);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRoles(Set.of(User.Role.ROLE_USER)); // Výchozí role
 
         User savedUser = userRepository.save(user);
 
+        log.info("Nový uživatel registrován: {}", savedUser.getUsername());
+
         // Odeslání uvítacího emailu
-        emailService.sendWelcomeEmail(savedUser.getEmail(), savedUser.getUsername());
+        new Thread(() -> emailService.sendWelcomeEmail(savedUser.getEmail(), savedUser.getUsername()));
 
         return savedUser;
     }

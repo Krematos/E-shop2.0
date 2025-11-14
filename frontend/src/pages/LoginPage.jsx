@@ -30,11 +30,6 @@ const LoginPage = () => {
 
   return (
     <div className="login-container">
-      {/* Vlevo jen logo/obrázek na desktopu, na mobilu pryč */}
-      <div className="login-visual-side">
-        <h1 className="logo">E-Shop</h1>
-        <p>Vítejte zpět! Nakupování nebylo nikdy jednodušší.</p>
-      </div>
 
       {/* Pravá strana - formulář */}
       <div className="login-form-side">
