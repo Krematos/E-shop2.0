@@ -18,10 +18,27 @@ public interface UserRepository extends JpaRepository <User, Long> {
      * @return {@link Optional} obsahující uživatele, pokud existuje
      */
     Optional<User> findByUsername(String username);
+
     /**
-     * Zkontroluje, zda uživatel s daným uživatelským jménem existuje.
+     * Najde uživatele podle jeho emailu.
      *
-     * @param username uživatelské jméno
+     * @param email emailová adresa
+          * @return {@link Optional} obsahující uživatele, pokud existuje
+          */
+         Optional<User> findByEmail(String email);
+     
+         /**
+          * Najde uživatele podle jeho resetovacího tokenu.
+          *
+          * @param token resetovací token
+          * @return {@link Optional} obsahující uživatele, pokud existuje
+          */
+         Optional<User> findByPasswordResetToken(String token);
+     
+         /**
+          * Zkontroluje, zda uživatel s daným uživatelským jménem existuje.
+          *
+          * @param username uživatelské jméno
      * @return true pokud uživatel existuje, jinak false
      */
     boolean existsByUsername(String username);

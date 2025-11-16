@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -35,6 +36,12 @@ public class User {
     @Column(nullable = false, unique = true)
     @Size(min = 5, max = 50)
     private String email;
+
+    @Column(name = "password_reset_token")
+    private String passwordResetToken;
+
+    @Column(name = "password_reset_token_expiry")
+    private LocalDateTime passwordResetTokenExpiry;
 
     @Column(name = "roles")
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))

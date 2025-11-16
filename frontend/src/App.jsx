@@ -9,6 +9,7 @@ import ProductDetailPage from './pages/ProductDetailPage';
 import CartPage from './pages/CartPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminPage from './pages/AdminPage';
 import CreateAdPage from './pages/CreateAdPage';
@@ -28,6 +29,7 @@ function App() {
                 <Route path="/cart" element={<CartPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/admin" element={<AdminPage />} />
                 <Route path="/ads/create" element={<CreateAdPage />} />

@@ -16,6 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
+import java.time.LocalDateTime;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 
 @Slf4j
@@ -45,6 +48,31 @@ public class UserService {
         new Thread(() -> emailService.sendWelcomeEmail(savedUser.getEmail(), savedUser.getUsername()));
 
         return savedUser;
+    }
+
+    public String createPasswordResetTokenForUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+
+        String token = UUID.randomUUID().toString();
+        user.setPasswordResetToken(token);
+        user.setPasswordResetTokenExpiry(LocalDateTime.now().plusHours(1)); // Token platný 1 hodinu
+        userRepository.save(user);
+        return token;
+    }
+
+    public void resetPassword(String token, String newPassword) {
+        User user = userRepository.findByPasswordResetToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid password reset token"));
+
+        if (user.getPasswordResetTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Password reset token has expired");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setPasswordResetToken(null);
+        user.setPasswordResetTokenExpiry(null);
+        userRepository.save(user);
     }
 
     private void validateUser(User user) {

@@ -1,12 +1,10 @@
 package org.example.controller;
 
-
-
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.model.User;
 import org.example.security.JwtUtil;
+import org.example.service.EmailService;
 import org.example.service.UserService;
 import org.example.service.impl.UserDetailsImpl;
 import org.example.service.impl.UserDetailsServiceImpl;
@@ -32,6 +30,7 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
     private final UserDetailsServiceImpl userDetailsService;
+    private final EmailService emailService;
 
 
 
@@ -45,6 +44,33 @@ public class AuthController {
                     "username", newUser.getUsername(),
                     "email", newUser.getEmail()
             ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        try {
+            String token = userService.createPasswordResetTokenForUser(email);
+            // TODO: Construct the reset URL properly
+            String resetUrl = "http://localhost:5173/reset-password?token=" + token;
+            emailService.sendPasswordResetEmail(email, resetUrl);
+            return ResponseEntity.ok(Map.of("message", "If a user with that email exists, a password reset link has been sent."));
+        } catch (Exception e) {
+            // Don't reveal if the user doesn't exist
+            return ResponseEntity.ok(Map.of("message", "If a user with that email exists, a password reset link has been sent."));
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
+        String token = body.get("token");
+        String newPassword = body.get("newPassword");
+        try {
+            userService.resetPassword(token, newPassword);
+            return ResponseEntity.ok(Map.of("message", "Password has been reset successfully."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
