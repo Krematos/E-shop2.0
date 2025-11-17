@@ -5,15 +5,15 @@ import org.example.service.OrderService;
 import org.example.service.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -23,7 +23,7 @@ import java.util.Optional;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(OrderController.class)
 public class OrderControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -34,8 +34,6 @@ public class OrderControllerTest {
     @Mock
     private UserService userService;
 
-    @InjectMocks
-    private OrderController orderController;
 
     @Test
     @DisplayName("✅ Vytvoření nové objednávky - úspěch")
@@ -60,7 +58,7 @@ public class OrderControllerTest {
                 .thenReturn(Optional.of(mockUser));
 
         Mockito.when(orderService.createOrder(Mockito.anyString(), Mockito.anyInt(), Mockito.any(), Mockito.any()))
-                .thenReturn(mockOrderDto);
+                .thenReturn(orderService.createOrder("Notebook", 2, new BigDecimal("15000"), mockUser));
 
         // JSON tělo požadavku
         String jsonRequest = """

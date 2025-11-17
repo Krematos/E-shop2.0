@@ -95,6 +95,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Cacheable(value = "ordersByUser", key = "#userName")
     public List<OrderDto> findOrdersByUser(String userName) {
+        log.info("Hledání objednávek pro uživatele: {}", userName);
         return orderRepository.findByUser_Username(userName)
                 .stream()
                 .map(orderMapper::toDto)
@@ -106,6 +107,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Cacheable(value = "allOrders")
     public List<OrderDto> findAllOrders() {
+        log.info("Načítání všech objednávek");
         return orderRepository.findAll()
                 .stream()
                 .map(orderMapper::toDto)
@@ -116,6 +118,7 @@ public class OrderServiceImpl implements OrderService {
      */
     @Override
     public Optional<OrderDto> findOrderById(Long id) {
+        log.info("Hledání objednávky podle ID: {}", id);
         return orderRepository.findById(id)
                 .map(orderMapper::toDto);
     }

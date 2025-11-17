@@ -34,6 +34,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Cacheable(value = "productsById", key = "#id")
     public Optional<Product> findProductById(Long id) {
+        log.info("Hledání produktu podle ID: {}", id);
         return productRepository.findById(id);
     }
     /**
@@ -73,6 +74,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Cacheable(value = "allProducts")
     public List<Product> findAllProducts() {
+        log.info("Načítání všech produktů");
         return productRepository.findAll();
     }
 

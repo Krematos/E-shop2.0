@@ -3,6 +3,15 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+### Logs ###
+*.log
+maven-wrapper.log*
+
+### Environment ###
+.env*
+!/.env.example
+!/.env.template
+
 ### IntelliJ IDEA ###
 .idea/modules.xml
 .idea/jarRepositories.xml

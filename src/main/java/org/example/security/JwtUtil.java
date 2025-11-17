@@ -1,11 +1,15 @@
 package org.example.security;
 
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import org.springframework.stereotype.Component;
 import io.jsonwebtoken.*;
 import java.nio.charset.StandardCharsets;
 import org.springframework.beans.factory.annotation.Value;
 
+import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.Date;
 import java.util.Set;
@@ -17,8 +21,8 @@ public class JwtUtil {
     private final Key signingKey;
     private final long expirationMillis;
 
-    // Pro jednoduchou revokaci tokenů (v paměti)
-    private final Set<String> revokedTokens = ConcurrentHashMap.newKeySet();
+    // TODO: Implement a persistent token blocklist (e.g., using a database or Redis)
+    // for a secure server-side logout. The current implementation is stateless.
 
     public JwtUtil(
             @Value("${jwt.secret}") String secretKey,
@@ -53,11 +57,18 @@ public class JwtUtil {
 
     private Claims parseToken(String token) {
         try {
-            return Jwts.parserBuilder()
-                    .setSigningKey(signingKey)
+            return Jwts.parser()
+                    .verifyWith((SecretKey) signingKey)
                     .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+        } catch (SignatureException e) {
+            throw new JwtAuthenticationException("Invalid JWT signature", e);
+        } catch (MalformedJwtException e) {
+            throw new JwtAuthenticationException("Malformed JWT token", e);
+        } catch (ExpiredJwtException e) {
+            throw new JwtAuthenticationException("Expired JWT token", e);
         } catch (JwtException e) {
             throw new JwtAuthenticationException("Invalid JWT token", e);
         }
