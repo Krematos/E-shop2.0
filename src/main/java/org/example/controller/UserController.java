@@ -1,14 +1,13 @@
 package org.example.controller;
 
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.dto.UserUpdateDto;
 import jakarta.validation.Valid;
 import org.example.dto.UserDto;
 import org.example.model.User;
-import org.example.service.UserService;
+import org.example.service.user.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

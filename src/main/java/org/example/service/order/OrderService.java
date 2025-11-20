@@ -1,4 +1,4 @@
-package org.example.service;
+package org.example.service.order;
 
 import org.example.dto.OrderDto;
 import org.example.model.Order;

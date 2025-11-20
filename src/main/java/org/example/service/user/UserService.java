@@ -1,11 +1,11 @@
-package org.example.service;
+package org.example.service.user;
 
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.model.User;
 import org.example.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.example.service.email.EmailService;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.crypto.password.PasswordEncoder;

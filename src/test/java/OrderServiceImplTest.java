@@ -4,7 +4,7 @@ import org.example.model.Order;
 import org.example.model.Product;
 import org.example.model.User;
 import org.example.repository.ProductRepository;
-import org.example.service.OrderService;
+import org.example.service.order.OrderService;
 import org.example.repository.OrderRepository;
 import org.example.service.impl.OrderServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,15 +25,12 @@ public class OrderServiceImplTest {
         @Mock
         private OrderRepository orderRepository;
 
-
         private OrderService orderService;
         @Mock
         private ProductRepository productRepository;
 
         @Mock
         private OrderMapper orderMapper;
-
-
 
         @BeforeEach
         void setUp() {

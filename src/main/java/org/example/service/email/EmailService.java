@@ -1,4 +1,4 @@
-package org.example.service;
+package org.example.service.email;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
@@ -27,6 +27,7 @@ public class EmailService {
      */
     @Async
     public void sendWelcomeEmail(String to, String username) {
+        log.info("Volána metoda pro odeslání uvítacího e-mailu");
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");

@@ -1,15 +1,14 @@
 import org.example.controller.OrderController;
 import org.example.dto.OrderDto;
 import org.example.model.User;
-import org.example.service.OrderService;
-import org.example.service.UserService;
+import org.example.service.order.OrderService;
+import org.example.service.user.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;

@@ -48,4 +48,3 @@ build/
 
 application.properties
 data.sql
-OrderControllerTest.java
