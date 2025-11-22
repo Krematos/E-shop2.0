@@ -8,6 +8,7 @@ import {
 } from '../services/productService';
 import { getAllOrders } from '../services/orderService';
 import LoadingSpinner from '../components/LoadingSpinner';
+import AdminAddProductForm from '../components/AdminAddProductForm';
 
 const AdminPage = () => {
   const [products, setProducts] = useState([]);
@@ -154,82 +155,25 @@ const AdminPage = () => {
 
             {showProductForm && (
               <div className="card mb-6">
-                <h3 className="text-xl font-semibold mb-4">
-                  {editingProduct ? 'Upravit produkt' : 'Nový produkt'}
-                </h3>
-                <form onSubmit={handleProductSubmit}>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Název
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        className="input-field"
-                        value={formData.name}
-                        onChange={(e) =>
-                          setFormData({ ...formData, name: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Popis
-                      </label>
-                      <textarea
-                        required
-                        className="input-field"
-                        rows="4"
-                        value={formData.description}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            description: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Cena (Kč)
-                      </label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0.01"
-                        required
-                        className="input-field"
-                        value={formData.price}
-                        onChange={(e) =>
-                          setFormData({ ...formData, price: e.target.value })
-                        }
-                      />
-                    </div>
-                  </div>
-                  <div className="flex space-x-4 mt-4">
-                    <button type="submit" className="btn-primary">
-                      {editingProduct ? 'Uložit změny' : 'Vytvořit'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowProductForm(false);
-                        setEditingProduct(null);
-                      }}
-                      className="btn-secondary"
-                    >
-                      Zrušit
-                    </button>
-                  </div>
-                </form>
+                <AdminAddProductForm
+                                    initialData={editingProduct}
+                                    onProductSaved={() => {
+                                        setShowProductForm(false);
+                                        setEditingProduct(null);
+                                        fetchData(); // Znovu načte data po uložení
+                                    }}
+                                    onCancel={() => {
+                                        setShowProductForm(false);
+                                        setEditingProduct(null);
+                                    }}
+                                />
               </div>
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {products.map((product) => {
-                const price = typeof product.price === 'string' 
-                  ? parseFloat(product.price) 
+                const price = typeof product.price === 'string'
+                  ? parseFloat(product.price)
                   : product.price;
 
                 return (
@@ -282,8 +226,8 @@ const AdminPage = () => {
                   </thead>
                   <tbody>
                     {orders.map((order) => {
-                      const price = typeof order.Price === 'string' 
-                        ? parseFloat(order.Price) 
+                      const price = typeof order.Price === 'string'
+                        ? parseFloat(order.Price)
                         : order.Price || order.totalPrice || 0;
                       const totalPrice = price * (order.quantity || 1);
 

@@ -55,6 +55,8 @@ public class Product  {
     private String currency;
 
     @ElementCollection
+    @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))
+    @Column(name = "images_url", length = 500)
     private List<String> images = new ArrayList<>();
 
     private boolean active = true;

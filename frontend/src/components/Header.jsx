@@ -47,9 +47,6 @@ const Header = () => {
                   <Link to="/admin" className="text-gray-700 hover:text-primary-600 transition-colors">
                     Administrace
                   </Link>
-                <Link to="/ads/create" className="text-gray-700 hover:text-primary-600 transition-colors">
-                     Vložit inzerát
-                 </Link>
                  </>
                 )}
               </>

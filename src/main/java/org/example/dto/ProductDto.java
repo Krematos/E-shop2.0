@@ -3,9 +3,11 @@ package org.example.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -26,6 +28,8 @@ public class ProductDto {
     @DecimalMin(value = "0.01", message = "Cena musí být větší než 0")
     @Digits(integer = 10, fraction = 2, message = "Neplatný formát ceny")
     private BigDecimal price;
+
+    private List<MultipartFile> images;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

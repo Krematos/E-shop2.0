@@ -40,18 +40,18 @@ public class ProductController {
     /**
      * ➕ Vytvoření nového produktu (pouze ADMIN).
      */
-    @PostMapping("/ads")
+    @PostMapping(path = "/ads", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')") // Pouze admin může přidávat produkty
     public ResponseEntity<ProductDto> createProduct(@Valid @RequestBody ProductDto productDto) {
         log.info("POST /api/products/ads - Vytvoření nového produktu: {}", productDto);
-        Product savedProduct = productService.saveProduct(productMapper.toEntity(productDto));
+        Product savedProduct = productService.createProductWithImages(productDto);
         return new ResponseEntity<>(productMapper.toDto(savedProduct), HttpStatus.CREATED);
     }
 
     /**
      * ♻️ Aktualizace existujícího produktu (pouze ADMIN).
      */
-    @PutMapping("/{id}")
+    @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')") // Pouze admin může aktualizovat produkty
     public ResponseEntity<ProductDto> updateProduct(@PathVariable Long id, @RequestBody ProductDto productDto) {
         log.info("PUT /api/products/{} - Aktualizace produktu: {}", id, productDto);
