@@ -3,8 +3,8 @@ import api from './api';
 /**
  * Získání všech produktů
  */
-export const getProducts = async () => {
-  const response = await api.get('/products');
+export const getProducts = async (page = 0, size = 12) => {
+  const response = await api.get(`/products?page=${page}&size=${size}`);
   return response.data;
 };
 

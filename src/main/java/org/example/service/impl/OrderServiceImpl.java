@@ -1,7 +1,5 @@
 package org.example.service.impl;
 
-
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.dto.OrderDto;
@@ -120,6 +118,14 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findById(id)
                 .map(orderMapper::toDto);
     }
+
+    @Override
+    public boolean isOwner(Long orderId, String username) {
+        return orderRepository.findById(orderId)
+                .map(order -> order.getUser().getUsername().equals(username))
+                .orElse(false);
+    }
+
     /**
      * Validuje vstupy pro vytvoření objednávky.
      */

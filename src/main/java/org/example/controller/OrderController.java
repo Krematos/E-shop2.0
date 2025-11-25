@@ -75,37 +75,14 @@ public class OrderController {
 
     // ✅ Detail objednávky podle ID
     @GetMapping("/{orderId}")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or @orderService.isOwner(#orderId, principal.username)")
     public ResponseEntity<OrderDto> getOrderById(
-            @PathVariable Long orderId,
-            @AuthenticationPrincipal UserDetails userDetails
+            @PathVariable Long orderId
     ) {
-        String username = userDetails.getUsername();
-        log.info("Uživatel {} požaduje detail objednávky s ID {}.", username, orderId);
-
-        User currentUser = userService.findUserByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new IllegalStateException("Uživatel nebyl nalezen po autentizaci."));
-
-        boolean isAdmin = userDetails.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        log.info("Požadavek na detail objednávky s ID {}.", orderId);
 
         // Získáme OrderDto z service
         return orderService.findOrderById(orderId)
-                .map(orderDto -> {
-                    // Pro kontrolu oprávnění potřebujeme Order entitu
-                    // Pokud není admin, ověříme že objednávka patří uživateli
-                    // (toto ověření by mělo být v service vrstvě, ale pro teď to necháme zde)
-                    if (!isAdmin) {
-                        // Zkontrolujeme, zda objednávka patří uživateli přes service
-                        List<OrderDto> userOrders = orderService.findOrdersByUser(currentUser.getUsername());
-                        boolean belongsToUser = userOrders.stream()
-                                .anyMatch(o -> o.getId().equals(orderId));
-                        if (!belongsToUser) {
-                            return null; // Vrátíme null, což způsobí 404
-                        }
-                    }
-                    return orderDto;
-                })
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }

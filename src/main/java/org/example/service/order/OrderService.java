@@ -19,4 +19,6 @@ public interface OrderService {
 
     List<OrderDto> findOrdersByUser(String userName);
 
+    boolean isOwner(Long orderId, String username);
+
 }

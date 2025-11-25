@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 @Slf4j
@@ -40,10 +42,10 @@ public class ProductController {
     /**
      * ➕ Vytvoření nového produktu (pouze ADMIN).
      */
-    @PostMapping(path = "/ads", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')") // Pouze admin může přidávat produkty
-    public ResponseEntity<ProductDto> createProduct(@Valid @RequestBody ProductDto productDto) {
-        log.info("POST /api/products/ads - Vytvoření nového produktu: {}", productDto);
+    public ResponseEntity<ProductDto> createProduct(@Valid @ModelAttribute ProductDto productDto) {
+        log.info("POST /api/products - Vytvoření nového produktu: {}", productDto);
         Product savedProduct = productService.createProductWithImages(productDto);
         return new ResponseEntity<>(productMapper.toDto(savedProduct), HttpStatus.CREATED);
     }
@@ -53,14 +55,11 @@ public class ProductController {
      */
     @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')") // Pouze admin může aktualizovat produkty
-    public ResponseEntity<ProductDto> updateProduct(@PathVariable Long id, @RequestBody ProductDto productDto) {
+    public ResponseEntity<ProductDto> updateProduct(@PathVariable Long id, @ModelAttribute ProductDto productDto) {
         log.info("PUT /api/products/{} - Aktualizace produktu: {}", id, productDto);
-        return productService.findProductById(id)
-                .map(existingProduct -> {
-                    productMapper.updateProductFromDto(productDto, existingProduct);
-                    Product updatedProduct = productService.saveProduct(existingProduct);
-                    return ResponseEntity.ok(productMapper.toDto(updatedProduct));
-                })
+        return productService.updateProduct(id, productDto)
+                .map(productMapper::toDto)
+                .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
     /**
@@ -78,11 +77,10 @@ public class ProductController {
      * 📋 Získání seznamu všech produktů.
      */
     @GetMapping
-    public List<ProductDto> getAllProducts() {
-        log.info("GET /api/products - Získání seznamu všech produktů");
-        return productService.findAllProducts().stream()
-                .map(productMapper::toDto)
-                .toList();
+    public Page<ProductDto> getAllProducts(Pageable pageable) {
+        log.info("GET /api/products - Získání seznamu všech produktů s paginací: {}", pageable);
+        return productService.findAllProducts(pageable)
+                .map(productMapper::toDto);
     }
 
 

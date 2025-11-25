@@ -55,32 +55,20 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<UserDto> getUserById(@PathVariable Long userId, @AuthenticationPrincipal UserDetails currentUserDetails) {
-        log.info("GET /api/user/{} - Uživatel {} požaduje informace o uživateli", userId, currentUserDetails.getUsername());
-        Optional<User> authenticatedUserOpt = userService.findUserByUsername(currentUserDetails.getUsername());
-        if( authenticatedUserOpt.isEmpty()) {
-            log.error("Interní chyba: Autentizovaný uživatel {} nebyl nalezen v databázi.", currentUserDetails.getUsername());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        User authenticatedUser = authenticatedUserOpt.get();
-        if( !authenticatedUser.getId().equals(userId) && !currentUserDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-            log.warn("Pokus o neoprávněný přístup: Uživatel {} se pokusil získat informace o uživateli {}", currentUserDetails.getUsername(), userId);
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN); // 403 Forbidden
-        }
+    @PreAuthorize("hasRole('ADMIN') or @userService.isOwner(#userId, principal.username)")
+    public ResponseEntity<UserDto> getUserById(@PathVariable Long userId) {
+        log.info("GET /api/user/{} - Požadavek na informace o uživateli", userId);
         return userService.findUserById(userId)
                 .map(this::convertToDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
-
     }
 
     @PutMapping("/{userId}")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or @userService.isOwner(#userId, principal.username)")
     public ResponseEntity<UserDto> updateUser(@PathVariable Long userId,
-                                              @Valid @RequestBody UserUpdateDto userUpdateDto,
-                                              @AuthenticationPrincipal UserDetails currentUserDetails) {
-        log.info("PUT /api/user/{} - Uživatel {} požaduje aktualizaci dat: {}", userId, currentUserDetails.getUsername(), userUpdateDto);
+                                              @Valid @RequestBody UserUpdateDto userUpdateDto) {
+        log.info("PUT /api/user/{} - Požadavek na aktualizaci dat: {}", userId, userUpdateDto);
         Optional<User> existingUserOpt = userService.findUserById(userId);
         if (existingUserOpt.isEmpty()) {
             log.warn("Aktualizace se nezdařila: Uživatel s ID {} nebyl nalezen.", userId);
@@ -88,37 +76,16 @@ public class UserController {
         }
 
         User existingUser = existingUserOpt.get();
-        Optional<User> authenticatedUserOpt = userService.findUserByUsername(currentUserDetails.getUsername());
-
-        if (authenticatedUserOpt.isEmpty()) {
-            log.error("Interní chyba: Autentizovaný uživatel {} nebyl nalezen v databázi.", currentUserDetails.getUsername());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        User authenticatedUser = authenticatedUserOpt.get();
-        boolean isAdmin = currentUserDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        // Ověření oprávnění
-        if (!existingUser.getId().equals(authenticatedUser.getId()) && !isAdmin) {
-            log.warn("Pokus o neoprávněný přístup: Uživatel {} se pokusil aktualizovat data uživatele {}", currentUserDetails.getUsername(), userId);
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN); // 403 Forbidden
-        }
 
         // Aktualizace dat:
-        existingUser.setEmail(userUpdateDto.getEmail());
-        existingUser.setUsername(userUpdateDto.getUsername());
-
-
-
-        // Pokud je uživatel admin, může měnit role
-        if (isAdmin && userUpdateDto.getRole() != null) {
-            log.info("Admin {} mění roli uživatele {} na {}", currentUserDetails.getUsername(), userId, userUpdateDto.getRole());
-            existingUser.setRole(userUpdateDto.getRole());
+        try {
+            User updatedUser = userService.updateUser(existingUser, userUpdateDto);
+            log.info("Data uživatele s ID {} byla úspěšně aktualizována.", userId);
+            return ResponseEntity.ok(convertToDto(updatedUser));
+        } catch (IllegalArgumentException e) {
+            log.warn("Aktualizace se nezdařila pro uživatele {}: {}", userId, e.getMessage());
+            return ResponseEntity.badRequest().body(null); // Or a DTO with the error message
         }
-
-        User updatedUser = userService.save(existingUser);
-        log.info("Data uživatele s ID {} byla úspěšně aktualizována.", userId);
-        return ResponseEntity.ok(convertToDto(updatedUser));
     }
 
     /**

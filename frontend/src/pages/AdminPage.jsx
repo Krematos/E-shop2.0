@@ -17,6 +17,8 @@ const AdminPage = () => {
   const [activeTab, setActiveTab] = useState('products');
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [productPage, setProductPage] = useState(0);
+  const [productTotalPages, setProductTotalPages] = useState(0);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -24,19 +26,33 @@ const AdminPage = () => {
   });
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData(productPage);
+  }, [productPage]);
 
-  const fetchData = async () => {
+  const fetchData = async (page = 0) => {
+    setLoading(true);
     try {
-      const [productsData, ordersData] = await Promise.all([
-        getProducts(),
-        getAllOrders(),
-      ]);
-      setProducts(productsData);
-      setOrders(ordersData);
+      const productsData = await getProducts(page, 6);
+      if (productsData && productsData.content) {
+        setProducts(productsData.content);
+        setProductTotalPages(productsData.totalPages);
+      } else {
+        setProducts([]);
+      }
+
+      // Fetch orders only if the tab is active or initially
+      if (activeTab === 'orders') {
+        const ordersData = await getAllOrders();
+        if (ordersData && ordersData.content) {
+          setOrders(ordersData.content);
+        } else {
+          setOrders([]);
+        }
+      }
     } catch (error) {
       console.error('Chyba při načítání dat:', error);
+      setProducts([]);
+      setOrders([]);
     } finally {
       setLoading(false);
     }
@@ -50,7 +66,7 @@ const AdminPage = () => {
         description: formData.description,
         price: parseFloat(formData.price),
       };
-
+        console.log('Odesílaná data produktu:', productData);
       if (editingProduct) {
         await updateProduct(editingProduct.id, productData);
       } else {
@@ -204,6 +220,26 @@ const AdminPage = () => {
                   </div>
                 );
               })}
+            </div>
+             {/* Pagination for products */}
+             <div className="flex justify-center items-center mt-6">
+              <button
+                onClick={() => setProductPage((prev) => Math.max(prev - 1, 0))}
+                disabled={productPage === 0}
+                className="btn-secondary"
+              >
+                Předchozí
+              </button>
+              <span className="mx-4">
+                Stránka {productPage + 1} z {productTotalPages}
+              </span>
+              <button
+                onClick={() => setProductPage((prev) => Math.min(prev + 1, productTotalPages - 1))}
+                disabled={productPage + 1 >= productTotalPages}
+                className="btn-secondary"
+              >
+                Další
+              </button>
             </div>
           </div>
         )}

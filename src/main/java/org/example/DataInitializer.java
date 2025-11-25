@@ -1,6 +1,7 @@
 package org.example;
 
 import lombok.extern.slf4j.Slf4j;
+import org.example.model.Product;
 import org.example.model.User;
 import org.example.model.User.Role;
 import org.example.repository.UserRepository;
@@ -36,4 +37,19 @@ public class DataInitializer {
             }
         };
     }
+
+    /*@Bean
+    CommandLineRunner initProducts() {
+        return args -> {
+
+            // Místo pro inicializaci produktů v databázi, pokud je potřeba
+            Product product = Product.builder()
+                    .name("Ukázkový produkt")
+                    .description("Toto je popis ukázkového produktu.")
+                    .price(new java.math.BigDecimal("19.99"))
+                    .category("Ukázková kategorie")
+                    .currency("CZK")
+                    .build();
+        };
+    }*/
 }

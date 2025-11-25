@@ -19,11 +19,11 @@ Kompletní REST API backend pro e-commerce aplikaci postavený na Spring Boot 3.
 ## 🛠 Technologie
 
 ### Hlavní frameworky a knihovny
-- **Spring Boot 3.5.3** - Hlavní framework
+- **Spring Boot 3.5.7** - Hlavní framework
 - **Spring Security** - Autentizace a autorizace
 - **Spring Data JPA** - Práce s databází
 - **PostgreSQL 42.7.8** - Relační databáze
-- **JWT (jjwt 0.11.5)** - Token-based autentizace
+- **JWT (jjwt 0.13.0)** - Token-based autentizace
 - **MapStruct 1.6.0** - Mapování mezi entitami a DTO
 - **Lombok 1.18.34** - Redukce boilerplate kódu
 - **Caffeine** - In-memory caching
@@ -36,49 +36,61 @@ Kompletní REST API backend pro e-commerce aplikaci postavený na Spring Boot 3.
 
 ```
 src/main/java/org/example/
-├── Main.java                    # Vstupní bod aplikace
-├── config/                      # Konfigurační třídy
-│   ├── SecurityConfig.java     # Spring Security konfigurace
-│   ├── WebConfig.java          # CORS a web konfigurace
-│   └── AsyncConfig.java        # Asynchronní zpracování
-├── controller/                  # REST kontrolery
-│   ├── AuthController.java     # Autentizace (login, register)
-│   ├── ProductController.java  # Správa produktů
-│   ├── OrderController.java    # Správa objednávek
-│   └── UserController.java     # Správa uživatelů
-├── service/                     # Business logika
-│   ├── UserService.java
-│   ├── ProductService.java
-│   ├── OrderService.java
-│   ├── JwtService.java
-│   ├── EmailService.java
-│   └── impl/                   # Implementace služeb
-│       ├── UserDetailsServiceImpl.java
-│       ├── OrderServiceImpl.java
-│       └── ProductServiceImpl.java
-├── repository/                  # Data Access Layer
-│   ├── UserRepository.java
-│   ├── ProductRepository.java
-│   ├── OrderRepository.java
-│   └── OrderItemRepository.java
-├── model/                       # JPA entity
-│   ├── User.java
-│   ├── Product.java
-│   ├── Order.java
-│   └── OrderItem.java
-├── dto/                         # Data Transfer Objects
-│   ├── UserDto.java
-│   ├── ProductDto.java
+├── Main.java
+├── DataInitializer.java
+├── config/
+│   ├── SecurityConfig.java
+│   ├── WebConfig.java
+│   └── AsyncConfig.java
+├── controller/
+│   ├── AuthController.java
+│   ├── ProductController.java
+│   ├── OrderController.java
+│   └── UserController.java
+├── dto/
+│   ├── ForgotPasswordRequest.java
+│   ├── LoginDto.java
 │   ├── OrderDto.java
-│   └── OrderItemDto.java
-├── mapper/                      # MapStruct mappery
-│   ├── UserMapper.java
-│   ├── ProductMapper.java
+│   ├── OrderItemDto.java
+│   ├── ProductDto.java
+│   ├── RegisterDto.java
+│   ├── ResetPasswordRequest.java
+│   ├── UserDto.java
+│   └── UserUpdateDto.java
+├── mapper/
+│   ├── OrderItemMapper.java
 │   ├── OrderMapper.java
-│   └── OrderItemMapper.java
-└── security/                    # Bezpečnostní komponenty
-    ├── JwtUtil.java            # JWT utility třída
-    └── JwtAuthenticationFilter.java
+│   ├── ProductMapper.java
+│   └── UserMapper.java
+├── model/
+│   ├── Order.java
+│   ├── OrderItem.java
+│   ├── PasswordResetToken.java
+│   ├── Product.java
+│   └── User.java
+├── repository/
+│   ├── OrderItemRepository.java
+│   ├── OrderRepository.java
+│   ├── ProductRepository.java
+│   └── UserRepository.java
+├── security/
+│   ├── JwtAuthenticationFilter.java
+│   └── JwtUtil.java
+└── service/
+    ├── email/
+    │   └── EmailService.java
+    ├── impl/
+    │   ├── OrderServiceImpl.java
+    │   ├── ProductServiceImpl.java
+    │   ├── UserDetailsImpl.java
+    │   └── UserDetailsServiceImpl.java
+    ├── order/
+    │   └── OrderService.java
+    ├── user/
+    │   └── UserService.java
+    ├── JwtService.java
+    ├── PasswordResetService.java
+    └── ProductService.java
 ```
 
 ## 📦 Požadavky
@@ -463,23 +475,23 @@ Všechny ostatní endpointy vyžadují platný JWT token.
 ### Implementované bezpečnostní opatření
 
 1. **JWT Autentizace**
-   - Token-based autentizace
-   - Automatické ověřování tokenu v každém požadavku
-   - Expirace tokenu po 1 hodině
+    - Token-based autentizace
+    - Automatické ověřování tokenu v každém požadavku
+    - Expirace tokenu po 1 hodině
 
 2. **Password Encoding**
-   - Hesla jsou hashována pomocí BCrypt
-   - Nikdy nejsou ukládána v plain textu
+    - Hesla jsou hashována pomocí BCrypt
+    - Nikdy nejsou ukládána v plain textu
 
 3. **CORS Protection**
-   - Konfigurováno pro specifické originy
-   - Povolené metody: GET, POST, PUT, DELETE, OPTIONS
+    - Konfigurováno pro specifické originy
+    - Povolené metody: GET, POST, PUT, DELETE, OPTIONS
 
 4. **CSRF Protection**
-   - Zakázáno pro REST API (stateless)
+    - Zakázáno pro REST API (stateless)
 
 5. **Role-based Access Control**
-   - Kontrola oprávnění na úrovni metod pomocí `@PreAuthorize`
+    - Kontrola oprávnění na úrovni metod pomocí `@PreAuthorize`
 
 ### Doporučení pro produkci
 
@@ -604,5 +616,5 @@ Tento projekt je vytvořen pro vzdělávací účely.
 ---
 
 **Verze:** 1.0-SNAPSHOT  
-**Spring Boot:** 3.5.3  
+**Spring Boot:** 3.5.7
 **Java:** 21

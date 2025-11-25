@@ -13,12 +13,28 @@ const HomePage = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setLoading(true);
         const data = await getProducts();
-        setProducts(data);
+
+        console.log('Načtené produkty:', data);
+        // 🛡️ OCHRANA: Ověříme, jestli je 'data' skutečně pole
+                if (Array.isArray(data)) {
+                  setProducts(data);
+
         // Zobrazíme první 6 produktů jako doporučené
         setFeaturedProducts(data.slice(0, 6));
+        } else  if (data.content){
+           console.error('Neočekávaný formát dat:', data);
+           setProducts(data.content);
+           setFeaturedProducts(data.content.slice(0, 6));
+        }else {
+          console.error('Neočekávaný formát dat:', data);
+                    setProducts([]);
+        }
       } catch (error) {
         console.error('Chyba při načítání produktů:', error);
+        setProducts([]); // I při chybě sítě nastavíme prázdné pole
+        setFeaturedProducts([]);
       } finally {
         setLoading(false);
       }

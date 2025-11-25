@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8080/api/products";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api/products";
 
 /**
  * Pomocná funkce pro získání tokenu.
@@ -22,8 +22,7 @@ const createFormData = (productData) => {
   // 1. Textová data
   // Musíme ošetřit null/undefined hodnoty
   if (productData.name) formData.append("name", productData.name);
-  if (productData.title) formData.append("name", productData.title); // Fallback pro různé názvy
-  if (productData.description) formData.append("description", productData.description);
+    if (productData.description) formData.append("description", productData.description);
   if (productData.price) formData.append("price", productData.price);
   if (productData.category) formData.append("category", productData.category);
 
@@ -35,9 +34,6 @@ const createFormData = (productData) => {
       if (imageObj.file) {
         formData.append("images", imageObj.file);
       }
-      // Pokud potřebuješ řešit i zachování starých obrázků,
-      // musel bys sem přidat logiku pro odeslání jejich URL,
-      // ale pro základní nahrávání stačí poslat nové soubory.
     });
   }
 
@@ -46,8 +42,8 @@ const createFormData = (productData) => {
 
 // --- API METODY ---
 
-export const getProducts = async () => {
-  const response = await fetch(API_URL);
+export const getProducts = async (page = 0, size = 10) => {
+  const response = await fetch(`${API_URL}?page=${page}&size=${size}`);
   if (!response.ok) {
     throw new Error("Chyba při načítání produktů");
   }
@@ -65,12 +61,10 @@ export const getProductById = async (id) => {
 export const createProduct = async (productData, token) => {
   const formData = createFormData(productData);
 
-  const response = await fetch(`${API_URL}/ads`, { // Endpoint pro vytvoření (podle tvého Controlleru)
+  const response = await fetch(API_URL, { // Endpoint pro vytvoření
     method: "POST",
     headers: {
       ...getAuthHeader(token),
-      // DŮLEŽITÉ: U FormData NIKDY nenastavuj 'Content-Type': 'multipart/form-data' ručně!
-      // Prohlížeč to udělá sám a přidá správné "boundary".
     },
     body: formData,
   });
@@ -107,7 +101,6 @@ export const deleteProduct = async (id, token) => {
     method: "DELETE",
     headers: {
       ...getAuthHeader(token),
-      "Content-Type": "application/json",
     },
   });
 
@@ -115,9 +108,5 @@ export const deleteProduct = async (id, token) => {
     throw new Error("Chyba při mazání produktu");
   }
 
-  // Delete často vrací 204 No Content (bez těla), takže nevoláme .json() pokud je status 204
-  if (response.status === 204) {
-      return true;
-  }
-  return true;
+  return response.status === 204;
 };

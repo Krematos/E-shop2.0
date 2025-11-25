@@ -29,6 +29,9 @@ public class ProductDto {
     @Digits(integer = 10, fraction = 2, message = "Neplatný formát ceny")
     private BigDecimal price;
 
+
+    private String category;
+
     private List<MultipartFile> images;
 
     private LocalDateTime createdAt;

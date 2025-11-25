@@ -1,21 +1,24 @@
 package org.example.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import java.util.List;
 import org.example.dto.ProductDto;
 import org.example.model.Product;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.List;
 
 @Service
 public interface ProductService {
-    //ProductDto createProduct(ProductDto productDto);
 
     Optional<Product> findProductById(Long id);
-    List<Product> findAllProducts();
+    Page<Product> findAllProducts(Pageable pageable);
     Product saveProduct(Product product);
     boolean deleteProductById(Long id);
 
     Product createProductWithImages(ProductDto productDto);
+
+    Optional<Product> updateProduct(Long id, ProductDto productDto);
 
 }

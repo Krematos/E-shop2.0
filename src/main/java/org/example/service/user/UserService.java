@@ -3,6 +3,7 @@ package org.example.service.user;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.dto.UserUpdateDto;
 import org.example.model.User;
 import org.example.repository.UserRepository;
 import org.example.service.email.EmailService;
@@ -101,6 +102,33 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Transactional
+    @CacheEvict(value = {"users", "usersById", "allUsers"}, allEntries = true)
+    public User updateUser(User user, UserUpdateDto userUpdateDto) {
+        validateUserUpdate(userUpdateDto, user.getId());
+
+        user.setUsername(userUpdateDto.getUsername());
+        user.setEmail(userUpdateDto.getEmail());
+        if (userUpdateDto.getRole() != null) {
+            user.setRole(userUpdateDto.getRole());
+        }
+
+        User updatedUser = userRepository.save(user);
+        log.info("Data uživatele s ID {} byla úspěšně aktualizována.", user.getId());
+        return updatedUser;
+    }
+
+    private void validateUserUpdate(UserUpdateDto userUpdateDto, Long userId) {
+        if (userRepository.existsByUsernameAndIdNot(userUpdateDto.getUsername(), userId)) {
+            log.warn("Aktualizace selhala - jméno {} již existuje", userUpdateDto.getUsername());
+            throw new IllegalArgumentException("Uživatelské jméno již existuje");
+        }
+        if (userRepository.existsByEmailAndIdNot(userUpdateDto.getEmail(), userId)) {
+            log.warn("Aktualizace selhala - email {} již existuje", userUpdateDto.getEmail());
+            throw new IllegalArgumentException("Email již existuje");
+        }
+    }
+
     @Cacheable(value = "usersById", key = "#userId")
     public Optional<User> findUserById(Long userId) {
         return userRepository.findById(userId);
@@ -110,6 +138,9 @@ public class UserService {
         return userRepository.findAll();
     }
 
-
-
+    public boolean isOwner(Long userId, String username) {
+        return userRepository.findById(userId)
+                .map(user -> user.getUsername().equals(username))
+                .orElse(false);
+    }
 }

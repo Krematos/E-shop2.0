@@ -10,12 +10,16 @@ const ProductListPage = () => {
   const [searchParams] = useSearchParams();
   const category = searchParams.get('category');
   const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
     const fetchProducts = async () => {
+      setLoading(true);
       try {
-        const data = await getProducts();
-        setProducts(data);
+        const data = await getProducts(page);
+        setProducts(data.content);
+        setTotalPages(data.totalPages);
       } catch (error) {
         console.error('Chyba při načítání produktů:', error);
       } finally {
@@ -24,7 +28,7 @@ const ProductListPage = () => {
     };
 
     fetchProducts();
-  }, []);
+  }, [page]);
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -36,6 +40,28 @@ const ProductListPage = () => {
   if (loading) {
     return <LoadingSpinner />;
   }
+
+  const Pagination = () => (
+    <div className="flex justify-center items-center space-x-4 mt-8">
+      <button
+        onClick={() => setPage(page - 1)}
+        disabled={page === 0}
+        className="btn btn-primary"
+      >
+        Předchozí
+      </button>
+      <span>
+        Stránka {page + 1} z {totalPages}
+      </span>
+      <button
+        onClick={() => setPage(page + 1)}
+        disabled={page >= totalPages - 1}
+        className="btn btn-primary"
+      >
+        Následující
+      </button>
+    </div>
+  );
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -62,11 +88,14 @@ const ProductListPage = () => {
 
       {/* Seznam produktů */}
       {filteredProducts.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+          <Pagination />
+        </>
       ) : (
         <div className="text-center py-12">
           <p className="text-gray-500 text-lg">Žádné produkty nenalezeny</p>
