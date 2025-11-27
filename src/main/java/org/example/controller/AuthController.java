@@ -1,13 +1,15 @@
 package org.example.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.model.User;
-import org.example.security.JwtUtil;
+import org.example.service.JwtService;
 import org.example.service.email.EmailService;
 import org.example.service.user.UserService;
 import org.example.service.impl.UserDetailsImpl;
 import org.example.service.impl.UserDetailsServiceImpl;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -27,10 +29,12 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
-    private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
     private final UserDetailsServiceImpl userDetailsService;
     private final EmailService emailService;
+    private final JwtService jwtService;
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
 
 
 
@@ -53,21 +57,23 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
-        String email = body.get("email");
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
         log.info("POST /api/auth/forgot-password - Požadavek na reset hesla pro email: {}", email);
+        if (email == null || email.isBlank()) {
+            log.warn("Požadavek na reset hesla selhal: Emailová adresa je prázdná.");
+            return ResponseEntity.badRequest().body(Map.of("error", "Emailová adresa nesmí být prázdná."));
+        }
         try {
             String token = userService.createPasswordResetTokenForUser(email);
-            // TODO: Construct the reset URL properly
-            String resetUrl = "http://localhost:5173/reset-password?token=" + token;
+            String resetUrl = frontendUrl + "/reset-password?token" + token;
             emailService.sendPasswordResetEmail(email, resetUrl);
             log.info("Odkaz pro reset hesla byl odeslán na email: {}", email);
-            return ResponseEntity.ok(Map.of("message", "If a user with that email exists, a password reset link has been sent."));
+
         } catch (Exception e) {
             log.error("Chyba při zpracování požadavku na reset hesla pro email {}: {}", email, e.getMessage());
-            // Don't reveal if the user doesn't exist
-            return ResponseEntity.ok(Map.of("message", "If a user with that email exists, a password reset link has been sent."));
         }
+        return ResponseEntity.ok(Map.of("message", "Pokud je tento e-mail registrován, instrukce byly odeslány."));
     }
 
     @PostMapping("/reset-password")
@@ -98,7 +104,7 @@ public class AuthController {
             );
 
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-            String token = jwtUtil.generateToken(userDetails.getUsername());
+            String token = jwtService.generateAccessToken(userDetails.getUsername());
 
             log.info("Uživatel {} byl úspěšně autentizován.", username);
             return ResponseEntity.ok(Map.of(
@@ -126,8 +132,8 @@ public class AuthController {
 
         String token = tokenHeader.substring(7);
         try {
-            String username = jwtUtil.extractUsername(token);
-            boolean valid = jwtUtil.validateToken(token, username);
+            String username = jwtService.extractUsername(token);
+            boolean valid = jwtService.validateToken(token, username);
             log.info("Validace tokenu pro uživatele {}: {}", username, valid ? "úspěšná" : "neúspěšná");
             return ResponseEntity.ok(Map.of(
                     "valid", valid,
@@ -137,6 +143,22 @@ public class AuthController {
             log.error("Chyba při validaci tokenu: {}", e.getMessage());
             return ResponseEntity.status(401).body(Map.of("error", "Neplatný token: " + e.getMessage()));
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse request){
+            log.info("POST /api/auth/logout - Uživatelský odhlášení");
+            // získání tokenu z hlavičky Authorization
+        String authHeader = request.getHeader("Authorization");
+        if(authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            jwtService.blacklistToken(token);
+            log.info("Token byl úspěšně přidán na černou listinu.");
+        } else {
+            log.warn("Odhlášení selhalo: Chybí 'Bearer ' prefix v hlavičce.");
+            return ResponseEntity.badRequest().body(Map.of("error", "Chybí token"));
+        }
+        return ResponseEntity.ok(Map.of("message", "Úspěšně odhlášeno"));
     }
 
 

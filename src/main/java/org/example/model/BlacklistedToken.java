@@ -1,0 +1,31 @@
+package org.example.model;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@Table(name = "blacklisted_tokens")
+public class BlacklistedToken {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, unique = true, length = 512)
+    private String token;
+
+    @Column(nullable = false)
+    private LocalDateTime expirationDate;
+
+    public BlacklistedToken(String token, LocalDateTime expirationDate) {
+        this.token = token;
+        this.expirationDate = expirationDate;
+    }
+}

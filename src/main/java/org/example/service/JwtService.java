@@ -2,12 +2,17 @@ package org.example.service;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.example.repository.BlacklistedTokenRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.example.model.BlacklistedToken;
+import org.example.repository.BlacklistedTokenRepository;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -18,11 +23,14 @@ public class JwtService {
 
     private final long refreshTokenExpirationMillis;
 
+    private final BlacklistedTokenRepository blacklistedTokenRepository;
+
 
     public JwtService(
             @Value("${jwt.secret}") String secretKey,
             @Value("${jwt.access-token-expiration-ms:900000}") long accessTokenExpirationMillis, // default 15 min
-            @Value("${jwt.refresh-token-expiration-ms:604800000}") long refreshTokenExpirationMillis // default 7 days
+            @Value("${jwt.refresh-token-expiration-ms:604800000}") long refreshTokenExpirationMillis, // default 7 days
+            BlacklistedTokenRepository blacklistedTokenRepository
     ) {
         if (secretKey == null || secretKey.isBlank() || secretKey.length() < 32) {
             throw new IllegalArgumentException("JWT secret must be at least 32 characters");
@@ -30,6 +38,7 @@ public class JwtService {
         this.signingKey = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
         this.accessTokenExpirationMillis = accessTokenExpirationMillis;
         this.refreshTokenExpirationMillis = refreshTokenExpirationMillis;
+        this.blacklistedTokenRepository = blacklistedTokenRepository;
     }
 
     // -------- Generování tokenu --------
@@ -40,6 +49,7 @@ public class JwtService {
     public String generateRefreshToken(String username) {
         return generateToken(username, refreshTokenExpirationMillis);
     }
+    // Společná metoda pro generování tokenu
     private String generateToken(String username, long expirationMillis) {
         long now = System.currentTimeMillis();
         return Jwts.builder()
@@ -69,7 +79,7 @@ public class JwtService {
         final Claims claims = extractAllClaim(token);
         return claimsResolver.apply(claims);
     }
-
+    // Metoda pro extrakci všech claimů z tokenu
     private Claims extractAllClaim(String token) {
         try {
             return Jwts.parser()
@@ -83,7 +93,19 @@ public class JwtService {
     }
 
     // -------- Blacklist pro refresh tokeny --------
-
+    // 3. Metoda pro Blacklist (volá se při Logoutu)
+    public void blacklistToken(String token) {
+        Date expirationDate = extractClaim(token, Claims::getExpiration);
+        LocalDateTime expiryDate = expirationDate.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
+        BlacklistedToken blacklistedToken = new BlacklistedToken(token, expiryDate);
+        blacklistedTokenRepository.save(blacklistedToken);
+    }
+    // 4. Metoda pro kontrolu (volá se při každém Requestu)
+    public boolean isTokenBlacklisted(String token) {
+        return blacklistedTokenRepository.existsByToken(token);
+    }
 
 
 }

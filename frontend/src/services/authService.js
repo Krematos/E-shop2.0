@@ -73,6 +73,25 @@ export const getUserRole = async () => {
     }
 };
 
+export const requestPasswordReset = async (email) => {
+    const response = await api.post('/auth/forgot-password', {
+    method: 'POST' ,
+    headers: {
+    'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        // Můžeš zkusit přečíst chybovou zprávu ze serveru
+        const errorText = await response.text();
+        throw new Error(errorText || 'Chyba při žádosti o obnovu hesla');
+      }
+
+
+    return true;
+};
+
 export default {
     register,
     login,

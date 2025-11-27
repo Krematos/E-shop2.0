@@ -2,7 +2,7 @@ package org.example.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.model.User;
-import org.example.security.JwtUtil;
+import org.example.service.JwtService;
 import org.example.service.email.EmailService;
 import org.example.service.user.UserService;
 import org.example.service.impl.UserDetailsImpl;
@@ -44,7 +44,7 @@ class AuthControllerTest {
     private UserService userService;
 
     @MockBean
-    private JwtUtil jwtUtil;
+    private JwtService jwtService;
 
     @MockBean
     private PasswordEncoder passwordEncoder;
@@ -101,7 +101,7 @@ class AuthControllerTest {
         Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
-        when(jwtUtil.generateToken("testuser")).thenReturn("dummy-jwt-token");
+        when(jwtService.generateAccessToken("testuser")).thenReturn("dummy-jwt-token");
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

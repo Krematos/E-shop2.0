@@ -78,7 +78,7 @@ const LoginPage = () => {
           </div>
 
           <div className="forgot-password">
-            <a href="/reset-password">Zapomněli jste heslo?</a>
+            <a href="/forgot-password">Zapomněli jste heslo?</a>
           </div>
 
           {/* Hlavní CTA - výrazné */}
