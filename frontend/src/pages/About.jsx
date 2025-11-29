@@ -7,7 +7,7 @@ const About = () => {
     const [loopNum, setLoopNum] = useState(0);
     const [typingSpeed, setTypingSpeed] = useState(150);
 
-    const words = ['Vývojář', 'Houževnatý', 'Nadšenec do AI', 'Týmový hráč', 'Věčný student'];
+    const words = ['Vývojář', 'Nadšenec do AI', 'Týmový hráč', 'Věčný student'];
 
     useEffect(() => {
         const handleType = () => {

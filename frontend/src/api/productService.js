@@ -61,7 +61,7 @@ export const getProductById = async (id) => {
 export const createProduct = async (productData, token) => {
   const formData = createFormData(productData);
 
-  const response = await fetch(API_URL, { // Endpoint pro vytvoření
+  const response = await fetch(`${API_URL}/ads`, { // Endpoint pro vytvoření
     method: "POST",
     headers: {
       ...getAuthHeader(token),

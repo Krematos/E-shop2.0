@@ -1,5 +1,6 @@
 package org.example.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -146,7 +147,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletResponse request){
+    public ResponseEntity<?> logout(HttpServletRequest request){
             log.info("POST /api/auth/logout - Uživatelský odhlášení");
             // získání tokenu z hlavičky Authorization
         String authHeader = request.getHeader("Authorization");

@@ -17,19 +17,17 @@ const HomePage = () => {
         const data = await getProducts();
 
         console.log('Načtené produkty:', data);
-        // 🛡️ OCHRANA: Ověříme, jestli je 'data' skutečně pole
-                if (Array.isArray(data)) {
-                  setProducts(data);
 
-        // Zobrazíme první 6 produktů jako doporučené
-        setFeaturedProducts(data.slice(0, 6));
-        } else  if (data.content){
-           console.error('Neočekávaný formát dat:', data);
-           setProducts(data.content);
-           setFeaturedProducts(data.content.slice(0, 6));
-        }else {
+        if (Array.isArray(data)) {
+          setProducts(data);
+          setFeaturedProducts(data.slice(0, 6));
+        } else if (data.content && Array.isArray(data.content)) {
+          // Jedná se o stránkovaný objekt (Page)
+          setProducts(data.content);
+          setFeaturedProducts(data.content.slice(0, 6));
+        } else {
           console.error('Neočekávaný formát dat:', data);
-                    setProducts([]);
+          setProducts([]);
         }
       } catch (error) {
         console.error('Chyba při načítání produktů:', error);
@@ -62,7 +60,7 @@ const HomePage = () => {
           <p className="text-xl mb-8 text-primary-100">
             Objevte široký výběr kvalitních produktů
           </p>
-          
+
           {/* Vyhledávací lišta */}
           <div className="max-w-2xl mx-auto">
             <input
@@ -101,7 +99,7 @@ const HomePage = () => {
             Zobrazit všechny →
           </Link>
         </div>
-        
+
         {searchTerm ? (
           <div>
             <h3 className="text-xl font-semibold mb-4">
@@ -132,4 +130,3 @@ const HomePage = () => {
 };
 
 export default HomePage;
-

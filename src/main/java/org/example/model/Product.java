@@ -1,10 +1,7 @@
 package org.example.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -12,7 +9,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 
 @Getter
 @Setter
@@ -25,7 +21,7 @@ import java.util.List;
 @Table(name = "products", indexes = {
         @Index(name = "idx_product_name", columnList = "name")
 })
-public class Product  {
+public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,7 +38,8 @@ public class Product  {
     @Column(name = "description", nullable = false)
     private String description;
 
-    @NotBlank(message = "Cena produktu nesmí být prázdná")
+    @NotNull(message = "Cena produktu nesmí být prázdná")
+    @Positive(message = "Cena produktu musí být kladné číslo")
     @DecimalMin(value = "0.01", inclusive = false, message = "Cena produktu musí být kladné číslo")
     @Digits(integer = 10, fraction = 2, message = "Cena produktu musí mít maximálně 10 číslic před desetinnou čárkou a 2 číslice za ní")
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
@@ -57,6 +54,7 @@ public class Product  {
     @ElementCollection
     @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))
     @Column(name = "images_url", length = 500)
+    @Builder.Default
     private List<String> images = new ArrayList<>();
 
     private boolean active = true;
@@ -68,6 +66,5 @@ public class Product  {
     @CreationTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-
 
 }

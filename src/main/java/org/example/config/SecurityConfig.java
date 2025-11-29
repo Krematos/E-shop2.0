@@ -4,6 +4,7 @@ import org.example.service.impl.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -59,6 +60,11 @@ public class SecurityConfig {
                         .requestMatchers("GET", "/api/products").permitAll() // Zobrazení produktů bez přihlášení
                         .requestMatchers("GET", "/api/products/**").permitAll() // Detail produktu bez přihlášení
                         .requestMatchers("GET", "/api/categories").permitAll() // Zobrazení kategorií bez přihlášení
+                        .requestMatchers("GET", "/api/images/**").permitAll() // Zobrazení obrázků bez přihlášení
+                        .requestMatchers(HttpMethod.POST, "/api/products/admin/**").hasRole("ADMIN")// Vytváření produktů pouze pro ADMIN
+                        .requestMatchers(HttpMethod.PUT, "/api/products/admin/**").hasRole("ADMIN") // Aktualizace produktů pouze pro ADMIN
+                        .requestMatchers(HttpMethod.DELETE, "/api/products/admin/**").hasRole("ADMIN") // Mazání produktů pouze pro ADMIN
+                        .requestMatchers("/error/**").permitAll() // Povolit přístup k chybovým stránkám
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

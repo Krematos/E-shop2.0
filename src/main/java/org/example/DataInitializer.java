@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.model.Product;
 import org.example.model.User;
 import org.example.model.User.Role;
+import org.example.repository.ProductRepository;
 import org.example.repository.UserRepository;
 import org.mapstruct.control.MappingControl;
 import org.springframework.boot.CommandLineRunner;
@@ -39,17 +40,24 @@ public class DataInitializer {
     }
 
     /*@Bean
-    CommandLineRunner initProducts() {
+    CommandLineRunner initProducts(ProductRepository productRepository) {
         return args -> {
 
+            if(productRepository.count() == 0) {
             // Místo pro inicializaci produktů v databázi, pokud je potřeba
             Product product = Product.builder()
                     .name("Ukázkový produkt")
                     .description("Toto je popis ukázkového produktu.")
-                    .price(new java.math.BigDecimal("19.99"))
-                    .category("Ukázková kategorie")
+                    .price("199")
+                    .category("Ostatní")
                     .currency("CZK")
                     .build();
+
+            productRepository.save(product);
+            System.out.println("Inicializován ukázkový produkt v databázi.");
+            } else {
+                System.out.println("Produkty již existují v databázi, inicializace přeskočena.");
+            }
         };
     }*/
 }

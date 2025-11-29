@@ -25,6 +25,7 @@ public class ProductDto {
     private String description;
 
     @NotNull(message = "Cena je povinná")
+    @Positive(message = "Cena musí být kladné číslo")
     @DecimalMin(value = "0.01", message = "Cena musí být větší než 0")
     @Digits(integer = 10, fraction = 2, message = "Neplatný formát ceny")
     private BigDecimal price;

@@ -1,6 +1,5 @@
 package org.example.controller;
 
-
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 
 @Slf4j
@@ -44,8 +45,10 @@ public class ProductController {
      */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')") // Pouze admin může přidávat produkty
-    public ResponseEntity<ProductDto> createProduct(@Valid @ModelAttribute ProductDto productDto) {
+    public ResponseEntity<ProductDto> createProduct(@RequestPart("product") ProductDto productDto,
+            @RequestPart("images") List<MultipartFile> images) {
         log.info("POST /api/products - Vytvoření nového produktu: {}", productDto);
+        productDto.setImages(images); // Set images to DTO so service can process them
         Product savedProduct = productService.createProductWithImages(productDto);
         return new ResponseEntity<>(productMapper.toDto(savedProduct), HttpStatus.CREATED);
     }
@@ -62,6 +65,7 @@ public class ProductController {
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
+
     /**
      * ❌ Smazání produktu podle ID (pouze ADMIN).
      */
@@ -73,6 +77,7 @@ public class ProductController {
                 ? ResponseEntity.noContent().build()
                 : ResponseEntity.notFound().build();
     }
+
     /**
      * 📋 Získání seznamu všech produktů.
      */
@@ -82,6 +87,5 @@ public class ProductController {
         return productService.findAllProducts(pageable)
                 .map(productMapper::toDto);
     }
-
 
 }
