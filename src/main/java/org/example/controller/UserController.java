@@ -115,7 +115,7 @@ public class UserController {
      */
     private UserDto convertToDto(User user) {
         if (user == null) {
-            return null; // nebo throw new IllegalArgumentException("User cannot be null");
+            return null;
         }
         UserDto dto = new UserDto();
         dto.setId(user.getId());

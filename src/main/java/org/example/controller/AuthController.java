@@ -145,7 +145,7 @@ public class AuthController {
             return ResponseEntity.status(401).body(Map.of("error", "Neplatný token: " + e.getMessage()));
         }
     }
-
+    // ✅ Odhlášení uživatele (blacklist tokenu)
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request){
             log.info("POST /api/auth/logout - Uživatelský odhlášení");

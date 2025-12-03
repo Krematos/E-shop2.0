@@ -23,7 +23,7 @@ public class DataInitializer {
         return args -> {
             String adminUsername = "HlavníAdmin";
             if (userRepository.findByUsername(adminUsername).isEmpty()) {
-                // Vytvoříme nového administrátora
+                // Vytvoří nového administrátora
                 User admin = User.builder()
                         .username(adminUsername)
                         .email("farm140warrior@gmail.com")

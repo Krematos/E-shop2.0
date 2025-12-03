@@ -29,6 +29,18 @@ Kompletní REST API backend pro e-commerce aplikaci postavený na Spring Boot 3.
 - **Caffeine** - In-memory caching
 - **Thymeleaf** - Šablony pro e-maily
 
+### Frontend
+- **React 19** - UI knihovna
+- **Vite** - Build tool a dev server
+- **TailwindCSS** - Styling
+- **Axios** - HTTP klient
+- **React Router** - Routování
+
+### Deployment
+- **Docker** - Kontejnerizace
+- **Docker Compose** - Orchestrace kontejnerů
+- **Nginx** - Web server pro frontend
+
 ### Java verze
 - **Java 21**
 
@@ -91,6 +103,26 @@ src/main/java/org/example/
     ├── JwtService.java
     ├── PasswordResetService.java
     └── ProductService.java
+
+frontend/
+├── src/
+│   ├── assets/
+│   ├── components/
+│   ├── context/
+│   ├── pages/
+│   ├── services/
+│   └── utils/
+├── public/
+├── index.html
+├── package.json
+└── vite.config.js
+
+deploy/
+├── backend.Dockerfile
+├── frontend.Dockerfile
+├── docker-compose.yml
+└── nginx/
+    └── default.conf
 ```
 
 ## 📦 Požadavky
@@ -98,6 +130,8 @@ src/main/java/org/example/
 - **Java 21** nebo vyšší
 - **Maven 3.6+**
 - **PostgreSQL 12+**
+- **Node.js 20+** (pro frontend vývoj)
+- **Docker & Docker Compose** (pro deployment)
 - **IDE** (IntelliJ IDEA, Eclipse, VS Code)
 
 ## 🚀 Instalace a spuštění
@@ -149,9 +183,33 @@ mvn spring-boot:run
 
 Aplikace poběží na `http://localhost:8080`
 
-### 5. Ověření
+### 5. Spuštění Frontendu (Vývoj)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend poběží na `http://localhost:5173`
+
+### 6. Docker Deployment (Produkce)
+
+Pro spuštění celé aplikace (databáze, backend, frontend) pomocí Docker Compose:
+
+```bash
+cd deploy
+docker-compose up -d --build
+```
+
+- Frontend: `http://localhost:80`
+- Backend API: `http://localhost:8080`
+- Databáze: port `5432`
+
+### 7. Ověření
 
 Otevřete prohlížeč a navštivte:
+- Frontend: `http://localhost:5173` (dev) nebo `http://localhost:80` (docker)
 - Health check: `http://localhost:8080/actuator/health`
 - API base: `http://localhost:8080/api`
 
@@ -195,7 +253,16 @@ spring.mail.host=smtp.gmail.com
 spring.mail.port=587
 spring.mail.username=email@gmail.com
 spring.mail.password=aplikacni-heslo
+spring.mail.password=aplikacni-heslo
 app.mail.from=noreply@eshop.cz
+```
+
+### Frontend (.env)
+
+Vytvořte soubor `frontend/.env` pro konfiguraci prostředí:
+
+```properties
+VITE_API_BASE_URL=http://localhost:8080/api
 ```
 
 ## 📡 API Dokumentace

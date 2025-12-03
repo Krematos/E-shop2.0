@@ -23,7 +23,7 @@ public class ImageController {
             Resource resource = new UrlResource(filePath.toUri());
 
             if (resource.exists()) {
-                // Zjistíme typ souboru (image/jpeg, image/png...)
+                // Zjistí typ souboru (image/jpeg, image/png...)
                 String contentType = Files.probeContentType(filePath);
                 if (contentType == null) {
                     contentType = "application/octet-stream";

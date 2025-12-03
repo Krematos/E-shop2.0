@@ -41,7 +41,7 @@ public class OrderController {
         User currentUser = userService.findUserByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new IllegalStateException("Uživatel nenalezen: " + userDetails.getUsername()));
 
-        // Použijeme price z DTO (s @JsonProperty("Price") pro kompatibilitu s frontendem)
+        // Použije price z DTO (s @JsonProperty("Price") pro kompatibilitu s frontendem)
         BigDecimal price = orderDto.getPrice() != null ? orderDto.getPrice() : orderDto.getTotalPrice();
         
         Order createdOrder = orderService.createOrder(

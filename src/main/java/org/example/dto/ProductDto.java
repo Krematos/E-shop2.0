@@ -1,6 +1,6 @@
 package org.example.dto;
 
-
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,10 +30,13 @@ public class ProductDto {
     @Digits(integer = 10, fraction = 2, message = "Neplatný formát ceny")
     private BigDecimal price;
 
-
     private String category;
 
-    private List<MultipartFile> images;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private List<MultipartFile> imagesFilenames;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private List<String> images;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

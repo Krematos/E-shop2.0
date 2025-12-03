@@ -50,7 +50,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                // 1. DŮLEŽITÉ: Aktivujeme CORS konfiguraci definovanou níže
+                // 1. DŮLEŽITÉ: Aktivuje CORS konfiguraci definovanou níže
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
@@ -73,7 +73,7 @@ public class SecurityConfig {
                 .build();
     }
 
-    // 2. Definice pravidel pro CORS (přesunuto z WebConfig sem)
+    // 2. Definice pravidel pro CORS
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();

@@ -38,9 +38,6 @@ public class ProductServiceImpl implements ProductService {
     @Value("${app.upload.dir:uploads}")
     private String uploadDir;
 
-    @Value("${app.upload.url:/uploads/}")
-    private String uploadUrl;
-
     private static final List<String> ALLOWED_IMAGE_TYPES = Arrays.asList("image/jpeg", "image/png", "image/gif");
 
     @Override
@@ -54,11 +51,19 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     @CacheEvict(value = {"productsById", "allProducts"}, allEntries = true)
     public boolean deleteProductById(Long id) {
+        Optional<Product> productOpt = productRepository.findById(id);
         if (!productRepository.existsById(id)) {
             log.warn("Odstranění selhalo - produkt s ID {} neexistuje", id);
             return false;
         }
-        productRepository.deleteById(id);
+        Product product = productOpt.get();
+        // Smazat soubory obrázků z filesystemu
+        for (String fileName : product.getImages()) {
+            deleteImageFile(fileName);
+        }
+
+        // Odstranit produkt z databáze
+        productRepository.delete(product);
         log.warn("Produkt s ID {} byl odstraněn", id);
         return true;
     }
@@ -85,14 +90,14 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     @CacheEvict(value = {"productsById", "allProducts"}, allEntries = true)
-    public Product createProductWithImages(ProductDto productDto) {
+    public Product createProductWithImages(ProductDto productDto) throws IOException {
         Product product = productMapper.toEntity(productDto);
-        if (productDto.getImages() != null && !productDto.getImages().isEmpty()) {
-            for (MultipartFile file : productDto.getImages()) {
+        if (productDto.getImagesFilenames() != null && !productDto.getImagesFilenames().isEmpty()) {
+            for (MultipartFile file : productDto.getImagesFilenames()) {
                 if (file != null && !file.isEmpty()) {
                     validateFile(file);
                     String fileName = saveFile(file);
-                    product.getImages().add(uploadUrl + fileName);
+                    product.getImages().add(fileName);
                 }
             }
         }
@@ -106,20 +111,27 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findById(id)
                 .map(existingProduct -> {
                     productMapper.updateProductFromDto(productDto, existingProduct);
-                    if (productDto.getImages() != null && !productDto.getImages().isEmpty()) {
-                        // This is a simplified approach. In a real application, you'd probably
-                        // want to delete the old images from the filesystem.
+                    if (productDto.getImagesFilenames() != null && !productDto.getImagesFilenames().isEmpty()) {
+                        // Delete old images from filesystem
+                        for(String oldImage : existingProduct.getImages()){
+                            deleteImageFile(oldImage);
+                        }
                         existingProduct.getImages().clear();
-                        for (MultipartFile file : productDto.getImages()) {
+                        // Add new images
+                        for (MultipartFile file : productDto.getImagesFilenames()) {
                             if (file != null && !file.isEmpty()) {
                                 validateFile(file);
-                                String fileName = saveFile(file);
-                                existingProduct.getImages().add(uploadUrl + fileName);
+                                String fileName = null;
+                                try {
+                                    fileName = saveFile(file);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                                existingProduct.getImages().add(fileName);
                             }
                         }
                     }
-                    Product updatedProduct = productRepository.save(existingProduct);
-                    return updatedProduct;
+                    return productRepository.save(existingProduct);
                 });
     }
 
@@ -132,7 +144,8 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private String saveFile(MultipartFile file) {
+    private String saveFile(MultipartFile file) throws IOException {
+        Files.createDirectories(Paths.get(uploadDir));
         String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
         Path uploadPath = Paths.get(uploadDir);
         try {
@@ -148,4 +161,19 @@ public class ProductServiceImpl implements ProductService {
         }
         return fileName;
     }
+
+    public void deleteImageFile(String fileName){
+        if(fileName == null || fileName.isEmpty()){
+            log.warn("Název souboru pro smazání je prázdný");
+            return;
+        }
+        try {
+            Path filePath = Paths.get(uploadDir).resolve(fileName);
+            Files.deleteIfExists(filePath);
+            log.info("Soubor {} byl smazán", fileName);
+        } catch (IOException e) {
+            log.error("Chyba při mazání souboru {}: {}", fileName, e.getMessage());
+        }
+    }
+
 }

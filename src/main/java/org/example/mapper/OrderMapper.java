@@ -22,7 +22,7 @@ public interface OrderMapper {
 
     @InheritInverseConfiguration
     @Mapping(target = "user", ignore = true) // nebude se mapovat automaticky
-    @Mapping(target = "product", ignore = true) // nastavíš ručně podle jména produktu
+    @Mapping(target = "product", ignore = true)
     Order toEntity(OrderDto dto);
 
     // === Pomocné metody pro extrakci hodnot z položek objednávky ===

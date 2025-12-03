@@ -9,10 +9,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebConfig  implements WebMvcConfigurer {
-    @Value("${app.upload.dir:uploads}")
+    @Value("${app.upload.dir}")
     private String uploadDir;
 
-    @Value("${app.upload.url:/uploads/}")
+    @Value("${app.upload.url}")
     private String uploadUrl;
 
     @Override
