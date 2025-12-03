@@ -2,18 +2,21 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+
 import { getImageUrl } from '../utils/urlUtils';
 
 const ProductCard = ({ product }) => {
+
+  console.log("Data produktu:", product.name, product.images);
+
   const { addToCart } = useCart();
   const [imgError, setImgError] = useState(false);
 
-    // Získání názvu hlavního obrázku
-    const mainImageFilename = product.images?.[0];
+  // Získání názvu hlavního obrázku
+  const mainImageFilename = product.images?.[0];
 
   // Sestavení URL obrázku
-    const imageUrl = getImageUrl(mainImageFilename);
+  const imageUrl = getImageUrl(mainImageFilename);
 
   const handleAddToCart = (e) => {
     e.preventDefault(); // Zabrání prokliku na detail produktu při kliknutí na tlačítko

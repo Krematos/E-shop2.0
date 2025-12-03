@@ -46,10 +46,12 @@ public class ProductController {
      */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')") // Pouze admin může přidávat produkty
-    public ResponseEntity<ProductDto> createProduct(@RequestPart("product") ProductDto productDto,
-            @RequestPart("images") List<MultipartFile> images) throws IOException {
-        log.info("POST /api/products - Vytvoření nového produktu: {}", productDto);
-        productDto.setImagesFilenames(images); // Set images to DTO so service can process them
+    public ResponseEntity<ProductDto> createProduct(@ModelAttribute ProductDto productDto) throws IOException {
+        log.info("POST /api/products - Vytvoření nového produktu: {}", productDto.getName());
+        if(productDto.getImagesFilenames() == null || productDto.getImagesFilenames().isEmpty()){
+            log.warn("Produkt nemá obrázky.");
+        }
+
         Product savedProduct = productService.createProductWithImages(productDto);
         return new ResponseEntity<>(productMapper.toDto(savedProduct), HttpStatus.CREATED);
     }

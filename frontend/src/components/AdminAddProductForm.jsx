@@ -29,10 +29,10 @@ const AdminAddProductForm = ({ initialData, onProductSaved, onCancel }) => {
         currency: 'Kč',
       });
 
-      if (initialData.imageUrls && Array.isArray(initialData.imageUrls)) {
-        const existingImages = initialData.imageUrls.map((url, index) => ({
+      if (initialData.images && Array.isArray(initialData.images)) {
+        const existingImages = initialData.images.map((filename, index) => ({
           file: null,
-          preview: getImageUrl(url),
+          preview: getImageUrl(filename),
           id: `existing-${index}`,
           isExisting: true
         }));

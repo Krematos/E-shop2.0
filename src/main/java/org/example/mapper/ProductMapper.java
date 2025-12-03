@@ -8,7 +8,7 @@ import org.mapstruct.*;
 public interface ProductMapper {
 
     // 1. Převod Entity -> DTO (Pro odeslání na frontend)
-    @Mapping(target = "images", ignore = true)
+    @Mapping(target = "imagesFilenames", ignore = true)
     ProductDto toDto(Product product);
 
     // 2. Převod DTO -> Entity (Při vytváření)
