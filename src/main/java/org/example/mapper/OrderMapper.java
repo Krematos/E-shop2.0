@@ -1,44 +1,31 @@
 package org.example.mapper;
 
+import org.example.dto.OrderItemDto;
 import org.example.model.Order;
 import org.example.dto.OrderDto;
+import org.example.model.OrderItem;
 import org.example.model.Product;
 import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
 import java.util.Optional;
+import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {OrderItemMapper.class})
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface OrderMapper {
     // --- Order → OrderDto ---
-    @Mapping(source = "product.name", target = "productName")
-    @Mapping(source = "quantity", target = "quantity")
-    @Mapping(source = "totalPrice", target = "totalPrice")
-    @Mapping(source = "orderDate", target = "createdAt")
-    @Mapping(target = "orderItems", source = "orderItems")
-    @Mapping(target = "price", expression = "java(order.getOrderItems() != null && !order.getOrderItems().isEmpty() ? order.getOrderItems().get(0).getPrice() : order.getTotalPrice().divide(java.math.BigDecimal.valueOf(order.getQuantity()), java.math.RoundingMode.HALF_UP))")
+    @Mapping(source = "user.username", target = "username")
+    @Mapping(source = "orderItems", target = "items")
     OrderDto toDto(Order order);
 
-    @InheritInverseConfiguration
-    @Mapping(target = "user", ignore = true) // nebude se mapovat automaticky
-    @Mapping(target = "product", ignore = true)
-    Order toEntity(OrderDto dto);
+    List<OrderDto> toDtoList(List<Order> orders);
 
-    // === Pomocné metody pro extrakci hodnot z položek objednávky ===
-    default String getProductName(Order order) {
-        if (order.getOrderItems() == null || order.getOrderItems().isEmpty()) {
-            return Optional.ofNullable(order.getProduct())
-                    .map(Product::getName)
-                    .orElse(null);
-        }
-        return order.getOrderItems().get(0).getProductName();
-    }
+    @Mapping(source = "price", target = "pricePerUnit")
+    OrderItemDto toOrderItemDto(OrderItem orderItem);
 
-    default Integer getQuantity(Order order) {
-        if (order.getOrderItems() == null || order.getOrderItems().isEmpty()) {
-            return order.getQuantity();
-        }
-        return order.getOrderItems().get(0).getQuantity();
-    }
+
+    List<OrderItemDto> toOrderItemDtoList(List<OrderItem> orderItems);
+
 }

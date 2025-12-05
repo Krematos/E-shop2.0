@@ -18,9 +18,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     /**
      * Najde objednávky podle názvu produktu.
      *
-     * @param name název produktu
+     * @param productName název produktu
      * @return seznam objednávek obsahujících daný produkt
      */
-    List<Order> findByProductName(String name);
+    List<Order> findByOrderItems_ProductName(String productName);
 
 }

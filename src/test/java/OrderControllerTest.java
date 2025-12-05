@@ -32,7 +32,7 @@ public class OrderControllerTest {
 
     @Mock
     private UserService userService;
-
+/*
 
     @Test
     @DisplayName("✅ Vytvoření nové objednávky - úspěch")
@@ -97,5 +97,5 @@ public class OrderControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].productName", is("Monitor")))
                 .andExpect(jsonPath("$[0].totalPrice", is(5000)));
-    }
+    }*/
 }

@@ -2,7 +2,10 @@ package org.example.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.dto.CreateOrderRequest;
 import org.example.dto.OrderDto;
+import org.example.dto.OrderItemRequest;
+import org.example.dto.OrderItemDto;
 import org.example.mapper.OrderMapper;
 import org.example.model.OrderItem;
 import org.example.model.Product;
@@ -19,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 @Slf4j
@@ -37,8 +41,7 @@ public class OrderServiceImpl implements OrderService {
         /**
         * Vytvoří novou objednávku.
         *
-        * @param productName Název produktu.
-        * @param quantity Počet kusů.
+        * @param request  Požadavek na vytvoření objednávky obsahující název produktu a počet kusů.
         * @param user Uživatel, který objednávku vytvořil.
         * @return Vytvořená objednávka.
         */
@@ -46,44 +49,73 @@ public class OrderServiceImpl implements OrderService {
      @Override
      @Transactional
      @CacheEvict(value = {"ordersById", "allOrders", "ordersByUser"}, allEntries = true)
-    public Order createOrder(String productName, int quantity, BigDecimal price, User user) {
+    public Order createOrder(CreateOrderRequest request, User user) {
+
+         // 1. Validace základních vstupů
          if (user == null) throw new IllegalArgumentException("Uživatel nesmí být null");
-         if (quantity <= 0) throw new IllegalArgumentException("Počet kusů musí být kladný");
-         if (price == null || price.compareTo(BigDecimal.ZERO) <= 0)
-             throw new IllegalArgumentException("Cena musí být kladná");
+         if (request.getOrderItems() == null || request.getOrderItems().isEmpty()) {
+             throw new IllegalArgumentException("Objednávka musí obsahovat alespoň jednu položku");
+         }
 
-         Product product = productRepository.findByName(productName)
-                 .orElseThrow(() -> new IllegalArgumentException("Produkt nebyl nalezen: " + productName));
+         log.info("Vytvářím objednávku pro uživatele: {}", user.getUsername());
 
-         // Vytvoření položky objednávky
-         OrderItem orderItem = OrderItem.builder()
-                 .productId(product.getId())
-                 .productName(productName)
-                 .quantity(quantity)
-                 .price(price)
-                 .totalPrice(price.multiply(BigDecimal.valueOf(quantity)))
-                 .build();
-            log.info("Vytvořena položka objednávky: {} x {} za cenu {}", quantity, productName, orderItem.getTotalPrice());
-
-            // Vytvoření objednávky
+         // 2. Vytvoření kostry objednávky (zatím bez položek a s cenou 0)
          Order order = Order.builder()
                  .user(user)
-                 .product(product)
                  .orderDate(LocalDateTime.now())
-                 .quantity(quantity)
-                 .totalPrice(orderItem.getTotalPrice())
+                 .orderItems(new ArrayList<>()) // Inicializace listu
+                 .totalPrice(BigDecimal.ZERO)
                  .build();
 
-         orderItem.setOrder(order); // vazba zpět na objednávku (1:N vztah)
+         // Pomocná proměnná pro sčítání celkové ceny
+         BigDecimal runningTotal = BigDecimal.ZERO;
 
-         order.setOrderItems(List.of(orderItem));
-         log.info("Vytvořena objednávka pro uživatele {} s celkovou cenou {}", user.getUsername(), order.getTotalPrice());
+         // 3. Iterace přes položky v košíku (Requestu)
+         for (OrderItemRequest itemRequest : request.getOrderItems()) {
+
+             // Validace množství
+             if (itemRequest.getQuantity() <= 0) {
+                 log.warn("Položka s ID {} má neplatné množství {}, přeskakuji.", itemRequest.getProductId(), itemRequest.getQuantity());
+                 continue;
+             }
+
+             // A. Načtení produktu z DB (Zásadní pro získání správné ceny!)
+             Product product = productRepository.findById(itemRequest.getProductId())
+                     .orElseThrow(() -> new IllegalArgumentException("Produkt nenalezen ID: " + itemRequest.getProductId()));
+
+             // B. Výpočet ceny za položku (Cena produktu * Množství)
+             BigDecimal itemTotalPrice = product.getPrice().multiply(BigDecimal.valueOf(itemRequest.getQuantity()));
+
+             // C. Vytvoření entity OrderItem
+             OrderItem orderItem = OrderItem.builder()
+                     .order(order) // Nastavení vazby na rodiče
+                     .productId(product.getId())
+                     .productName(product.getName())
+                     .quantity(itemRequest.getQuantity())
+                     .price(product.getPrice()) // Ukládáme jednotkovou cenu v době nákupu
+                     .totalPrice(itemTotalPrice)
+                     .build();
+
+             // D. Přidání do seznamu v objednávce
+             order.getOrderItems().add(orderItem);
+
+             // E. Přičtení k celkové ceně objednávky
+             runningTotal = runningTotal.add(itemTotalPrice);
+         }
+
+         // 4. Finální nastavení celkové ceny a uložení
+         if (order.getOrderItems().isEmpty()) {
+             throw new IllegalArgumentException("Nepodařilo se přidat žádné platné položky do objednávky.");
+         }
+
+         order.setTotalPrice(runningTotal);
 
          Order savedOrder = orderRepository.save(order);
-         log.info("Vytvořena objednávka {} pro uživatele {}", savedOrder.getId(), user.getUsername());
+         log.info("Objednávka ID {} úspěšně uložena. Celková cena: {}", savedOrder.getId(), savedOrder.getTotalPrice());
 
          return savedOrder;
      }
+
 
     /**
      * Najde všechny objednávky uživatele s cachováním.
@@ -119,12 +151,7 @@ public class OrderServiceImpl implements OrderService {
                 .map(orderMapper::toDto);
     }
 
-    @Override
-    public boolean isOwner(Long orderId, String username) {
-        return orderRepository.findById(orderId)
-                .map(order -> order.getUser().getUsername().equals(username))
-                .orElse(false);
-    }
+
 
     /**
      * Validuje vstupy pro vytvoření objednávky.

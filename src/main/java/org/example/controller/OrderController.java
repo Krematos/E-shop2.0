@@ -3,6 +3,7 @@ package org.example.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.dto.CreateOrderRequest;
 import org.example.mapper.OrderMapper;
 import org.example.model.User;
 import org.example.service.order.OrderService;
@@ -33,23 +34,17 @@ public class OrderController {
     @PostMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<OrderDto> createOrder(
-            @Valid @RequestBody OrderDto orderDto,
+            @Valid @RequestBody CreateOrderRequest request,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
-        log.info("Uživatel {} vytváří novou objednávku.", userDetails.getUsername());
-
+        log.info("Vytváření nové objednávky pro uživatele: {}", userDetails.getUsername());
+        // Získání aktuálního uživatele
         User currentUser = userService.findUserByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new IllegalStateException("Uživatel nenalezen: " + userDetails.getUsername()));
 
-        // Použije price z DTO (s @JsonProperty("Price") pro kompatibilitu s frontendem)
-        BigDecimal price = orderDto.getPrice() != null ? orderDto.getPrice() : orderDto.getTotalPrice();
-        
-        Order createdOrder = orderService.createOrder(
-                orderDto.getProductName(),
-                orderDto.getQuantity(),
-                price,
-                currentUser
-        );
+        // Vytvoření objednávky pomocí service
+        Order createdOrder = orderService.createOrder(request, currentUser);
+        // Mapping na DTO a vrácení odpovědi
         return ResponseEntity.status(HttpStatus.CREATED).body(orderMapper.toDto(createdOrder));
     }
 
@@ -86,5 +81,6 @@ public class OrderController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
+
 
 }

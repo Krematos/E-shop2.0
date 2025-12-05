@@ -17,21 +17,11 @@ import java.util.List;
 public class OrderDto {
     private Long id;
 
-    @NotBlank(message = "Název produktu nesmí být prázdný")
-    private String productName;
-    
-    @NotNull(message = "Množství je povinné")
-    @Min(value = 1, message = "Množství musí být alespoň 1")
-    private Integer quantity;
-    
-    @NotNull(message = "Cena je povinná")
-    @Min(value = 0, message = "Cena nesmí být záporná")
-    @JsonProperty("Price") // Podpora pro frontend, který posílá "Price" s velkým P
-    private BigDecimal price;
+   private String username;
     
     private BigDecimal totalPrice;
 
     private LocalDateTime createdAt;
-    private List<OrderItemDto> orderItems;
+    private List<OrderItemDto> items;
 
 }
