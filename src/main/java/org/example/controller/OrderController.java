@@ -37,6 +37,7 @@ public class OrderController {
             @Valid @RequestBody CreateOrderRequest request,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
+        log.info("PŘIJATÝ JSON REQUEST: {}", request);
         log.info("Vytváření nové objednávky pro uživatele: {}", userDetails.getUsername());
         // Získání aktuálního uživatele
         User currentUser = userService.findUserByUsername(userDetails.getUsername())

@@ -24,18 +24,15 @@ const CartPage = () => {
 
     setLoading(true);
     try {
-      // Vytvoření objednávky pro každý produkt v košíku
-      for (const item of cartItems) {
-        const price = typeof item.price === 'string' 
-          ? parseFloat(item.price) 
-          : item.price;
-        
-        await createOrder({
-          productName: item.name,
-          quantity: item.quantity,
-          Price: price,
-        });
-      }
+      // Příprava dat pro backend (CreateOrderRequest)
+      const orderItems = cartItems.map(item => ({
+        productId: item.id,
+        quantity: item.quantity
+      }));
+
+      await createOrder({
+        orderItems: orderItems
+      });
 
       clearCart();
       alert('Objednávka byla úspěšně vytvořena!');
@@ -73,8 +70,8 @@ const CartPage = () => {
         {/* Seznam produktů */}
         <div className="lg:col-span-2 space-y-4">
           {cartItems.map((item) => {
-            const price = typeof item.price === 'string' 
-              ? parseFloat(item.price) 
+            const price = typeof item.price === 'string'
+              ? parseFloat(item.price)
               : item.price;
             const itemTotal = price * item.quantity;
 
