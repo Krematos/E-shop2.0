@@ -25,6 +25,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService {
 
     private final UserRepository userRepository;
@@ -46,11 +47,12 @@ public class UserService {
         log.info("Nový uživatel registrován: {}", savedUser.getUsername());
 
         // Odeslání uvítacího emailu
-        new Thread(() -> emailService.sendWelcomeEmail(savedUser.getEmail(), savedUser.getUsername()));
+        emailService.sendWelcomeEmail(savedUser.getEmail(), savedUser.getUsername());
 
         return savedUser;
     }
 
+    @Transactional
     public String createPasswordResetTokenForUser(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
@@ -61,7 +63,7 @@ public class UserService {
         userRepository.save(user);
         return token;
     }
-
+    @Transactional
     public void resetPassword(String token, String newPassword) {
         User user = userRepository.findByPasswordResetToken(token)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid password reset token"));
@@ -88,6 +90,7 @@ public class UserService {
     }
 
     // getters, setters, další metody...
+    @Transactional
     @CacheEvict(value = {"users", "usersById", "allUsers"}, allEntries = true)
     public void DeleteUserById(Long userId) {
         userRepository.deleteById(userId);
@@ -116,6 +119,14 @@ public class UserService {
         User updatedUser = userRepository.save(user);
         log.info("Data uživatele s ID {} byla úspěšně aktualizována.", user.getId());
         return updatedUser;
+    }
+
+    @Transactional
+    @CacheEvict(value = {"users", "usersById", "allUsers"}, allEntries = true)
+    public void changeUserRole(Long userId, User.Role newRole) {
+        User user = findUserById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        user.setRole(String.valueOf(newRole));
+        userRepository.save(user);
     }
 
     private void validateUserUpdate(UserUpdateDto userUpdateDto, Long userId) {
