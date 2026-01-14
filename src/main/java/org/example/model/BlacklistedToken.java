@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity
@@ -22,9 +23,9 @@ public class BlacklistedToken {
     private String token;
 
     @Column(nullable = false)
-    private LocalDateTime expirationDate;
+    private Instant expirationDate;
 
-    public BlacklistedToken(String token, LocalDateTime expirationDate) {
+    public BlacklistedToken(String token, Instant expirationDate) {
         this.token = token;
         this.expirationDate = expirationDate;
     }

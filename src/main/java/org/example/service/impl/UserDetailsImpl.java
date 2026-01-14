@@ -5,12 +5,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.example.model.User;
 import java.util.Collection;
 
-public class UserDetailsImpl implements UserDetails {
-    private final User user;
-
-    public UserDetailsImpl(User user) {
-        this.user = user;
-    }
+public record UserDetailsImpl(User user) implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -45,9 +40,5 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
-    }
-
-    public User getUser() {
-        return user;
     }
 }

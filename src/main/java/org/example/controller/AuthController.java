@@ -1,15 +1,13 @@
 package org.example.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.model.User;
 import org.example.service.JwtService;
-import org.example.service.email.EmailService;
 import org.example.service.user.UserService;
 import org.example.service.impl.UserDetailsImpl;
-import org.example.service.impl.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,7 +15,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -30,18 +27,18 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
-    private final PasswordEncoder passwordEncoder;
-    private final UserDetailsServiceImpl userDetailsService;
-    private final EmailService emailService;
     private final JwtService jwtService;
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
+    /**
+     * ✅ Registrace nového uživatele
+     * @param user
+     * @return
+     */
 
-
-    // ✅ Registrace nového uživatele
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody User user) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody User user) {
         log.info("POST /api/auth/register - Pokus o registraci uživatele: {}", user.getUsername());
         try {
             User newUser = userService.registerNewUser(user);
@@ -57,44 +54,12 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
-        String email = request.get("email");
-        log.info("POST /api/auth/forgot-password - Požadavek na reset hesla pro email: {}", email);
-        if (email == null || email.isBlank()) {
-            log.warn("Požadavek na reset hesla selhal: Emailová adresa je prázdná.");
-            return ResponseEntity.badRequest().body(Map.of("error", "Emailová adresa nesmí být prázdná."));
-        }
-        try {
-            String token = userService.createPasswordResetTokenForUser(email);
-            String resetUrl = frontendUrl + "/reset-password?token" + token;
-            emailService.sendPasswordResetEmail(email, resetUrl);
-            log.info("Odkaz pro reset hesla byl odeslán na email: {}", email);
-
-        } catch (Exception e) {
-            log.error("Chyba při zpracování požadavku na reset hesla pro email {}: {}", email, e.getMessage());
-        }
-        return ResponseEntity.ok(Map.of("message", "Pokud je tento e-mail registrován, instrukce byly odeslány."));
-    }
-
-    @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
-        String token = body.get("token");
-        String newPassword = body.get("newPassword");
-        log.info("POST /api/auth/reset-password - Pokus o reset hesla s tokenem: {}", token);
-        try {
-            userService.resetPassword(token, newPassword);
-            log.info("Heslo pro token {} bylo úspěšně resetováno.", token);
-            return ResponseEntity.ok(Map.of("message", "Password has been reset successfully."));
-        } catch (IllegalArgumentException e) {
-            log.error("Chyba při resetu hesla s tokenem {}: {}", token, e.getMessage());
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
-    }
-
-    // ✅ Přihlášení a vydání JWT tokenu
+    /** Uživatel resetuje heslo pomocí tokenu
+     *
+     *  Map obsahující token a nové heslo.
+     */
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@RequestBody Map<String, String> credentials) {
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody Map<String, String> credentials) {
         String username = credentials.get("username");
         String password = credentials.get("password");
         log.info("POST /api/auth/login - Pokus o přihlášení uživatele: {}", username);
@@ -122,7 +87,11 @@ public class AuthController {
         }
     }
 
-    // ✅ Ověření JWT tokenu (např. pro FE)
+    /**
+     * ✅ Ověření JWT tokenu (např. pro FE)
+     * @param tokenHeader
+     * @return
+     */
     @GetMapping("/validate")
     public ResponseEntity<?> validateToken(@RequestHeader("Authorization") String tokenHeader) {
         log.info("GET /api/auth/validate - Pokus o validaci tokenu");
@@ -145,7 +114,12 @@ public class AuthController {
             return ResponseEntity.status(401).body(Map.of("error", "Neplatný token: " + e.getMessage()));
         }
     }
-    // ✅ Odhlášení uživatele (blacklist tokenu)
+
+    /**
+     * ✅ Odhlášení uživatele
+     * @param request
+     * @return
+     */
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request){
             log.info("POST /api/auth/logout - Uživatelský odhlášení");

@@ -2,7 +2,7 @@ package org.example.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.dto.ProductDto;
+import org.example.dto.ProductResponse;
 import org.example.mapper.ProductMapper;
 import org.example.model.Product;
 import org.example.repository.ProductRepository;
@@ -90,10 +90,10 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     @CacheEvict(value = {"productsById", "allProducts"}, allEntries = true)
-    public Product createProductWithImages(ProductDto productDto) throws IOException {
+    public Product createProductWithImages(ProductResponse productDto) throws IOException {
         Product product = productMapper.toEntity(productDto);
-        if (productDto.getImagesFilenames() != null && !productDto.getImagesFilenames().isEmpty()) {
-            for (MultipartFile file : productDto.getImagesFilenames()) {
+        if (productDto.imagesFilenames() != null && !productDto.imagesFilenames().isEmpty()) {
+            for (MultipartFile file : productDto.imagesFilenames()) {
                 if (file != null && !file.isEmpty()) {
                     validateFile(file);
                     String fileName = saveFile(file);
@@ -107,18 +107,18 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     @CacheEvict(value = {"productsById", "allProducts"}, allEntries = true)
-    public Optional<Product> updateProduct(Long id, ProductDto productDto) {
+    public Optional<Product> updateProduct(Long id, ProductResponse productDto) {
         return productRepository.findById(id)
                 .map(existingProduct -> {
                     productMapper.updateProductFromDto(productDto, existingProduct);
-                    if (productDto.getImagesFilenames() != null && !productDto.getImagesFilenames().isEmpty()) {
+                    if (productDto.imagesFilenames() != null && !productDto.imagesFilenames().isEmpty()) {
                         // Delete old images from filesystem
                         for(String oldImage : existingProduct.getImages()){
                             deleteImageFile(oldImage);
                         }
                         existingProduct.getImages().clear();
                         // Add new images
-                        for (MultipartFile file : productDto.getImagesFilenames()) {
+                        for (MultipartFile file : productDto.imagesFilenames()) {
                             if (file != null && !file.isEmpty()) {
                                 validateFile(file);
                                 String fileName = null;
@@ -146,7 +146,12 @@ public class ProductServiceImpl implements ProductService {
 
     private String saveFile(MultipartFile file) throws IOException {
         Files.createDirectories(Paths.get(uploadDir));
-        String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+        if(!Files.exists(Paths.get(uploadDir))){
+            Files.createDirectories(Paths.get(uploadDir));
+        }
+        String sanitizedName = file.getOriginalFilename()
+                .replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
+        String fileName = UUID.randomUUID().toString() + "_" + sanitizedName;
         Path uploadPath = Paths.get(uploadDir);
         try {
             if (!Files.exists(uploadPath)) {

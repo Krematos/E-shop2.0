@@ -3,9 +3,8 @@ package org.example.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.dto.CreateOrderRequest;
-import org.example.dto.OrderDto;
+import org.example.dto.OrderResponse;
 import org.example.dto.OrderItemRequest;
-import org.example.dto.OrderItemDto;
 import org.example.mapper.OrderMapper;
 import org.example.model.OrderItem;
 import org.example.model.Product;
@@ -21,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +53,7 @@ public class OrderServiceImpl implements OrderService {
 
          // 1. Validace základních vstupů
          if (user == null) throw new IllegalArgumentException("Uživatel nesmí být null");
-         if (request.getOrderItems() == null || request.getOrderItems().isEmpty()) {
+         if (request.customerId() == null || request.items().isEmpty()) {
              throw new IllegalArgumentException("Objednávka musí obsahovat alespoň jednu položku");
          }
 
@@ -62,7 +62,7 @@ public class OrderServiceImpl implements OrderService {
          // 2. Vytvoření kostry objednávky (zatím bez položek a s cenou 0)
          Order order = Order.builder()
                  .user(user)
-                 .orderDate(LocalDateTime.now())
+                 .orderDate(Instant.now())
                  .orderItems(new ArrayList<>()) // Inicializace listu
                  .totalPrice(BigDecimal.ZERO)
                  .build();
@@ -71,28 +71,28 @@ public class OrderServiceImpl implements OrderService {
          BigDecimal runningTotal = BigDecimal.ZERO;
 
          // 3. Iterace přes položky v košíku (Requestu)
-         for (OrderItemRequest itemRequest : request.getOrderItems()) {
+         for (OrderItemRequest itemRequest : request.items()) {
 
              // Validace množství
-             if (itemRequest.getQuantity() <= 0) {
-                 log.warn("Položka s ID {} má neplatné množství {}, přeskakuji.", itemRequest.getProductId(), itemRequest.getQuantity());
+             if (itemRequest.quantity() <= 0) {
+                 log.warn("Položka s ID {} má neplatné množství {}, přeskakuji.", itemRequest.productId(), itemRequest.quantity());
                  continue;
              }
 
              // A. Načtení produktu z DB (Zásadní pro získání správné ceny!)
-             Product product = productRepository.findById(itemRequest.getProductId())
-                     .orElseThrow(() -> new IllegalArgumentException("Produkt nenalezen ID: " + itemRequest.getProductId()));
+             Product product = productRepository.findById(itemRequest.productId())
+                     .orElseThrow(() -> new IllegalArgumentException("Produkt nenalezen ID: " + itemRequest.productId()));
 
              // B. Výpočet ceny za položku (Cena produktu * Množství)
-             BigDecimal itemTotalPrice = product.getPrice().multiply(BigDecimal.valueOf(itemRequest.getQuantity()));
+             BigDecimal itemTotalPrice = product.getPrice().multiply(BigDecimal.valueOf(itemRequest.quantity()));
 
              // C. Vytvoření entity OrderItem
              OrderItem orderItem = OrderItem.builder()
                      .order(order) // Nastavení vazby na rodiče
                      .productId(product.getId())
                      .productName(product.getName())
-                     .quantity(itemRequest.getQuantity())
-                     .price(product.getPrice()) // Ukládáme jednotkovou cenu v době nákupu
+                     .quantity(itemRequest.quantity())
+                     .price(product.getPrice()) // Ukládá jednotkovou cenu v době nákupu
                      .totalPrice(itemTotalPrice)
                      .build();
 
@@ -122,7 +122,7 @@ public class OrderServiceImpl implements OrderService {
      */
     @Override
     @Cacheable(value = "ordersByUser", key = "#userName")
-    public List<OrderDto> findOrdersByUser(String userName) {
+    public List<OrderResponse> findOrdersByUser(String userName) {
         log.info("Hledání objednávek pro uživatele: {}", userName);
         return orderRepository.findByUser_Username(userName)
                 .stream()
@@ -134,7 +134,7 @@ public class OrderServiceImpl implements OrderService {
      */
     @Override
     @Cacheable(value = "allOrders")
-    public List<OrderDto> findAllOrders() {
+    public List<OrderResponse> findAllOrders() {
         log.info("Načítání všech objednávek");
         return orderRepository.findAll()
                 .stream()
@@ -145,7 +145,7 @@ public class OrderServiceImpl implements OrderService {
      * Najde objednávku podle ID.
      */
     @Override
-    public Optional<OrderDto> findOrderById(Long id) {
+    public Optional<OrderResponse> findOrderById(Long id) {
         log.info("Hledání objednávky podle ID: {}", id);
         return orderRepository.findById(id)
                 .map(orderMapper::toDto);

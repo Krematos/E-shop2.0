@@ -4,8 +4,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
-import java.util.List;
-import org.example.dto.ProductDto;
+
+import org.example.dto.ProductResponse;
 import org.example.model.Product;
 import org.springframework.stereotype.Service;
 
@@ -19,8 +19,8 @@ public interface ProductService {
     Product saveProduct(Product product);
     boolean deleteProductById(Long id);
 
-    Product createProductWithImages(ProductDto productDto) throws IOException;
+    Product createProductWithImages(ProductResponse productDto) throws IOException;
 
-    Optional<Product> updateProduct(Long id, ProductDto productDto);
+    Optional<Product> updateProduct(Long id, ProductResponse productDto);
 
 }

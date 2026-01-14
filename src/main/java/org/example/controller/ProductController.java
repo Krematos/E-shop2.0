@@ -1,9 +1,8 @@
 package org.example.controller;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.dto.ProductDto;
+import org.example.dto.ProductResponse;
 import org.example.mapper.ProductMapper;
 import org.example.model.Product;
 import org.example.service.ProductService;
@@ -15,10 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -33,7 +30,7 @@ public class ProductController {
      * 🔍 Získání produktu podle ID.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ProductDto> getProductById(@PathVariable Long id) {
+    public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
         log.info("GET /api/products/{} - Získání produktu podle ID", id);
         return productService.findProductById(id)
                 .map(productMapper::toDto)
@@ -46,9 +43,9 @@ public class ProductController {
      */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')") // Pouze admin může přidávat produkty
-    public ResponseEntity<ProductDto> createProduct(@ModelAttribute ProductDto productDto) throws IOException {
-        log.info("POST /api/products - Vytvoření nového produktu: {}", productDto.getName());
-        if(productDto.getImagesFilenames() == null || productDto.getImagesFilenames().isEmpty()){
+    public ResponseEntity<ProductResponse> createProduct(@ModelAttribute ProductResponse productDto) throws IOException {
+        log.info("POST /api/products - Vytvoření nového produktu: {}", productDto.name());
+        if(productDto.imagesFilenames() == null || productDto.imagesFilenames().isEmpty()){
             log.warn("Produkt nemá obrázky.");
         }
 
@@ -61,7 +58,7 @@ public class ProductController {
      */
     @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')") // Pouze admin může aktualizovat produkty
-    public ResponseEntity<ProductDto> updateProduct(@PathVariable Long id, @ModelAttribute ProductDto productDto) {
+    public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id, @ModelAttribute ProductResponse productDto) {
         log.info("PUT /api/products/{} - Aktualizace produktu: {}", id, productDto);
         return productService.updateProduct(id, productDto)
                 .map(productMapper::toDto)
@@ -85,7 +82,7 @@ public class ProductController {
      * 📋 Získání seznamu všech produktů.
      */
     @GetMapping
-    public Page<ProductDto> getAllProducts(Pageable pageable) {
+    public Page<ProductResponse> getAllProducts(Pageable pageable) {
         log.info("GET /api/products - Získání seznamu všech produktů s paginací: {}", pageable);
         return productService.findAllProducts(pageable)
                 .map(productMapper::toDto);

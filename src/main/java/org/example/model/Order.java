@@ -6,6 +6,7 @@ import lombok.*;
 
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +36,7 @@ public class Order {
     private List<OrderItem> orderItems = new ArrayList<>(); // Položky objednávky
 
     @Column(name = "order_date", nullable = false)
-    private LocalDateTime orderDate; // Datum a čas vytvoření objednávky
+    private Instant orderDate; // Datum a čas vytvoření objednávky
 
     @Column(name = "total_price", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalPrice; // Celková cena objednávky

@@ -11,6 +11,7 @@ import org.example.repository.BlacklistedTokenRepository;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -96,9 +97,7 @@ public class JwtService {
     // 3. Metoda pro Blacklist (volá se při Logoutu)
     public void blacklistToken(String token) {
         Date expirationDate = extractClaim(token, Claims::getExpiration);
-        LocalDateTime expiryDate = expirationDate.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDateTime();
+        Instant expiryDate = expirationDate.toInstant();
         BlacklistedToken blacklistedToken = new BlacklistedToken(token, expiryDate);
         blacklistedTokenRepository.save(blacklistedToken);
     }

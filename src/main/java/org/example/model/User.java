@@ -7,6 +7,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import jakarta.validation.constraints.Size;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -41,7 +42,7 @@ public class User {
     private String passwordResetToken;
 
     @Column(name = "password_reset_token_expiry")
-    private LocalDateTime passwordResetTokenExpiry;
+    private Instant passwordResetTokenExpiry;
 
     @Column(name = "roles")
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))

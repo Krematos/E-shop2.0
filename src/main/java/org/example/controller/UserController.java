@@ -1,11 +1,14 @@
 package org.example.controller;
 
-
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.dto.UserUpdateDto;
+import org.example.dto.UserUpdateResponse;
 import jakarta.validation.Valid;
-import org.example.dto.UserDto;
+import org.example.dto.UserResponse;
+import org.example.mapper.UserMapper;
 import org.example.model.User;
 import org.example.service.user.UserService;
 import org.springframework.http.HttpStatus;
@@ -26,18 +29,18 @@ import java.util.stream.Collectors;
 public class UserController {
 
     private final UserService userService;
+    private final UserMapper userMapper;
 
     /**
      * Získání seznamu všech uživatelů.
      * Vyžaduje ROLE_ADMIN.
      */
-
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public List<UserDto> getAllUsers() {
+    public List<UserResponse> getAllUsers() {
         log.info("GET /api/user - Získání seznamu všech uživatelů");
         return userService.findAllUsers().stream()
-                .map(this::convertToDto)
+                .map(userMapper::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -46,51 +49,47 @@ public class UserController {
      */
     @GetMapping("/me")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<UserDto> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
+    @Operation(summary = "Get currentUser", description = "Získání informací o přihlášeném uživateli") // Swagger
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User found"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    public ResponseEntity<UserResponse> getCurrentUser(@Valid @AuthenticationPrincipal UserDetails userDetails) {
         log.info("GET /api/user/me - Získání informací o přihlášeném uživateli: {}", userDetails.getUsername());
         return userService.findUserByUsername(userDetails.getUsername())
-                .map(this::convertToDto)
+                .map(userMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
+    /**
+     * Získání uživatele podle ID.
+     * Vyžaduje ROLE_ADMIN nebo vlastníka účtu.
+     *
+     * @param userId ID uživatele.
+     * @return Uživatelská data nebo 404, pokud uživatel neexistuje.
+     */
+
     @GetMapping("/{userId}")
     @PreAuthorize("hasRole('ADMIN') or @userService.isOwner(#userId, principal.username)")
-    public ResponseEntity<UserDto> getUserById(@PathVariable Long userId) {
+    @Operation(summary = "Get user by ID", description = "Požadavek na informace o uživateli.") // Swagger
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User found"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long userId) {
         log.info("GET /api/user/{} - Požadavek na informace o uživateli", userId);
         return userService.findUserById(userId)
-                .map(this::convertToDto)
+                .map(userMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{userId}")
-    @PreAuthorize("hasRole('ADMIN') or @userService.isOwner(#userId, principal.username)")
-    public ResponseEntity<UserDto> updateUser(@PathVariable Long userId,
-                                              @Valid @RequestBody UserUpdateDto userUpdateDto) {
-        log.info("PUT /api/user/{} - Požadavek na aktualizaci dat: {}", userId, userUpdateDto);
-        Optional<User> existingUserOpt = userService.findUserById(userId);
-        if (existingUserOpt.isEmpty()) {
-            log.warn("Aktualizace se nezdařila: Uživatel s ID {} nebyl nalezen.", userId);
-            return ResponseEntity.notFound().build();
-        }
-
-        User existingUser = existingUserOpt.get();
-
-        // Aktualizace dat:
-        try {
-            User updatedUser = userService.updateUser(existingUser, userUpdateDto);
-            log.info("Data uživatele s ID {} byla úspěšně aktualizována.", userId);
-            return ResponseEntity.ok(convertToDto(updatedUser));
-        } catch (IllegalArgumentException e) {
-            log.warn("Aktualizace se nezdařila pro uživatele {}: {}", userId, e.getMessage());
-            return ResponseEntity.badRequest().body(null); // Or a DTO with the error message
-        }
-    }
 
     /**
      * Smaže uživatele.
      * Vyžaduje ROLE_ADMIN.
+     * 
      * @param userId ID uživatele ke smazání.
      * @return HTTP 204 No Content.
      */
@@ -105,24 +104,5 @@ public class UserController {
         }
         log.warn("Smazání se nezdařilo: Uživatel s ID {} nebyl nalezen.", userId);
         return ResponseEntity.notFound().build(); // 404 Not Found
-    }
-
-    // --- Pomocné metody pro konverzi mezi entitou a DTO ---
-
-    /**
-     * Konvertuje entitu User na UserDto.
-     * Nezahrnuje heslo pro bezpečnostní důvody.
-     */
-    private UserDto convertToDto(User user) {
-        if (user == null) {
-            return null;
-        }
-        UserDto dto = new UserDto();
-        dto.setId(user.getId());
-        dto.setUsername(user.getUsername());
-        dto.setEmail(user.getEmail());
-        // Převod rolí z enum na Stringy pro DTO
-        dto.setRoles(user.getRoles().stream().map(Enum::name).collect(Collectors.toSet()).toString());
-        return dto;
     }
 }

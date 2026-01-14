@@ -1,5 +1,6 @@
 package org.example.config;
 
+import lombok.AllArgsConstructor;
 import org.example.service.impl.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -10,6 +11,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,7 +29,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import java.util.Arrays;
 import java.util.List;
 
-
+@AllArgsConstructor
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
@@ -41,18 +43,14 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsServiceImpl userDetailsService;
 
-    public SecurityConfig(String[] allowedOrigins, JwtAuthenticationFilter jwtAuthenticationFilter, UserDetailsServiceImpl userDetailsService) {
-        this.allowedOrigins = allowedOrigins;
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-        this.userDetailsService = userDetailsService;
-    }
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 // 1. DŮLEŽITÉ: Aktivuje CORS konfiguraci definovanou níže
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.disable())
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll() // Swagger přístup bez přihlášení
                         .requestMatchers("/api/auth/**").permitAll() // registrace, login - opraveno na /api/auth/**
@@ -64,6 +62,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/products/admin/**").hasRole("ADMIN")// Vytváření produktů pouze pro ADMIN
                         .requestMatchers(HttpMethod.PUT, "/api/products/admin/**").hasRole("ADMIN") // Aktualizace produktů pouze pro ADMIN
                         .requestMatchers(HttpMethod.DELETE, "/api/products/admin/**").hasRole("ADMIN") // Mazání produktů pouze pro ADMIN
+                        .requestMatchers("/api/auth/forgot-password", "/api/auth/reset-password").permitAll() // Povolit přístup k zapomenutému heslu
                         .requestMatchers("/error/**").permitAll() // Povolit přístup k chybovým stránkám
                         .anyRequest().authenticated()
                 )

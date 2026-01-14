@@ -1,12 +1,13 @@
 package org.example.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class ResetPasswordRequest {
-    private String newPassword;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+public record ResetPasswordRequest(
+        @NotBlank
+        String token,
+        @NotBlank
+        @Size(min = 8, message = "Heslo musí mít alespoň 8 znaků")
+        String newPassword) {
 }

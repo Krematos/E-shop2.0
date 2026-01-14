@@ -7,7 +7,7 @@ import org.example.dto.CreateOrderRequest;
 import org.example.mapper.OrderMapper;
 import org.example.model.User;
 import org.example.service.order.OrderService;
-import org.example.dto.OrderDto;
+import org.example.dto.OrderResponse;
 import org.example.model.Order;
 import org.example.service.user.UserService;
 import org.springframework.http.HttpStatus;
@@ -17,7 +17,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Slf4j
@@ -30,10 +29,15 @@ public class OrderController {
     private final UserService userService;
     private final OrderMapper orderMapper;
 
-    // ✅ Vytvoření nové objednávky
+    /**
+     * ✅ Vytvoření nové objednávky
+     * @param request
+     * @param userDetails
+     * @return
+     */
     @PostMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<OrderDto> createOrder(
+    public ResponseEntity<OrderResponse> createOrder(
             @Valid @RequestBody CreateOrderRequest request,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
@@ -49,35 +53,46 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(orderMapper.toDto(createdOrder));
     }
 
-    // ✅ Získání všech objednávek (ADMIN)
+    /**
+     * ✅ Získání všech objednávek (ADMIN)
+     * @return
+     */
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<OrderDto>> getAllOrders() {
+    public ResponseEntity<List<OrderResponse>> getAllOrders() {
         log.info("Admin požadoval seznam všech objednávek.");
-        List<OrderDto> orders = orderService.findAllOrders();
+        List<OrderResponse> orders = orderService.findAllOrders();
         return ResponseEntity.ok(orders);
     }
 
-    // ✅ Získání objednávek přihlášeného uživatele
+    /**
+     * ✅ Získání objednávek přihlášeného uživatele
+     * @param userDetails
+     * @return
+     */
     @GetMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<List<OrderDto>> getUserOrders(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<List<OrderResponse>> getUserOrders(@Valid @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.findUserByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new IllegalStateException("Uživatel nebyl nalezen po autentizaci."));
 
-        List<OrderDto> orders = orderService.findOrdersByUser(currentUser.getUsername());
+        List<OrderResponse> orders = orderService.findOrdersByUser(currentUser.getUsername());
         return ResponseEntity.ok(orders);
     }
 
-    // ✅ Detail objednávky podle ID
+    /**
+     * ✅ Detail objednávky podle ID
+     * @param orderId
+     * @return
+     */
     @GetMapping("/{orderId}")
     @PreAuthorize("hasRole('ADMIN') or @orderService.isOwner(#orderId, principal.username)")
-    public ResponseEntity<OrderDto> getOrderById(
+    public ResponseEntity<OrderResponse> getOrderById(@Valid
             @PathVariable Long orderId
     ) {
         log.info("Požadavek na detail objednávky s ID {}.", orderId);
 
-        // Získáme OrderDto z service
+        // Získá OrderDto z service
         return orderService.findOrderById(orderId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());

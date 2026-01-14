@@ -31,7 +31,7 @@ public class EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
 
-            // Připravíme HTML šablonu s proměnnou username
+            // Připraví HTML šablonu s proměnnou username
             Context context = new Context();
             context.setVariable("username", username);
             String htmlContent = templateEngine.process("welcome-email", context);
@@ -42,7 +42,7 @@ public class EmailService {
             helper.setFrom("noreply@secondel.cz");
 
             mailSender.send(message);
-            System.out.println("✅ Odeslán uvítací e-mail na " + to);
+            log.info("✅ Odeslán uvítací e-mail na " + to);
         } catch (Exception e) {
             log.error("Chyba při odesílání uvítacího e-mailu: {}", e.getMessage());
         }

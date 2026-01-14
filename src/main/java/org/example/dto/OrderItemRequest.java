@@ -1,9 +1,8 @@
 package org.example.dto;
 
-import lombok.Data;
 
-@Data
-public class OrderItemRequest {
-    private Long productId;
-    private int quantity;
+public record OrderItemRequest(
+        Long productId,
+        int quantity
+) {
 }
