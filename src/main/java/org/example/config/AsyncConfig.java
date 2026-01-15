@@ -9,6 +9,10 @@ import java.util.concurrent.Executor;
 @Configuration
 @EnableAsync
 public class AsyncConfig {
+    /**
+     * Nastavení vlastního Executoru pro asynchronní úlohy.
+     * @return
+     */
     @Bean
     public Executor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();

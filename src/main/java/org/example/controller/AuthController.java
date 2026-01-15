@@ -4,6 +4,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.dto.JwtResponse;
+import org.example.dto.LoginRequest;
 import org.example.model.User;
 import org.example.service.JwtService;
 import org.example.service.user.UserService;
@@ -15,6 +17,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -59,30 +62,31 @@ public class AuthController {
      *  Map obsahující token a nové heslo.
      */
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody Map<String, String> credentials) {
-        String username = credentials.get("username");
-        String password = credentials.get("password");
-        log.info("POST /api/auth/login - Pokus o přihlášení uživatele: {}", username);
-
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        log.info("POST /api/auth/login - Pokus o přihlášení uživatele: {}", loginRequest.username());
         try {
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username, password)
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.username(),
+                            loginRequest.password()
+                    )
             );
+            // 2. Nastavení kontextu pro aktuální vlákno
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
+            // 3. Získání detailů uživatele (UserDetails)
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-            String token = jwtService.generateAccessToken(userDetails.getUsername());
 
-            log.info("Uživatel {} byl úspěšně autentizován.", username);
-            return ResponseEntity.ok(Map.of(
-                    "token", token,
-                    "username", userDetails.getUsername(),
-                    "roles", userDetails.getAuthorities()
-            ));
+            // 4. Generování JWT tokenu
+            String jwt = jwtService.generateAccessToken(userDetails.getUsername());
+
+            // 5. Návrat odpovědi s tokenem
+            return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getUsername(), userDetails.getAuthorities()));
         } catch (BadCredentialsException e) {
-            log.warn("Neúspěšný pokus o přihlášení pro uživatele {}: Neplatné přihlašovací údaje", username);
+            log.warn("Neúspěšný pokus o přihlášení pro uživatele {}: Neplatné přihlašovací údaje", loginRequest.username());
             return ResponseEntity.status(401).body(Map.of("error", "Neplatné přihlašovací údaje"));
         } catch (AuthenticationException e) {
-            log.error("Chyba při autentizaci pro uživatele {}: {}", username, e.getMessage());
+            log.error("Chyba při autentizaci pro uživatele {}: {}", loginRequest.username(), e.getMessage());
             return ResponseEntity.status(500).body(Map.of("error", "Chyba při autentizaci"));
         }
     }

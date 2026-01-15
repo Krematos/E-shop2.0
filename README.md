@@ -24,8 +24,8 @@ Kompletní REST API backend pro e-commerce aplikaci postavený na Spring Boot 3.
 - **Spring Data JPA** - Práce s databází
 - **PostgreSQL 42.7.8** - Relační databáze
 - **JWT (jjwt 0.13.0)** - Token-based autentizace
-- **MapStruct 1.6.0** - Mapování mezi entitami a DTO
-- **Lombok 1.18.34** - Redukce boilerplate kódu
+- **MapStruct 1.6.3** - Mapování mezi entitami a DTO
+- **Lombok 1.18.42** - Redukce boilerplate kódu
 - **Caffeine** - In-memory caching
 - **Thymeleaf** - Šablony pro e-maily
 
@@ -53,24 +53,35 @@ src/main/java/org/example/
 ├── config/
 │   ├── SecurityConfig.java
 │   ├── WebConfig.java
-│   └── AsyncConfig.java
+│   ├── AsyncConfig.java
+│   ├── GlobalExceptionHandler.java
+│   └── OpenApiConfig.java
 ├── controller/
 │   ├── AuthController.java
 │   ├── ProductController.java
 │   ├── OrderController.java
-│   └── UserController.java
+│   ├── UserController.java
+│   ├── ImageController.java
+│   └── PasswordResetController.java
 ├── dto/
+│   ├── CreateOrderRequest.java
 │   ├── ForgotPasswordRequest.java
-│   ├── LoginDto.java
-│   ├── OrderDto.java
-│   ├── OrderItemDto.java
-│   ├── ProductDto.java
-│   ├── RegisterDto.java
+│   ├── JwtResponse.java
+│   ├── LoginRequest.java
+│   ├── MessageResponse.java
+│   ├── OrderItemRequest.java
+│   ├── OrderItemResponse.java
+│   ├── OrderResponse.java
+│   ├── ProductRequest.java
+│   ├── ProductResponse.java
 │   ├── ResetPasswordRequest.java
-│   ├── UserDto.java
-│   └── UserUpdateDto.java
+│   ├── UserRegistrationRequest.java
+│   ├── UserResponse.java
+│   └── UserUpdateResponse.java
+├── exception/
+│   ├── UserAlreadyExistException.java
+│   └── UserNotFoundException.java
 ├── mapper/
-│   ├── OrderItemMapper.java
 │   ├── OrderMapper.java
 │   ├── ProductMapper.java
 │   └── UserMapper.java
@@ -78,13 +89,19 @@ src/main/java/org/example/
 │   ├── Order.java
 │   ├── OrderItem.java
 │   ├── PasswordResetToken.java
+│   ├── BlacklistedToken.java
 │   ├── Product.java
-│   └── User.java
+│   ├── User.java
+│   └── enums/
+│       ├── Permission.java
+│       └── Role.java
 ├── repository/
 │   ├── OrderItemRepository.java
 │   ├── OrderRepository.java
 │   ├── ProductRepository.java
-│   └── UserRepository.java
+│   ├── UserRepository.java
+│   ├── PasswordResetRepository.java
+│   └── BlacklistedTokenRepository.java
 ├── security/
 │   ├── JwtAuthenticationFilter.java
 │   └── JwtUtil.java
