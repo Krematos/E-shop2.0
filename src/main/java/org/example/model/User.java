@@ -1,7 +1,13 @@
 package org.example.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import org.example.model.enums.Role;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.proxy.HibernateProxy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,6 +16,7 @@ import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.time.LocalDateTime;
@@ -27,15 +34,21 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotBlank(message = "Uživatelské jméno je povinné")
     @Column(nullable = false, unique = true)
     @Size(min = 3, max = 30)
     private String username;
+
+    @NotBlank(message = "Heslo je povinné")
     @Column(nullable = false)
-    @Size(min = 6, max = 100)
+    @Size(min = 8, max = 150)
     private String password;
 
+    @NotBlank(message = "Email je povinný")
+    @Email(message = "Neplatný formát emailu")
     @Column(nullable = false, unique = true)
-    @Size(min = 5, max = 50)
+    @Size(max = 50)
     private String email;
 
     @Column(name = "password_reset_token")
@@ -44,67 +57,57 @@ public class User {
     @Column(name = "password_reset_token_expiry")
     private Instant passwordResetTokenExpiry;
 
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Instant createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private Instant updatedAt;
+
     @Column(name = "roles")
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     private Set<Role> roles = new HashSet<>();
 
-
-
-    // Vrací Spring Security autority
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream()
-                .map(role -> new SimpleGrantedAuthority(role.name()))
-                .collect(Collectors.toSet());
-    }
-
-    // Přidá jednu roli, nepřepisuje existující
     public void addRole(Role role) {
-        if (role != null) roles.add(role);
-    }
-
-
-    public String getRole() {
-        return roles.stream()
-                .findFirst()
-                .map(Enum::name)
-                .orElse(Role.ROLE_USER.name()); // Default role if none set
-    }
-
-    public void setRole(String role) {
-        if (role != null && !role.isEmpty()) {
-            String normalizedRole = role.startsWith("ROLE_") ? role : "ROLE_" + role;
-            this.roles = Set.of(Role.valueOf(role));
-        } else {
-            this.roles = Set.of(Role.ROLE_USER); // Default role
+        if (role != null) {
+            this.roles.add(role);
         }
     }
 
+    public void removeRole(Role role) {
+        if (role != null) {
+            this.roles.remove(role);
+        }
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+        Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
+        Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
+        if (thisEffectiveClass != oEffectiveClass) return false;
+        User user = (User) o;
+        return getId() != null && Objects.equals(getId(), user.getId());
+    }
+
+    @Override
+    public final int hashCode() {
+        return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
+    }
 
     @Override
     public String toString() {
         return "User{" +
-                "username='" + username + '\'' +
+                "id=" + id +
+                ", username='" + username + '\'' +
                 ", email='" + email + '\'' +
                 '}';
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof User)) return false;
-        User user = (User) o;
-        return username.equals(user.username) && email.equals(user.email);
-    }
 
-    @Override
-    public int hashCode() {
-        return 31 * username.hashCode() + email.hashCode();
-    }
 
-    public enum Role {
-        ROLE_USER,
-        ROLE_ADMIN
-    }
 }

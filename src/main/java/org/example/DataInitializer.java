@@ -3,7 +3,6 @@ package org.example;
 import lombok.extern.slf4j.Slf4j;
 import org.example.model.Product;
 import org.example.model.User;
-import org.example.model.User.Role;
 import org.example.repository.ProductRepository;
 import org.example.repository.UserRepository;
 import org.mapstruct.control.MappingControl;
@@ -17,7 +16,7 @@ import java.util.Set;
 @Slf4j
 @Configuration
 public class DataInitializer {
-
+    /*
     @Bean
     CommandLineRunner initAdmin(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
@@ -37,7 +36,7 @@ public class DataInitializer {
                 log.info("Admin již existuje: {}", adminUsername);
             }
         };
-    }
+    }*/
 
     /*@Bean
     CommandLineRunner initProducts(ProductRepository productRepository) {

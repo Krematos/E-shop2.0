@@ -3,22 +3,20 @@ package org.example.service.user;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.dto.UserUpdateResponse;
+import org.example.event.UserRegisteredEvent;
 import org.example.model.User;
+import org.example.model.enums.Role;
 import org.example.repository.UserRepository;
-import org.example.service.email.EmailService;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.time.LocalDateTime;
+import java.util.*;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 @Slf4j
@@ -31,7 +29,7 @@ public class UserService {
 
     private final PasswordEncoder passwordEncoder;
 
-    private final EmailService emailService;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * Registrace nového uživatele s výchozí rolí USER.
@@ -41,19 +39,21 @@ public class UserService {
      * @throws IllegalArgumentException pokud uživatelské jméno nebo email již
      *                                  existuje.
      */
+
     @Transactional
     @CacheEvict(value = { "users", "usersById", "allUsers" }, allEntries = true)
     public User registerNewUser(User user) {
+        // 1. Validace
         validateUser(user);
+        // 2. Encode hesla
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRoles(Set.of(User.Role.ROLE_USER)); // Výchozí role
-
+        // 3. Nastavení defaultní role
+        user.setRoles(new HashSet<>(Collections.singletonList(Role.USER)));
+        // 4. Uložení do DB
         User savedUser = userRepository.save(user);
-
-        log.info("Nový uživatel registrován: {}", savedUser.getUsername());
-
-        // Odeslání uvítacího emailu
-        emailService.sendWelcomeEmail(savedUser.getEmail(), savedUser.getUsername());
+        log.info("Uživatel uložen do DB, publikuji event...");
+        // 5. Odeslání emailu
+        eventPublisher.publishEvent(new UserRegisteredEvent(savedUser));
 
         return savedUser;
     }
@@ -61,13 +61,7 @@ public class UserService {
     @Transactional
     @CacheEvict(value = { "users", "usersById", "allUsers" }, allEntries = true)
     public User updateUser(User user, UserUpdateResponse userUpdateResponse) {
-        // Assuming validateUserUpdate is a new method to be added or already exists
-        // For now, commenting it out as it's not in the original document
-        // validateUserUpdate(userUpdateResponse, user.getId());
 
-        // UserUpdateResponse obsahuje firstName, lastName, email
-        // ale User entita má pouze username, email, password, roles
-        // Aktualizujeme pouze email
         user.setEmail(userUpdateResponse.email());
 
         User updatedUser = userRepository.save(user);
@@ -158,10 +152,22 @@ public class UserService {
      */
     @Transactional
     @CacheEvict(value = { "users", "usersById", "allUsers" }, allEntries = true)
-    public void changeUserRole(Long userId, User.Role newRole) {
-        User user = findUserById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
-        user.setRole(String.valueOf(newRole));
+    public void changeUserRole(Long userId, Role newRole) {
+        // 1. Načtení uživatele
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Uživatel s ID " + userId + " nebyl nalezen"));
+
+        // 2. Aktualizace rolí
+        user.setRoles(new HashSet<>(Collections.singletonList(newRole)));
+
+        // Varianta B: Pokud by mohl mít více rolí a chcete jen přidat/odebrat
+         user.getRoles().clear();
+         user.addRole(newRole);
+
+        // 3. Save není nutný díky @Transactional (Dirty Checking), ale pro čitelnost neškodí
         userRepository.save(user);
+
+        log.info("Role uživatele {} změněna na {}", user.getUsername(), newRole);
     }
 
     @Cacheable(value = "usersById", key = "#userId")

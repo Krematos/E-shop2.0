@@ -1,6 +1,7 @@
 package org.example.service.email;
 
 import lombok.extern.slf4j.Slf4j;
+import org.example.event.UserRegisteredEvent;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -15,6 +16,8 @@ import jakarta.mail.internet.MimeMessage;
 public class EmailService {
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
+
+
 
     public EmailService(JavaMailSender mailSender, TemplateEngine templateEngine) {
         this.mailSender = mailSender;
@@ -80,4 +83,6 @@ public class EmailService {
             log.error("Chyba při odesílání e-mailu pro reset hesla: {}", e.getMessage());
         }
     }
+
+
 }

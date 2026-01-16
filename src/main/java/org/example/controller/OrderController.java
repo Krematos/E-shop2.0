@@ -87,7 +87,7 @@ public class OrderController {
      */
     @GetMapping("/{orderId}")
     @PreAuthorize("hasRole('ADMIN') or @orderService.isOwner(#orderId, principal.username)")
-    public ResponseEntity<OrderResponse> getOrderById(@Valid
+    public ResponseEntity<OrderResponse> getOrderById(
             @PathVariable Long orderId
     ) {
         log.info("Požadavek na detail objednávky s ID {}.", orderId);

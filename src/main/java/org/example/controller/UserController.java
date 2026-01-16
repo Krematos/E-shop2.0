@@ -105,4 +105,17 @@ public class UserController {
         log.warn("Smazání se nezdařilo: Uživatel s ID {} nebyl nalezen.", userId);
         return ResponseEntity.notFound().build(); // 404 Not Found
     }
+
+    @PutMapping("/{userId}")
+    @PreAuthorize("hasRole('ADMIN') or @userService.isOwner(#userId, principal.username)")
+    public ResponseEntity<UserResponse> updateUser(
+            @PathVariable User user, // <--- A přijmout to ID
+            @Valid @RequestBody UserUpdateResponse request
+    ) {
+        return ResponseEntity.ok(
+                userMapper.toDto(
+                        userService.updateUser(user, request)
+                )
+        );
+    }
 }

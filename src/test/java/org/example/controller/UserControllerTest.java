@@ -1,10 +1,13 @@
 package org.example.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.example.config.SecurityConfig;
 import org.example.dto.UserResponse;
 import org.example.dto.UserUpdateResponse;
 import org.example.mapper.UserMapper;
 import org.example.model.User;
+import org.example.model.enums.Role;
+import org.example.security.JwtAuthenticationFilter;
 import org.example.service.JwtService;
 import org.example.service.impl.UserDetailsServiceImpl;
 import org.example.service.user.UserService;
@@ -14,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -35,6 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Testuje všechny REST API endpointy pro správu uživatelů.
  */
 @WebMvcTest(UserController.class)
+@Import({SecurityConfig.class, JwtAuthenticationFilter.class})
 @DisplayName("UserController Integration Tests")
 class UserControllerTest {
 
@@ -69,7 +74,7 @@ class UserControllerTest {
                 .username("testuser")
                 .email("test@example.com")
                 .password("encodedPassword123")
-                .roles(Set.of(User.Role.ROLE_USER))
+                .roles(Set.of(Role.USER))
                 .build();
 
         adminUser = User.builder()
@@ -77,7 +82,7 @@ class UserControllerTest {
                 .username("admin")
                 .email("admin@example.com")
                 .password("encodedAdminPass")
-                .roles(Set.of(User.Role.ROLE_ADMIN))
+                .roles(Set.of(Role.ADMIN))
                 .build();
 
         // Vytvoření testovacích DTO responses
@@ -248,7 +253,7 @@ class UserControllerTest {
                 .username("testuser")
                 .email("jan.novak@example.com")
                 .password("encodedPassword123")
-                .roles(Set.of(User.Role.ROLE_USER))
+                .roles(Set.of(Role.USER))
                 .build();
 
         UserResponse updatedResponse = new UserResponse(
