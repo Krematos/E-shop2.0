@@ -17,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -105,17 +106,22 @@ public class UserController {
         log.warn("Smazání se nezdařilo: Uživatel s ID {} nebyl nalezen.", userId);
         return ResponseEntity.notFound().build(); // 404 Not Found
     }
-
+    /**
+     * ✅ Aktualizace uživatele
+     */
     @PutMapping("/{userId}")
     @PreAuthorize("hasRole('ADMIN') or @userService.isOwner(#userId, principal.username)")
     public ResponseEntity<UserResponse> updateUser(
-            @PathVariable User user, // <--- A přijmout to ID
+            @PathVariable("userId") Long userId,
             @Valid @RequestBody UserUpdateResponse request
     ) {
-        return ResponseEntity.ok(
-                userMapper.toDto(
-                        userService.updateUser(user, request)
-                )
-        );
+        log.info("Požadavek na update uživatele ID: {}", userId);
+        // 1. Najde uživatele podle ID
+        User existingUser = userService.findUserById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Uživatel nenalezen"));
+        // 2. Provede update
+        User updatedUser = userService.updateUser(existingUser, request);
+        // 3. Vrátí odpověď
+        return ResponseEntity.ok(userMapper.toDto(updatedUser));
     }
 }

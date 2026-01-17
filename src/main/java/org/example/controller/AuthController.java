@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @Slf4j
+@RestControllerAdvice
 @RestController // Označuje, že tato třída je REST kontroler
 @RequestMapping("/api/auth") // Definuje základní cestu pro všechny metody v tomto kontroleru
 @RequiredArgsConstructor
@@ -62,9 +63,9 @@ public class AuthController {
      *  Map obsahující token a nové heslo.
      */
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<JwtResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         log.info("POST /api/auth/login - Pokus o přihlášení uživatele: {}", loginRequest.username());
-        try {
+            // 1. Autentizace uživatele
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequest.username(),
@@ -82,13 +83,7 @@ public class AuthController {
 
             // 5. Návrat odpovědi s tokenem
             return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getUsername(), userDetails.getAuthorities()));
-        } catch (BadCredentialsException e) {
-            log.warn("Neúspěšný pokus o přihlášení pro uživatele {}: Neplatné přihlašovací údaje", loginRequest.username());
-            return ResponseEntity.status(401).body(Map.of("error", "Neplatné přihlašovací údaje"));
-        } catch (AuthenticationException e) {
-            log.error("Chyba při autentizaci pro uživatele {}: {}", loginRequest.username(), e.getMessage());
-            return ResponseEntity.status(500).body(Map.of("error", "Chyba při autentizaci"));
-        }
+
     }
 
     /**

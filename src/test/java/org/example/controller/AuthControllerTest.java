@@ -120,7 +120,6 @@ class AuthControllerTest {
 
     @Test
     void testAuthenticateUser_BadCredentials() throws Exception {
-        // Zdepoužije DTO pro konzistenci
         LoginRequest loginRequest = new LoginRequest("testuser", "wrongpassword");
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))

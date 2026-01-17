@@ -160,10 +160,6 @@ public class UserService {
         // 2. Aktualizace rolí
         user.setRoles(new HashSet<>(Collections.singletonList(newRole)));
 
-        // Varianta B: Pokud by mohl mít více rolí a chcete jen přidat/odebrat
-         user.getRoles().clear();
-         user.addRole(newRole);
-
         // 3. Save není nutný díky @Transactional (Dirty Checking), ale pro čitelnost neškodí
         userRepository.save(user);
 

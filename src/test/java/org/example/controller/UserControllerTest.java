@@ -29,7 +29,6 @@ import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -49,7 +48,7 @@ class UserControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockBean(name = "userService")
     private UserService userService;
 
     @MockBean
@@ -60,6 +59,7 @@ class UserControllerTest {
 
     @MockBean
     private UserDetailsServiceImpl userDetailsService;
+
 
     private User testUser;
     private User adminUser;
@@ -124,7 +124,10 @@ class UserControllerTest {
 
         verify(userService, times(1)).findAllUsers();
     }
-
+    /**
+     * GET /api/user - Běžný uživatel nemá přístup (403 Forbidden)
+     * @throws Exception
+     */
     @Test
     @DisplayName("GET /api/user - Běžný uživatel nemá přístup (403 Forbidden)")
     @WithMockUser(roles = "USER")
@@ -136,7 +139,10 @@ class UserControllerTest {
 
         verify(userService, never()).findAllUsers();
     }
-
+    /**
+     * GET /api/user - Nepřihlášený uživatel nemá přístup (401 Unauthorized)
+     * @throws Exception
+     */
     @Test
     @DisplayName("GET /api/user - Nepřihlášený uživatel nemá přístup (401 Unauthorized)")
     void getAllUsers_Unauthenticated_ReturnsUnauthorized() throws Exception {
@@ -212,7 +218,7 @@ class UserControllerTest {
         // Given
         when(userService.isOwner(1L, "testuser")).thenReturn(true);
         when(userService.findUserById(1L)).thenReturn(Optional.of(testUser));
-        when(userMapper.toDto(testUser)).thenReturn(testUserResponse);
+         when(userMapper.toDto(testUser)).thenReturn(testUserResponse);
 
         // When & Then
         mockMvc.perform(get("/api/user/{userId}", 1L))
@@ -221,6 +227,10 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.username").value("testuser"));
     }
 
+    /**
+     * GET /api/user/{userId} - Uživatel nenalezen vrátí 404 Not Found
+     * @throws Exception
+     */
     @Test
     @DisplayName("GET /api/user/{userId} - Uživatel nenalezen (404)")
     @WithMockUser(roles = "ADMIN")
@@ -277,7 +287,10 @@ class UserControllerTest {
 
         verify(userService, times(1)).updateUser(eq(testUser), any(UserUpdateResponse.class));
     }
-
+    /**
+     * PUT /api/user/{userId} - Vlastník úspěšně aktualizuje své údaje
+     * @throws Exception
+     */
     @Test
     @DisplayName("PUT /api/user/{userId} - Vlastník úspěšně aktualizuje své údaje")
     @WithMockUser(username = "testuser", roles = "USER")
@@ -303,6 +316,10 @@ class UserControllerTest {
         verify(userService, times(1)).updateUser(eq(testUser), any(UserUpdateResponse.class));
     }
 
+    /**
+     * PUT /api/user/{userId} - Uživatel nenalezen vrátí 404 Not Found
+     * @throws Exception
+     */
     @Test
     @DisplayName("PUT /api/user/{userId} - Uživatel nenalezen (404)")
     @WithMockUser(roles = "ADMIN")
@@ -325,6 +342,10 @@ class UserControllerTest {
         verify(userService, never()).updateUser(any(), any());
     }
 
+    /**
+     * PUT /api/user/{userId} - Duplicitní email vrátí 400 Bad Request
+     * @throws Exception
+     */
     @Test
     @DisplayName("PUT /api/user/{userId} - Duplicitní email vrátí 400 Bad Request")
     @WithMockUser(roles = "ADMIN")
@@ -349,6 +370,10 @@ class UserControllerTest {
         verify(userService, times(1)).updateUser(eq(testUser), any(UserUpdateResponse.class));
     }
 
+    /**
+     * PUT /api/user/{userId} - Neplatná validace (prázdné hodnoty)
+     * @throws Exception
+     */
     @Test
     @DisplayName("PUT /api/user/{userId} - Neplatná validace (prázdné hodnoty)")
     @WithMockUser(roles = "ADMIN")
@@ -369,9 +394,10 @@ class UserControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    // ==================== DELETE /api/user/{userId} - deleteUser
-    // ====================
-
+    /**
+     * DELETE /api/user/{userId} - Admin úspěšně smaže uživatele
+     * @throws Exception
+     */
     @Test
     @DisplayName("DELETE /api/user/{userId} - Admin úspěšně smaže uživatele")
     @WithMockUser(roles = "ADMIN")
@@ -388,6 +414,10 @@ class UserControllerTest {
         verify(userService, times(1)).DeleteUserById(1L);
     }
 
+    /**
+     * DELETE /api/user/{userId} - Uživatel nenalezen
+     * @throws Exception
+     */
     @Test
     @DisplayName("DELETE /api/user/{userId} - Uživatel nenalezen (404)")
     @WithMockUser(roles = "ADMIN")
@@ -403,6 +433,10 @@ class UserControllerTest {
         verify(userService, never()).DeleteUserById(anyLong());
     }
 
+    /**
+     * DELETE /api/user/{userId} - Běžný uživatel nemá přístup
+     * @throws Exception
+     */
     @Test
     @DisplayName("DELETE /api/user/{userId} - Běžný uživatel nemá přístup (403)")
     @WithMockUser(roles = "USER")

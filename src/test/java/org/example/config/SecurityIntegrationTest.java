@@ -26,8 +26,6 @@ public class SecurityIntegrationTest {
     @MockBean
     private UserDetailsServiceImpl userDetailsService;
 
-    // Pokud JwtAuthenticationFilter závisí na nějaké JwtService,
-    // možná ji budete muset také mocknout (@MockBean private JwtService jwtService;)
 
     // --- 1. TESTY VEŘEJNÝCH ENDPOINTŮ (PUBLIC) ---
 
@@ -70,7 +68,7 @@ public class SecurityIntegrationTest {
     void shouldDenyAnonymousAccessToProtectedResource() throws Exception {
         // Testuje .anyRequest().authenticated()
         mockMvc.perform(get("/api/users/me"))
-                .andExpect(status().is(403));
+                .andExpect(status().is(401));
     }
 
     // --- 3. TESTY ROLÍ (RBAC - Role Based Access Control) ---
