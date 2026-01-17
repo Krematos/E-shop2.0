@@ -14,13 +14,14 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.test.web.servlet.MockMvc;
+import org.example.service.user.UserService;
 
 import java.util.Collections;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -29,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(ProductController.class)
 @AutoConfigureMockMvc(addFilters = false) // Disable security filters for simplicity in this unit test
 class ProductControllerTest {
-    /*
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -45,6 +46,12 @@ class ProductControllerTest {
     @MockBean
     private UserDetailsServiceImpl userDetailsService; // Required because of security config
 
+    @MockBean
+    private AuthenticationManager authenticationManager; // Required for AuthController
+
+    @MockBean
+    private UserService userService; // Required for AuthController
+
     @Test
     void getProductById_Success() throws Exception {
         Long productId = 1L;
@@ -52,9 +59,16 @@ class ProductControllerTest {
         product.setId(productId);
         product.setName("Test Product");
 
-        ProductResponse productDto = new ProductResponse();
-        productDto.setId(productId);
-        productDto.setName("Test Product");
+        ProductResponse productDto = new ProductResponse(
+                productId,
+                "Test Product",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         when(productService.findProductById(productId)).thenReturn(Optional.of(product));
         when(productMapper.toDto(product)).thenReturn(productDto);
@@ -80,9 +94,16 @@ class ProductControllerTest {
         product.setId(1L);
         product.setName("Test Product");
 
-        ProductResponse productDto = new ProductResponse();
-        productDto.setId(1L);
-        productDto.setName("Test Product");
+        ProductResponse productDto = new ProductResponse(
+                1L,
+                "Test Product",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         Page<Product> productPage = new PageImpl<>(Collections.singletonList(product));
 
@@ -93,5 +114,5 @@ class ProductControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].id").value(1L))
                 .andExpect(jsonPath("$.content[0].name").value("Test Product"));
-    }*/
+    }
 }

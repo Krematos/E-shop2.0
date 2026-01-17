@@ -14,12 +14,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import jakarta.validation.constraints.Size;
 
 import java.time.Instant;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.time.LocalDateTime;
+
+
 
 @Getter
 @Setter
@@ -82,7 +81,7 @@ public class User {
             this.roles.remove(role);
         }
     }
-
+    // --- Přepis equals a hashCode pro správnou práci s Hibernate proxy objekty ---
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;

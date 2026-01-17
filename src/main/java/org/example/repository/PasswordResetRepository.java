@@ -3,10 +3,12 @@ package org.example.repository;
 import org.example.model.User;
 import org.example.model.PasswordResetToken;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.Optional;
 
+@Repository
 public interface PasswordResetRepository extends JpaRepository<PasswordResetToken, Long> {
     // 1. Metoda pro hledání tokenu
     Optional<PasswordResetToken> findByToken(String token);
