@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -52,8 +51,8 @@ public class UserController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @Operation(summary = "Get currentUser", description = "Získání informací o přihlášeném uživateli") // Swagger
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User found"),
-            @ApiResponse(responseCode = "404", description = "User not found")
+            @ApiResponse(responseCode = "200", description = "Uživatel nalezen"),
+            @ApiResponse(responseCode = "404", description = "Uživatel nenalezen")
     })
     public ResponseEntity<UserResponse> getCurrentUser(@Valid @AuthenticationPrincipal UserDetails userDetails) {
         log.info("GET /api/user/me - Získání informací o přihlášeném uživateli: {}", userDetails.getUsername());
@@ -75,8 +74,8 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN') or @userService.isOwner(#userId, principal.username)")
     @Operation(summary = "Get user by ID", description = "Požadavek na informace o uživateli.") // Swagger
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User found"),
-            @ApiResponse(responseCode = "404", description = "User not found")
+            @ApiResponse(responseCode = "200", description = "Uživatel nalezen"),
+            @ApiResponse(responseCode = "404", description = "Uživatel nenalezen")
     })
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long userId) {
         log.info("GET /api/user/{} - Požadavek na informace o uživateli", userId);

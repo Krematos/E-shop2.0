@@ -1,13 +1,13 @@
 package org.example.dto;
 
 import org.springframework.security.core.GrantedAuthority;
-import java.util.List;
 import java.util.Collection;
+import java.util.Set;
 
 public record JwtResponse(String accessToken,
                           String tokenType,
                           String username,
-                          List<String> roles) {
+                          Set<String> roles) {
     public JwtResponse(String accessToken, String username, Collection<? extends GrantedAuthority> authorities) {
     this(
             accessToken,
@@ -15,7 +15,7 @@ public record JwtResponse(String accessToken,
             username,
             authorities.stream()
                     .map(GrantedAuthority::getAuthority)
-                    .toList()
+                    .collect(java.util.stream.Collectors.toSet())
     );
     }
 }

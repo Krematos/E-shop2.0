@@ -39,36 +39,31 @@ public class SecurityConfig {
     @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:5174}")
     private String[] allowedOrigins;
 
-
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsServiceImpl userDetailsService;
-
-
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                // 1. DŮLEŽITÉ: Aktivuje CORS konfiguraci definovanou níže
+                // Aktivuje CORS konfiguraci definovanou níže
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll() // Swagger přístup bez přihlášení
-                        .requestMatchers("/api/auth/**").permitAll() // registrace, login - opraveno na /api/auth/**
+                        .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll() // Swagger API dokumentace
+                        .requestMatchers("/api/auth/**").permitAll() // registrace, login
                         .requestMatchers("/uploads/**").permitAll() // přístup k obrázkům bez přihlášení
                         .requestMatchers("GET", "/api/products").permitAll() // Zobrazení produktů bez přihlášení
                         .requestMatchers("GET", "/api/products/**").permitAll() // Detail produktu bez přihlášení
                         .requestMatchers("GET", "/api/categories").permitAll() // Zobrazení kategorií bez přihlášení
                         .requestMatchers("GET", "/api/images/**").permitAll() // Zobrazení obrázků bez přihlášení
-                        .requestMatchers(HttpMethod.POST, "/api/products/admin/**").hasRole("ADMIN")// Vytváření produktů pouze pro ADMIN
-                        .requestMatchers(HttpMethod.PUT, "/api/products/admin/**").hasRole("ADMIN") // Aktualizace produktů pouze pro ADMIN
-                        .requestMatchers(HttpMethod.DELETE, "/api/products/admin/**").hasRole("ADMIN") // Mazání produktů pouze pro ADMIN
-                        .requestMatchers("/api/auth/forgot-password", "/api/auth/reset-password").permitAll() // Povolit přístup k zapomenutému heslu
+                        .requestMatchers(HttpMethod.POST, "/api/products/admin/**").hasRole("ADMIN")// Vytváření produktů pouze pro Admin
+                        .requestMatchers(HttpMethod.PUT, "/api/products/admin/**").hasRole("ADMIN") // Aktualizace produktů pouze pro Admin
+                        .requestMatchers(HttpMethod.DELETE, "/api/products/admin/**").hasRole("ADMIN") // Mazání produktů pouze pro Admin
+                        .requestMatchers("/api/auth/forgot-password", "/api/auth/reset-password").permitAll() // Povolit přístup k resetu hesla
                         .requestMatchers("/error/**").permitAll() // Povolit přístup k chybovým stránkám
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 .exceptionHandling(e -> e
-                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-            )
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .userDetailsService(userDetailsService)
@@ -80,7 +75,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Použijeme pole načtené přes @Value
+        // Použije pole načtené přes @Value
         configuration.setAllowedOrigins(Arrays.asList(allowedOrigins));
 
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
@@ -93,6 +88,7 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -103,5 +99,3 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 }
-
-

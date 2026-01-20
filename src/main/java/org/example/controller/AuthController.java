@@ -31,8 +31,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Controller pro autentizaci a autorizaci uživatelů.
@@ -138,7 +140,9 @@ public class AuthController {
                 return ResponseEntity.ok(new TokenValidationResponse(false, null, null));
             }
             // Získání rolí uživatele z tokenu (pokud jsou uloženy v tokenu)
-            List<String> roles = java.util.Collections.emptyList();
+            List<String> rawRoles = jwtService.extractRoles(token);
+
+            Set<String> roles = new HashSet<>(rawRoles);
 
             // Token je validní
             return ResponseEntity.ok(new TokenValidationResponse(true, username, roles));

@@ -8,6 +8,7 @@ import org.example.security.JwtAuthenticationFilter;
 import org.example.service.JwtService;
 import org.example.service.PasswordResetService;
 import org.example.service.impl.UserDetailsServiceImpl;
+import org.example.service.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,6 +39,9 @@ class PasswordResetControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @MockBean(name = "userService")
+    private UserService userService;
 
     @MockBean
     private PasswordResetService passwordResetService;

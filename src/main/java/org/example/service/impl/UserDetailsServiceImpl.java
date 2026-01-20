@@ -1,6 +1,5 @@
 package org.example.service.impl;
 
-
 import org.example.model.User;
 import org.example.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;

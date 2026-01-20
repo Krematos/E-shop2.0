@@ -1,6 +1,6 @@
 # E-Shop Backend - Spring Boot REST API
 
-Kompletní REST API backend pro e-commerce aplikaci postavený na Spring Boot 3.5.3 s PostgreSQL databází, JWT autentizací a pokročilými funkcemi jako caching a asynchronní zpracování.
+Kompletní REST API backend pro e-commerce aplikaci postavený na Spring Boot 3.5.7 s PostgreSQL databází, JWT autentizací a pokročilými funkcemi jako caching a asynchronní zpracování.
 
 ## 📋 Obsah
 
@@ -28,6 +28,7 @@ Kompletní REST API backend pro e-commerce aplikaci postavený na Spring Boot 3.
 - **Lombok 1.18.42** - Redukce boilerplate kódu
 - **Caffeine** - In-memory caching
 - **Thymeleaf** - Šablony pro e-maily
+- **SpringDoc OpenAPI 2.8.3** - Swagger dokumentace API
 
 ### Frontend
 - **React 19** - UI knihovna
@@ -50,6 +51,8 @@ Kompletní REST API backend pro e-commerce aplikaci postavený na Spring Boot 3.
 src/main/java/org/example/
 ├── Main.java
 ├── DataInitializer.java
+├── component/
+│   └── UserEventListener.java
 ├── config/
 │   ├── SecurityConfig.java
 │   ├── WebConfig.java
@@ -78,6 +81,8 @@ src/main/java/org/example/
 │   ├── UserRegistrationRequest.java
 │   ├── UserResponse.java
 │   └── UserUpdateResponse.java
+├── event/
+│   └── UserRegisteredEvent.java
 ├── exception/
 │   ├── UserAlreadyExistException.java
 │   └── UserNotFoundException.java
@@ -186,6 +191,10 @@ jwt.secret=vaše-bezpečný-secret-klíč
 
 # CORS (upravte podle vašeho frontendu)
 app.cors.allowed-origins=http://localhost:5173
+
+# Swagger/OpenAPI (volitelné)
+springdoc.api-docs.path=/api/v1/api-docs
+springdoc.swagger-ui.path=/api/v1/swagger-ui.html
 ```
 
 ### 4. Sestavení a spuštění
@@ -229,6 +238,7 @@ Otevřete prohlížeč a navštivte:
 - Frontend: `http://localhost:5173` (dev) nebo `http://localhost:80` (docker)
 - Health check: `http://localhost:8080/actuator/health`
 - API base: `http://localhost:8080/api`
+- Swagger UI: `http://localhost:8080/api/v1/swagger-ui.html`
 
 ## ⚙️ Konfigurace
 
@@ -285,6 +295,20 @@ VITE_API_BASE_URL=http://localhost:8080/api
 ## 📡 API Dokumentace
 
 Base URL: `http://localhost:8080/api`
+
+### Swagger/OpenAPI
+
+Aplikace obsahuje automaticky generovanou interaktivní API dokumentaci pomocí Swagger/OpenAPI:
+
+- **Swagger UI**: `http://localhost:8080/api/v1/swagger-ui.html`
+- **OpenAPI JSON**: `http://localhost:8080/api/v1/api-docs`
+
+Swagger UI poskytuje:
+- Kompletní přehled všech API endpointů
+- Možnost testování API přímo z prohlížeče
+- Automatickou validaci požadavků a odpovědí
+- Podrobnou dokumentaci parametrů a modelů
+- Autorizaci pomocí JWT tokenů (tlačítko "Authorize")
 
 ### Autentizace (`/api/auth`)
 

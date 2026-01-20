@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 import java.util.function.Function;
 
 @Service
@@ -90,6 +91,8 @@ public class JwtService {
         }
     }
 
+
+
     // -------- Blacklist pro refresh tokeny --------
     // 3. Metoda pro Blacklist (volá se při Logoutu)
     public void blacklistToken(String token) {
@@ -104,4 +107,15 @@ public class JwtService {
     }
 
 
+    public List<String> extractRoles(String token) {
+        Claims claims = extractAllClaim(token);
+        Object rolesObject = claims.get("roles");
+        if (rolesObject instanceof List<?>) {
+            return ((List<?>) rolesObject).stream()
+                    .filter(String.class::isInstance)
+                    .map(String.class::cast)
+                    .toList();
+        }
+        return List.of();
+    }
 }

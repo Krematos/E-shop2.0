@@ -1,6 +1,6 @@
 package org.example.dto;
 
-import java.util.List;
+import java.util.Set;
 
-public record TokenValidationResponse(boolean valid, String username, List<String> role) {
+public record TokenValidationResponse(boolean valid, String username, Set<String> role) {
 }

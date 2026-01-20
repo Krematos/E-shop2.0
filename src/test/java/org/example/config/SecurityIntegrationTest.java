@@ -1,6 +1,9 @@
 package org.example.config;
 
 import static org.hamcrest.Matchers.not;
+
+import org.example.model.Product;
+import org.example.repository.ProductRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +17,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.example.service.impl.UserDetailsServiceImpl;
 
 // Import statických metod pro čitelnější testy
+import java.math.BigDecimal;
+import java.time.Instant;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -23,9 +29,11 @@ public class SecurityIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private ProductRepository productRepository;
+
     @MockBean
     private UserDetailsServiceImpl userDetailsService;
-
 
     // --- 1. TESTY VEŘEJNÝCH ENDPOINTŮ (PUBLIC) ---
 
@@ -39,7 +47,7 @@ public class SecurityIntegrationTest {
     @Test
     @DisplayName("Swagger API Docs by měl být veřejně přístupný (Security check)")
     void shouldAllowAccessToSwagger() throws Exception {
-        mockMvc.perform(get("/v3/api-docs"))
+        mockMvc.perform(get("/api-docs"))
                 .andExpect(status().is(not(401)))
                 .andExpect(status().is(not(403)));
     }
@@ -48,8 +56,8 @@ public class SecurityIntegrationTest {
     @DisplayName("Login endpoint by měl být dostupný (i když tělo requestu chybí/je špatné, nesmí vrátit 401/403)")
     void shouldAllowAccessToAuthEndpoints() throws Exception {
         mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}")) // Posílá prázdné tělo
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}")) // Posílá prázdné tělo
                 .andExpect(status().is4xxClientError()) // Čeká 400 Bad Request (validace), ale NE 401/403
                 .andExpect(status().is(400)); // Konkrétně 400, ne 403 Forbidden
     }
@@ -75,8 +83,8 @@ public class SecurityIntegrationTest {
 
     @Test
     @DisplayName("Uživatel s rolí USER nesmí mazat produkty")
-    @WithMockUser(username = "user", roles = {"USER"})
-        // Spring Security automaticky přidá prefix "ROLE_", takže hledá "ROLE_USER"
+    @WithMockUser(username = "user", roles = { "USER" })
+    // Spring Security automaticky přidá prefix "ROLE_", takže hledá "ROLE_USER"
     void shouldDenyUserRoleAccessToAdminEndpoints() throws Exception {
         mockMvc.perform(delete("/api/products/admin/123"))
                 .andExpect(status().is(404));
@@ -84,10 +92,23 @@ public class SecurityIntegrationTest {
 
     @Test
     @DisplayName("Uživatel s rolí ADMIN může mazat produkty (200 OK)")
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    @WithMockUser(username = "admin", roles = { "ADMIN" })
     void shouldAllowAdminRoleAccessToAdminEndpoints() throws Exception {
-        mockMvc.perform(delete("/api/products/admin/123"))
-                .andExpect(status().is(404)); // Předpokládá, že controller v testu není nebo ID neexistuje
+        // Vytvoření testovacího produktu
+        Product product = new Product();
+        product.setName("Produkt na smazání");
+        product.setDescription("Popis");
+        product.setPrice(BigDecimal.TEN);
+        product.setCategory("Kategorie");
+        product.setCreatedAt(Instant.now());
+
+        // Uložení produktu do databáze
+        Product savedProduct = productRepository.save(product);
+        Long productId = savedProduct.getId();
+
+        // Smazání produktu přes API
+        mockMvc.perform(delete("/api/products/" + productId))
+                .andExpect(status().isNoContent());
     }
 
     // --- 4. CORS TEST (Volitelné) ---
@@ -96,8 +117,8 @@ public class SecurityIntegrationTest {
     @DisplayName("CORS: OPTIONS request z povoleného originu by měl projít")
     void shouldAllowCorsForAllowedOrigin() throws Exception {
         mockMvc.perform(options("/api/products")
-                        .header("Access-Control-Request-Method", "GET")
-                        .header("Origin", "http://localhost:5173"))
+                .header("Access-Control-Request-Method", "GET")
+                .header("Origin", "http://localhost:5173"))
                 .andExpect(status().isOk())
                 .andExpect(header().exists("Access-Control-Allow-Origin"));
     }
@@ -106,8 +127,8 @@ public class SecurityIntegrationTest {
     @DisplayName("CORS: OPTIONS request ze zakázaného originu by měl být zamítnut")
     void shouldDenyCorsForUnknownOrigin() throws Exception {
         mockMvc.perform(options("/api/products")
-                        .header("Access-Control-Request-Method", "GET")
-                        .header("Origin", "http://evil-hacker.com"))
+                .header("Access-Control-Request-Method", "GET")
+                .header("Origin", "http://evil-hacker.com"))
                 .andExpect(status().isForbidden());
     }
 }
