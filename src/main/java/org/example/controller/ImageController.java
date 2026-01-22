@@ -25,7 +25,6 @@ import java.nio.file.Paths;
 @RequestMapping("/api/images")
 @Tag(name = "Obrázky", description = "API pro správu a získávání obrázků produktů")
 public class ImageController {
-    private final String UPLOAD_DIR = "uploads/";
 
     /**
      * 🖼️ Získání obrázku podle názvu souboru.
@@ -45,7 +44,8 @@ public class ImageController {
     public ResponseEntity<Resource> getImage(
             @Parameter(description = "Název souboru obrázku (např. 'produkt-123.jpg')", required = true, example = "uuid_product-image.jpg") @PathVariable String filename) {
         try {
-            Path filePath = Paths.get(UPLOAD_DIR).resolve(filename).normalize();
+            String uploadDir = "uploads/";
+            Path filePath = Paths.get(uploadDir).resolve(filename).normalize();
             Resource resource = new UrlResource(filePath.toUri());
 
             if (resource.exists()) {

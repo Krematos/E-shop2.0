@@ -1,11 +1,11 @@
 package org.example.service.order;
 
-import org.example.dto.OrderResponse;
+import org.example.dto.order.OrderResponse;
 import org.example.model.Order;
 import org.example.model.User;
 import org.springframework.stereotype.Service;
 
-import org.example.dto.CreateOrderRequest;
+import org.example.dto.order.CreateOrderRequest;
 
 import java.util.List;
 import java.util.Optional;

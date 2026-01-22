@@ -1,4 +1,4 @@
-import org.example.dto.UserRegistrationRequest;
+import org.example.dto.user.UserRegistrationRequest;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Mock;

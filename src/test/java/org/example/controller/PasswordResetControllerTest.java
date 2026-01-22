@@ -2,9 +2,8 @@ package org.example.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.config.SecurityConfig;
-import org.example.dto.ForgotPasswordRequest;
-import org.example.dto.ResetPasswordRequest;
-import org.example.security.JwtAuthenticationFilter;
+import org.example.dto.password.ForgotPasswordRequest;
+import org.example.dto.password.ResetPasswordRequest;
 import org.example.service.JwtService;
 import org.example.service.PasswordResetService;
 import org.example.service.impl.UserDetailsServiceImpl;
@@ -30,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Testuje REST API endpointy pro reset hesla.
  */
 @WebMvcTest(PasswordResetController.class)
-@Import({SecurityConfig.class, JwtAuthenticationFilter.class})
+@Import({SecurityConfig.class})
 @DisplayName("PasswordResetController Integration Tests")
 class PasswordResetControllerTest {
 

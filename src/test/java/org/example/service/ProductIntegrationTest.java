@@ -1,7 +1,6 @@
 package org.example.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.dto.ProductResponse;
 import org.example.model.Product;
 import org.example.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;

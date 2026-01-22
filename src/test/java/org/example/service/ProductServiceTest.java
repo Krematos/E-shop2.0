@@ -1,6 +1,5 @@
 package org.example.service;
 
-import org.example.dto.ProductResponse;
 import org.example.mapper.ProductMapper;
 import org.example.model.Product;
 import org.example.repository.ProductRepository;
@@ -14,7 +13,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;

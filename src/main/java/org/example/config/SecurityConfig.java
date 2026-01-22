@@ -1,6 +1,7 @@
 package org.example.config;
 
 import lombok.AllArgsConstructor;
+import org.example.security.JwtAuthenticationFilter;
 import org.example.service.impl.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -23,11 +24,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 
-import org.example.security.JwtAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.apache.tomcat.util.http.Method.DELETE;
+import static org.apache.tomcat.util.http.Method.PUT;
 
 @AllArgsConstructor
 @Configuration
@@ -44,7 +47,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
+        http
                 // Aktivuje CORS konfiguraci definovanou níže
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
@@ -56,18 +59,16 @@ public class SecurityConfig {
                         .requestMatchers("GET", "/api/products/**").permitAll() // Detail produktu bez přihlášení
                         .requestMatchers("GET", "/api/categories").permitAll() // Zobrazení kategorií bez přihlášení
                         .requestMatchers("GET", "/api/images/**").permitAll() // Zobrazení obrázků bez přihlášení
-                        .requestMatchers(HttpMethod.POST, "/api/products/admin/**").hasRole("ADMIN")// Vytváření produktů pouze pro Admin
-                        .requestMatchers(HttpMethod.PUT, "/api/products/admin/**").hasRole("ADMIN") // Aktualizace produktů pouze pro Admin
-                        .requestMatchers(HttpMethod.DELETE, "/api/products/admin/**").hasRole("ADMIN") // Mazání produktů pouze pro Admin
+
+                        .requestMatchers(HttpMethod.POST, PUT, DELETE, "/api/products/admin/**").hasRole("ADMIN")// Vytváření, úprava a mazání produktů pouze pro ADMin
                         .requestMatchers("/api/auth/forgot-password", "/api/auth/reset-password").permitAll() // Povolit přístup k resetu hesla
                         .requestMatchers("/error/**").permitAll() // Povolit přístup k chybovým stránkám
                         .anyRequest().authenticated())
                 .exceptionHandling(e -> e
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .userDetailsService(userDetailsService)
-                .build();
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
     }
 
     // 2. Definice pravidel pro CORS
@@ -80,7 +81,7 @@ public class SecurityConfig {
 
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setExposedHeaders(List.of("Authorization", "Content-Type", "Set-Cookie"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 

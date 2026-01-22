@@ -1,16 +1,9 @@
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api/products";
 
 /**
- * Pomocná funkce pro získání tokenu.
- * Uprav si klíč 'token' nebo 'jwt' podle toho, jak ho ukládáš v localStorage.
+ * POZNÁMKA: Token je nyní v HttpOnly cookie a je automaticky přidán do požadavků.
+ * Funkce getAuthHeader již není potřeba.
  */
-const getAuthHeader = (token) => {
-  const storedToken = token || localStorage.getItem("token");
-  if (storedToken) {
-    return { Authorization: `Bearer ${storedToken}` };
-  }
-  return {};
-};
 
 /**
  * Pomocná funkce pro přípravu FormData.
@@ -22,7 +15,7 @@ const createFormData = (productData) => {
   // 1. Textová data
   // Musíme ošetřit null/undefined hodnoty
   if (productData.name) formData.append("name", productData.name);
-    if (productData.description) formData.append("description", productData.description);
+  if (productData.description) formData.append("description", productData.description);
   if (productData.price) formData.append("price", productData.price);
   if (productData.category) formData.append("category", productData.category);
 
@@ -63,9 +56,7 @@ export const createProduct = async (productData, token) => {
 
   const response = await fetch(`${API_URL}/ads`, { // Endpoint pro vytvoření
     method: "POST",
-    headers: {
-      ...getAuthHeader(token),
-    },
+    credentials: 'include', // Token je v HttpOnly cookie
     body: formData,
   });
 
@@ -82,10 +73,7 @@ export const updateProduct = async (id, productData, token) => {
 
   const response = await fetch(`${API_URL}/${id}`, {
     method: "PUT",
-    headers: {
-      ...getAuthHeader(token),
-      // Opět: Content-Type nenastavujeme ručně
-    },
+    credentials: 'include', // Token je v HttpOnly cookie
     body: formData,
   });
 
@@ -99,9 +87,7 @@ export const updateProduct = async (id, productData, token) => {
 export const deleteProduct = async (id, token) => {
   const response = await fetch(`${API_URL}/${id}`, {
     method: "DELETE",
-    headers: {
-      ...getAuthHeader(token),
-    },
+    credentials: 'include', // Token je v HttpOnly cookie
   });
 
   if (!response.ok) {

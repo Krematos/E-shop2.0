@@ -1,5 +1,7 @@
-package org.example.dto;
+package org.example.dto.order;
 
+
+import org.example.dto.order.OrderItemRequest;
 
 import java.util.List;
 

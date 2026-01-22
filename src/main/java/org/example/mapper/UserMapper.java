@@ -1,7 +1,7 @@
 package org.example.mapper;
 
-import org.example.dto.UserRegistrationRequest;
-import org.example.dto.UserResponse;
+import org.example.dto.user.UserRegistrationRequest;
+import org.example.dto.user.UserResponse;
 import org.example.model.User;
 import org.example.model.enums.Role;
 import org.mapstruct.Mapper;

@@ -15,8 +15,8 @@ import static org.example.model.enums.Permission.*;
 
 @RequiredArgsConstructor
 public enum Role {
-    USER(Collections.emptySet()),
-    ADMIN(Set.of(
+    ROLE_USER(Collections.emptySet()),
+    ROLE_ADMIN(Set.of(
             ADMIN_READ,
             ADMIN_UPDATE,
             ADMIN_CREATE,
@@ -25,7 +25,7 @@ public enum Role {
             USER_UPDATE
     )
     ),
-    MANAGER(Set.of(
+    ROLE_MANAGER(Set.of(
             USER_READ,
             USER_UPDATE
     )

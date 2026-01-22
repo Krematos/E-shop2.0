@@ -2,12 +2,11 @@ package org.example.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.config.SecurityConfig;
-import org.example.dto.CreateOrderRequest;
-import org.example.dto.OrderResponse;
+import org.example.dto.order.CreateOrderRequest;
+import org.example.dto.order.OrderResponse;
 import org.example.mapper.OrderMapper;
 import org.example.model.Order;
 import org.example.model.User;
-import org.example.security.JwtAuthenticationFilter;
 import org.example.service.impl.UserDetailsServiceImpl;
 import org.example.service.order.OrderService;
 import org.example.service.user.UserService;
@@ -27,7 +26,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.example.security.JwtAuthenticationFilter;
 import org.example.service.JwtService;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -39,7 +37,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(OrderController.class)
-@Import({SecurityConfig.class, JwtAuthenticationFilter.class})
+@Import({SecurityConfig.class})
 public class OrderControllerTest {
 
     @Autowired

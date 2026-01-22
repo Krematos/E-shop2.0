@@ -5,7 +5,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
 
-import org.example.dto.ProductResponse;
+import org.example.dto.product.ProductResponse;
 import org.example.model.Product;
 import org.springframework.stereotype.Service;
 

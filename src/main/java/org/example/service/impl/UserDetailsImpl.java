@@ -9,11 +9,19 @@ import java.util.stream.Collectors;
 
 public record UserDetailsImpl(User user) implements UserDetails {
 
+    public Long getId() {
+        return user.getId();
+    }
+
+    public String getEmail() {
+        return user.getEmail();
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
-                .collect(Collectors.toList());
+                .map(role -> new SimpleGrantedAuthority(role.name()))
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -45,4 +53,5 @@ public record UserDetailsImpl(User user) implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
 }

@@ -10,17 +10,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.dto.ForgotPasswordRequest;
+import org.example.dto.password.ForgotPasswordRequest;
 import org.example.dto.MessageResponse;
-import org.example.dto.ResetPasswordRequest;
+import org.example.dto.password.ResetPasswordRequest;
 import org.example.service.PasswordResetService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Map;
 
 /**
  * Controller pro správu obnovení hesla.
@@ -49,7 +47,7 @@ public class PasswordResetController {
             @ApiResponse(responseCode = "400", description = "Neplatný formát emailu", content = @Content)
     })
     @PostMapping("forgot-password")
-    public ResponseEntity<?> forgotPassword(
+    public ResponseEntity<MessageResponse> forgotPassword(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Email uživatele pro obnovení hesla", required = true, content = @Content(schema = @Schema(implementation = ForgotPasswordRequest.class), examples = @ExampleObject(value = "{\"email\":\"user@example.com\"}"))) @RequestBody @Valid ForgotPasswordRequest forgotPasswordRequest) {
         passwordResetService.initiatePasswordReset(forgotPasswordRequest.email());
         return ResponseEntity.ok(new MessageResponse("Žádost o obnovení hesla byla odeslána na váš email"));
@@ -72,14 +70,9 @@ public class PasswordResetController {
             }))
     })
     @PostMapping("reset-password")
-    public ResponseEntity<?> resetPassword(
+    public ResponseEntity<MessageResponse> resetPassword(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Reset token a nové heslo", required = true, content = @Content(schema = @Schema(implementation = ResetPasswordRequest.class), examples = @ExampleObject(value = "{\"token\":\"abc123xyz...\",\"newPassword\":\"NewSecurePassword123\"}"))) @RequestBody @Valid ResetPasswordRequest resetPasswordRequest) {
-        try {
-            passwordResetService.resetPassword(resetPasswordRequest.token(), resetPasswordRequest.newPassword());
-            return ResponseEntity.ok(new MessageResponse("Heslo bylo úspěšně změněno."));
-        } catch (IllegalArgumentException e) {
-            log.error("Chyba při resetu hesla s tokenem {}: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+        passwordResetService.resetPassword(resetPasswordRequest.token(), resetPasswordRequest.newPassword());
+        return ResponseEntity.ok(new MessageResponse("Heslo bylo úspěšně změněno."));
     }
 }

@@ -2,9 +2,9 @@ package org.example.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.dto.CreateOrderRequest;
-import org.example.dto.OrderResponse;
-import org.example.dto.OrderItemRequest;
+import org.example.dto.order.CreateOrderRequest;
+import org.example.dto.order.OrderResponse;
+import org.example.dto.order.OrderItemRequest;
 import org.example.mapper.OrderMapper;
 import org.example.model.OrderItem;
 import org.example.model.Product;

@@ -1,7 +1,7 @@
 package org.example.mapper;
 
 import org.example.model.Product;
-import org.example.dto.ProductResponse;
+import org.example.dto.product.ProductResponse;
 import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")

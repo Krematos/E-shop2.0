@@ -3,7 +3,7 @@
  * * 1. Zkouší načíst hodnotu z .env souboru (pro produkci/konfiguraci).
  * 2. Pokud není definována, použije fallback na localhost (pro vývoj).
  */
-export const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL || 'http://localhost:8080/uploads/';
+export const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL || 'http://localhost:8080/api/images/';
 
 /**
  * Vygeneruje kompletní URL pro obrázek.

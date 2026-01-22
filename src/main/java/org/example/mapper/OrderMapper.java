@@ -1,11 +1,10 @@
 package org.example.mapper;
 
-import org.example.dto.OrderItemResponse;
+import org.example.dto.order.OrderItemResponse;
 import org.example.model.Order;
-import org.example.dto.OrderResponse;
+import org.example.dto.order.OrderResponse;
 import org.example.model.OrderItem;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.List;

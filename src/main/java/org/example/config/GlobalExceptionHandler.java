@@ -1,5 +1,8 @@
 package org.example.config;
 
+import org.example.dto.MessageResponse;
+import org.example.exception.InvalidTokenException;
+import org.example.exception.TokenExpiredException;
 import org.example.exception.UserAlreadyExistException;
 import org.example.exception.UserNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -10,6 +13,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -36,7 +40,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
+        ex.getBindingResult().getAllErrors().forEach(error -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
@@ -82,6 +86,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("error", "Operaci nelze provést z důvodu konfliktu dat (např. duplicitní záznam)."));
     }
+    // 415 - Nepodporovaný formát dat
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<Map<String, String>> handleHttpMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex) {
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+                .body(Map.of("error", "Nepodporovaný formát dat: " + ex.getMessage()));
+    }
 
     // 423 - Účet uzamčen
     @ExceptionHandler(AccountLockedException.class)
@@ -95,6 +105,22 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleUserNotFound(UserNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("error", ex.getMessage()));
+    }
+
+    // Řeší expiraci tokenu -> 400
+    @ExceptionHandler(TokenExpiredException.class)
+    public ResponseEntity<MessageResponse> handleTokenExpired(TokenExpiredException e) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new MessageResponse("Odkaz pro obnovu hesla již vypršel. Vyžádejte si prosím nový."));
+    }
+
+    // Řeší neplatný token -> 400 (nebo 404)
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<MessageResponse> handleInvalidToken(InvalidTokenException e) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new MessageResponse("Neplatný odkaz pro obnovu hesla."));
     }
 
     // Obecná výjimka pro ResponseStatusException

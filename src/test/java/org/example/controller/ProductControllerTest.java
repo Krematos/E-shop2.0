@@ -1,6 +1,6 @@
 package org.example.controller;
 
-import org.example.dto.ProductResponse;
+import org.example.dto.product.ProductResponse;
 import org.example.mapper.ProductMapper;
 import org.example.model.Product;
 import org.example.service.JwtService;

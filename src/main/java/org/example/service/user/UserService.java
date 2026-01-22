@@ -2,7 +2,7 @@ package org.example.service.user;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.dto.UserUpdateResponse;
+import org.example.dto.user.UserUpdateResponse;
 import org.example.event.UserRegisteredEvent;
 import org.example.model.User;
 import org.example.model.enums.Role;
@@ -48,7 +48,7 @@ public class UserService {
         // 2. Encode hesla
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         // 3. Nastavení defaultní role
-        user.setRoles(new HashSet<>(Collections.singletonList(Role.USER)));
+        user.setRoles(new HashSet<>(Collections.singletonList(Role.ROLE_USER)));
         // 4. Uložení do DB
         User savedUser = userRepository.save(user);
         log.info("Uživatel uložen do DB, publikuji event...");
