@@ -1,4 +1,4 @@
-import org.example.dto.LoginRequest;
+import krematos.dto.LoginRequest;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Mock;
