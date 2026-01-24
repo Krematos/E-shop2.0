@@ -13,7 +13,6 @@ import krematos.model.Order;
 import krematos.repository.OrderRepository;
 import krematos.repository.ProductRepository;
 import krematos.service.order.OrderService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -30,7 +29,7 @@ import java.util.Optional;
 @Transactional
 public class OrderServiceImpl implements OrderService {
 
-    @Autowired
+
     private final OrderMapper orderMapper;
 
      private final OrderRepository orderRepository;

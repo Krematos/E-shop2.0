@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -287,7 +288,7 @@ class RegisterControllerIntegrationTest {
                 .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.username").exists());
+                .andExpect(jsonPath("$.message", containsString("username=")));
     }
 
     @Test
@@ -304,7 +305,7 @@ class RegisterControllerIntegrationTest {
                 .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.username").exists());
+                .andExpect(jsonPath("$.message", containsString("Neplatná vstupní data.")));
     }
 
     @Test
@@ -322,7 +323,7 @@ class RegisterControllerIntegrationTest {
                 .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.username").exists());
+                .andExpect(jsonPath("$.message", containsString("Neplatná vstupní data.")));
     }
 
     @Test
@@ -360,7 +361,7 @@ class RegisterControllerIntegrationTest {
                 .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.email").exists());
+                .andExpect(jsonPath("$.message", containsString("Neplatná vstupní data.")));
     }
 
     @Test
@@ -387,7 +388,7 @@ class RegisterControllerIntegrationTest {
                     .content(objectMapper.writeValueAsString(request)))
                     .andDo(print())
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.email").exists());
+                    .andExpect(jsonPath("$.message", containsString("Neplatná vstupní data.")));
         }
     }
 
@@ -426,7 +427,7 @@ class RegisterControllerIntegrationTest {
                 .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.password").exists());
+                .andExpect(jsonPath("$.message", containsString("Neplatná vstupní data.")));
     }
 
     @Test
@@ -443,7 +444,7 @@ class RegisterControllerIntegrationTest {
                 .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.password").exists());
+                .andExpect(jsonPath("$.message", containsString("Neplatná vstupní data.")));
     }
 
     @Test
@@ -481,9 +482,9 @@ class RegisterControllerIntegrationTest {
                 .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.username").exists())
-                .andExpect(jsonPath("$.email").exists())
-                .andExpect(jsonPath("$.password").exists());
+                .andExpect(jsonPath("$.message", containsString("Neplatná vstupní data.")))
+                .andExpect(jsonPath("$.message", containsString("Neplatná vstupní data.")))
+                .andExpect(jsonPath("$.message", containsString("Neplatná vstupní data.")));
     }
 
     @Test

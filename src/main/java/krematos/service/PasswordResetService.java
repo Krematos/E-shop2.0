@@ -46,7 +46,7 @@ public class PasswordResetService {
         String token = UUID.randomUUID().toString();
 
         // Uloží do DB
-        PasswordResetToken myToken = new PasswordResetToken(token, user, null);
+        PasswordResetToken myToken = new PasswordResetToken(token, user);
         tokenRepository.save(myToken);
 
         // Pošle email (asynchronně, aby uživatel nečekal)

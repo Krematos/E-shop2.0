@@ -172,7 +172,7 @@ class PasswordResetControllerTest {
                 .content(objectMapper.writeValueAsString(validResetPasswordRequest)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Neplatný token"));
+                .andExpect(jsonPath("$.message").value("Neplatný token"));
 
         verify(passwordResetService, times(1)).resetPassword(anyString(), anyString());
     }
@@ -190,7 +190,8 @@ class PasswordResetControllerTest {
                 .content(objectMapper.writeValueAsString(validResetPasswordRequest)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Token vypršel"));
+                .andExpect(jsonPath("$.message").value("Token vypršel"))
+                .andExpect(jsonPath("$.errorCode").value("ILLEGAL_ARGUMENT"));
 
         verify(passwordResetService, times(1)).resetPassword(anyString(), anyString());
     }

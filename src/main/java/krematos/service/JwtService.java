@@ -2,6 +2,7 @@ package krematos.service;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import krematos.exception.token.InvalidTokenException;
 import krematos.repository.BlacklistedTokenRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,8 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
+import java.time.Clock;
+
 
 @Service
 public class JwtService {
@@ -24,12 +27,17 @@ public class JwtService {
 
     private final BlacklistedTokenRepository blacklistedTokenRepository;
 
+    private final Clock clock;
+
+
+
 
     public JwtService(
             @Value("${jwt.secret}") String secretKey,
             @Value("${jwt.access-token-expiration-ms:900000}") long accessTokenExpirationMillis, // default 15 min
             @Value("${jwt.refresh-token-expiration-ms:604800000}") long refreshTokenExpirationMillis, // default 7 days
-            BlacklistedTokenRepository blacklistedTokenRepository
+            BlacklistedTokenRepository blacklistedTokenRepository,
+                       Clock clock
     ) {
         if (secretKey == null || secretKey.isBlank() || secretKey.length() < 32) {
             throw new IllegalArgumentException("JWT secret must be at least 32 characters");
@@ -38,6 +46,7 @@ public class JwtService {
         this.accessTokenExpirationMillis = accessTokenExpirationMillis;
         this.refreshTokenExpirationMillis = refreshTokenExpirationMillis;
         this.blacklistedTokenRepository = blacklistedTokenRepository;
+        this.clock = clock;
     }
 
     // -------- Generování tokenu --------
@@ -50,19 +59,21 @@ public class JwtService {
     }
     // Společná metoda pro generování tokenu
     private String generateToken(String username, long expirationMillis) {
-        long now = System.currentTimeMillis();
+        Date now = Date.from(Instant.now(clock));
+        Date expiryDate = new Date(now.getTime() + expirationMillis);
+
         return Jwts.builder()
                 .setSubject(username)
-                .setIssuedAt(new Date(now))
-                .setExpiration(new Date(now + expirationMillis))
-                .signWith(signingKey)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith((SecretKey) signingKey)
                 .compact();
     }
 
     // -------- Parsování a validace --------
-    public boolean validateToken(String Token, String username){
-        final String tokenUsername = extractUsername(Token);
-        return (tokenUsername.equals(username) && !isTokenExpired(Token));
+    public boolean validateToken(String token, String username){
+        final String tokenUsername = extractUsername(token);
+        return (tokenUsername.equals(username) && !isTokenExpired(token));
     }
 
     private boolean isTokenExpired(String token){
@@ -86,8 +97,10 @@ public class JwtService {
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
+        } catch (IllegalArgumentException e) {
+            throw new InvalidTokenException("Token JWT nesmí být prázdný nebo null");
         } catch (JwtException e) {
-            throw new RuntimeException("Invalid JWT token", e);
+            throw new InvalidTokenException("Neplatný token JWT");
         }
     }
 

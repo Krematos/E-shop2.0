@@ -403,14 +403,14 @@ class UserControllerTest {
     void deleteUser_AsAdmin_Success() throws Exception {
         // Given
         when(userService.findUserById(1L)).thenReturn(Optional.of(testUser));
-        doNothing().when(userService).DeleteUserById(1L);
+        doNothing().when(userService).deleteUserById(1L);
 
         // When & Then
         mockMvc.perform(delete("/api/user/{userId}", 1L))
                 .andDo(print())
                 .andExpect(status().isNoContent());
 
-        verify(userService, times(1)).DeleteUserById(1L);
+        verify(userService, times(1)).deleteUserById(1L);
     }
 
     /**
@@ -429,7 +429,7 @@ class UserControllerTest {
                 .andDo(print())
                 .andExpect(status().isNotFound());
 
-        verify(userService, never()).DeleteUserById(anyLong());
+        verify(userService, never()).deleteUserById(anyLong());
     }
 
     /**
@@ -445,6 +445,6 @@ class UserControllerTest {
                 .andDo(print())
                 .andExpect(status().isForbidden());
 
-        verify(userService, never()).DeleteUserById(anyLong());
+        verify(userService, never()).deleteUserById(anyLong());
     }
 }

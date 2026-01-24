@@ -1,6 +1,7 @@
 package krematos.dto.user;
 
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -15,6 +16,7 @@ public record UserUpdateResponse(
 
         @NotBlank(message = "Email nesmí být prázdný")
         @Size(min = 5, max = 100, message = "Email musí mít od 5 do 100 znaků")
+        @Email(message = "Email musí být ve správném formátu")
         String email       
 
 ) {

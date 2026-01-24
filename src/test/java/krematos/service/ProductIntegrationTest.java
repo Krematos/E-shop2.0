@@ -116,15 +116,6 @@ class ProductIntegrationTest {
     @WithMockUser(roles = { "ADMIN" }) // Pouze admin může vytvářet produkty
     @DisplayName("POST /api/products - Úspěšné vytvoření produktu")
     void createProduct_Success() throws Exception {
-        // Arrange: Příprava dat pro nový produkt
-        String productJson = """
-                {
-                    "name": "New Product",
-                    "description": "New Description",
-                    "price": 99.99,
-                    "category": "New Category"
-                }
-                """;
 
         // Act: Vytvoření produktu přes API
         mockMvc.perform(post("/api/products")

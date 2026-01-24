@@ -1,7 +1,9 @@
 package krematos.service.impl;
 
-import krematos.exception.product.ProductBadImageTypException;
-import krematos.exception.product.ProductNotFoundException;
+import jakarta.annotation.PostConstruct;
+import krematos.exception.product.FileStorageException;
+import krematos.exception.product.InvalidFileException;
+import krematos.exception.product.ProductImageFileIsTooBig;
 import krematos.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -23,10 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -41,9 +42,21 @@ public class ProductServiceImpl implements ProductService {
     private String uploadDir;
 
     private static final List<String> ALLOWED_IMAGE_TYPES = Arrays.asList("image/jpeg", "image/png", "image/gif");
+    private static final long MAX_FILE_SIZE = (long) 5 * 1024 * 1024; // 5MB
+
+    // Inicializace složky při startu aplikace
+    @PostConstruct
+    public void init() {
+        try {
+            Files.createDirectories(Paths.get(uploadDir));
+        } catch (IOException e) {
+            throw new InvalidFileException("Nelze vytvořit adresář pro upload");
+        }
+    }
 
     @Override
     @Cacheable(value = "productsById", key = "#id")
+    @Transactional(readOnly = true)
     public Optional<Product> findProductById(Long id) {
         log.info("Hledání produktu podle ID: {}", id);
         return productRepository.findById(id);
@@ -53,56 +66,46 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     @CacheEvict(value = {"productsById", "allProducts"}, allEntries = true)
     public boolean deleteProductById(Long id) {
-        Optional<Product> productOpt = productRepository.findById(id);
-        if (!productRepository.existsById(id)) {
+        return productRepository.findById(id).map(product -> {
+
+            // Uloží seznam souborů ke smazání
+            List<String> imagesToDelete = new ArrayList<>(product.getImages());
+            productRepository.delete(product);
+
+            // Smazání souborů až PO commitu transakce
+            deleteFilesAfterCommit(imagesToDelete);
+            log.warn("Produkt s ID {} byl odstraněn", id);
+            return true;
+        }).orElseGet(() -> {
             log.warn("Odstranění selhalo - produkt s ID {} neexistuje", id);
             return false;
-        }
-        Product product = productOpt.get();
-        // Smazat soubory obrázků z filesystemu
-        for (String fileName : product.getImages()) {
-            deleteImageFile(fileName);
-        }
-
-        // Odstranit produkt z databáze
-        productRepository.delete(product);
-        log.warn("Produkt s ID {} byl odstraněn", id);
-        return true;
+        });
     }
 
     @Override
     @Transactional
     @CacheEvict(value = {"productsById", "allProducts"}, allEntries = true)
     public Product saveProduct(Product product) {
-        if (product == null) {
-            throw new IllegalArgumentException("Produkt nesmí být null");
-        }
+        if (product == null) throw new InvalidFileException("Produkt nesmí být null");
         Product saved = productRepository.save(product);
         log.info("Produkt s ID {} byl uložen/aktualizován", saved.getId());
         return saved;
     }
 
     @Override
-    @Cacheable(value = "allProducts", key = "#pageable")
+    @Cacheable(value = "allProducts", key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort")
+    @Transactional(readOnly = true)
     public Page<Product> findAllProducts(Pageable pageable) {
-        log.info("Načítání stránky produktů: {}", pageable);
         return productRepository.findAll(pageable);
     }
 
     @Override
     @Transactional
     @CacheEvict(value = {"productsById", "allProducts"}, allEntries = true)
-    public Product createProductWithImages(ProductResponse productDto) throws IOException {
+    public Product createProductWithImages(ProductResponse productDto) { // IOException řešíme uvnitř
         Product product = productMapper.toEntity(productDto);
-        if (productDto.imagesFilenames() != null && !productDto.imagesFilenames().isEmpty()) {
-            for (MultipartFile file : productDto.imagesFilenames()) {
-                if (file != null && !file.isEmpty()) {
-                    validateFile(file);
-                    String fileName = saveFile(file);
-                    product.getImages().add(fileName);
-                }
-            }
-        }
+        List<String> savedFiles = processImages(productDto.imagesFilenames());
+        product.getImages().addAll(savedFiles);
         return productRepository.save(product);
     }
 
@@ -110,80 +113,102 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     @CacheEvict(value = {"productsById", "allProducts"}, allEntries = true)
     public Optional<Product> updateProduct(Long id, ProductResponse productDto) {
-        return productRepository.findById(id)
-                .map(existingProduct -> {
-                    productMapper.updateProductFromDto(productDto, existingProduct);
-                    if (productDto.imagesFilenames() != null && !productDto.imagesFilenames().isEmpty()) {
-                        // Smaže staré obrázky
-                        for(String oldImage : existingProduct.getImages()){
-                            deleteImageFile(oldImage);
-                        }
-                        existingProduct.getImages().clear();
-                        // Přidá nové obrázky
-                        for (MultipartFile file : productDto.imagesFilenames()) {
-                            if (file != null && !file.isEmpty()) {
-                                validateFile(file);
-                                String fileName = null;
-                                try {
-                                    fileName = saveFile(file);
-                                } catch (IOException e) {
-                                    throw new IllegalArgumentException(e);
-                                }
-                                existingProduct.getImages().add(fileName);
-                            }
-                        }
-                    }
-                    return productRepository.save(existingProduct);
-                });
+        return productRepository.findById(id).map(existingProduct -> {
+            productMapper.updateProductFromDto(productDto, existingProduct);
+
+            if (productDto.imagesFilenames() != null && !productDto.imagesFilenames().isEmpty()) {
+                List<String> newFiles = processImages(productDto.imagesFilenames());
+                existingProduct.getImages().addAll(newFiles);
+            }
+            return productRepository.save(existingProduct);
+        });
+    }
+
+    // --- Helper Methods ---
+
+    private List<String> processImages(List<MultipartFile> files) {
+        List<String> fileNames = new ArrayList<>();
+        if (files == null || files.isEmpty()) return fileNames;
+
+        for (MultipartFile file : files) {
+            if (file != null && !file.isEmpty()) {
+                validateFile(file);
+                try {
+                    fileNames.add(saveFile(file));
+                } catch (IOException e) {
+                    throw new FileStorageException("Chyba při ukládání souboru: " + file.getOriginalFilename(), e);
+                }
+            }
+        }
+        return fileNames;
     }
 
     private void validateFile(MultipartFile file) {
-        if (file.isEmpty()) {
-            throw new ProductNotFoundException("Soubor(obrázek) nesmí být prázdný.");
-        }
         if (!ALLOWED_IMAGE_TYPES.contains(file.getContentType())) {
-            throw new ProductBadImageTypException("Nepovolený typ souboru: " + file.getContentType());
+            throw new InvalidFileException("Nepovolený typ souboru: " + file.getContentType());
         }
-        if(file.getSize() > 5 * 1024 * 1024){
-            throw new ProductBadImageTypException("Soubor je příliš velký. Maximální povolená velikost je 5MB.");
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new ProductImageFileIsTooBig("Soubor je příliš velký. Max 5MB.");
         }
-
     }
 
     private String saveFile(MultipartFile file) throws IOException {
-        Files.createDirectories(Paths.get(uploadDir));
-        if(!Files.exists(Paths.get(uploadDir))){
-            Files.createDirectories(Paths.get(uploadDir));
+        if (file == null || file.isEmpty()) {
+            throw new InvalidFileException("Soubor není přiložen");
         }
-        String sanitizedName = file.getOriginalFilename()
-                .replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
-        String fileName = UUID.randomUUID().toString() + "_" + sanitizedName;
-        Path uploadPath = Paths.get(uploadDir);
-        try {
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-            Path filePath = uploadPath.resolve(fileName);
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-            log.info("Soubor {} byl uložen", fileName);
-        } catch (IOException e) {
-            log.error("Chyba při ukládání souboru {}: {}", fileName, e.getMessage());
-            throw new IllegalArgumentException("Chyba při ukládání souboru", e);
+
+        String originalName = file.getOriginalFilename();
+        if (originalName == null || originalName.isBlank()) {
+            throw new InvalidFileException("Soubor nemá platný název");
         }
+
+        String sanitizedName = originalName.replaceAll(
+                "[^a-zA-Z0-9\\.\\-]",
+                "_"
+        );
+
+        String fileName = UUID.randomUUID() + "_" + sanitizedName;
+        Path filePath = Paths.get(uploadDir).resolve(fileName);
+
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+        log.info("Soubor {} byl uložen", fileName);
         return fileName;
     }
 
-    public void deleteImageFile(String fileName){
-        if(fileName == null || fileName.isEmpty()){
-            log.warn("Název souboru pro smazání je prázdný");
+    // Bezpečné mazání souborů spřažené s transakcí
+    private void deleteFilesAfterCommit(List<String> fileNames) {
+        if (fileNames == null || fileNames.isEmpty()) return;
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                for (String fileName : fileNames) {
+                    deleteImageFile(fileName);
+                }
+            }
+        });
+    }
+
+    public void deleteImageFile(String fileName) {
+        // 1. Validace
+        if (fileName == null || fileName.isBlank()) {
+            log.warn("Pokus o smazání souboru s prázdným názvem - ignoruji.");
             return;
         }
+
+        // 2. Sanitizace: Odstraní mezery na začátku a na konci
+        String sanitizedName = fileName.trim();
+
         try {
-            Path filePath = Paths.get(uploadDir).resolve(fileName);
+            Path filePath = Paths.get(uploadDir).resolve(sanitizedName);
             Files.deleteIfExists(filePath);
-            log.info("Soubor {} byl smazán", fileName);
+            log.info("Soubor {} byl smazán z disku", sanitizedName);
+        } catch (java.nio.file.InvalidPathException e) {
+            // 3. Záchranná síť: Pokud je jméno i po ořezání neplatné (např. obsahuje nepovolené znaky)
+            log.warn("Neplatný formát cesty k souboru '{}': {}", fileName, e.getMessage());
         } catch (IOException e) {
-            log.error("Chyba při mazání souboru {}: {}", fileName, e.getMessage());
+            log.error("Nepodařilo se smazat soubor {}: {}", sanitizedName, e.getMessage());
         }
     }
 

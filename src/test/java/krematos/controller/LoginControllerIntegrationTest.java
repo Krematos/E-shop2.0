@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -195,7 +196,7 @@ class LoginControllerIntegrationTest {
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.username").exists());
+                .andExpect(jsonPath("$.message", containsString("Neplatná vstupní data.")));
     }
 
     @Test
@@ -212,7 +213,7 @@ class LoginControllerIntegrationTest {
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.password").exists());
+                .andExpect(jsonPath("$.message", containsString("Neplatná vstupní data.")));
     }
 
     @Test
@@ -229,7 +230,7 @@ class LoginControllerIntegrationTest {
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.username").exists());
+                .andExpect(jsonPath("$.message", containsString("Neplatná vstupní data.")));
     }
 
     @Test
@@ -246,7 +247,7 @@ class LoginControllerIntegrationTest {
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.password").exists());
+                .andExpect(jsonPath("$.message" , containsString("Neplatná vstupní data.")));
     }
 
     @Test

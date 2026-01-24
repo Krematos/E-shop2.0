@@ -25,7 +25,7 @@ public class PasswordResetToken {
     @Column(nullable = false)
     private Instant expiryDate; // Datum a čas vypršení platnosti tokenu
 
-    public PasswordResetToken(String token, User user, Instant expiryDate) {
+    public PasswordResetToken(String token, User user) {
         this.token = token;
         this.user = user;
         this.expiryDate = Instant.now().plus(15, ChronoUnit.MINUTES);

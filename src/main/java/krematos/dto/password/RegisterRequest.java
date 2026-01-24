@@ -6,13 +6,13 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record RegisterRequest (
-        @NotBlank
+        @NotBlank (message = "Jméno nesmí být prázdné")
         @Size(min = 3, max = 30, message = "Jméno musí mít 3-30 znaků")
         String username,
         @NotBlank (message = "Email nesmí být prázdný")
         @Email (message = "Neplatná emailová adresa")
         @Pattern(regexp = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$", message = "Email musí obsahovat platnou koncovku (např. .com, .cz)")
         String email,
-        @NotBlank @Size(min= 8)
+        @NotBlank @Size(min= 8, max = 100, message = "Heslo musí mít 8-100 znaků")
         String password) {
 }

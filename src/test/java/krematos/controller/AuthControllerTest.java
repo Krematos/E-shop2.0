@@ -26,6 +26,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
@@ -100,7 +101,7 @@ class AuthControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(user)))
                                 .andExpect(status().isBadRequest())
-                                .andExpect(jsonPath("$.error").value("Email již existuje"));
+                                .andExpect(jsonPath("$.message").value("Email již existuje"));
         }
 
         @Test
@@ -187,9 +188,9 @@ class AuthControllerTest {
                                 .andDo(print())
                                 .andExpect(status().isBadRequest()) // 400
                                 // Ověří, že GlobalExceptionHandler vrátil mapu chyb
-                                .andExpect(jsonPath("$.username").exists())
-                                .andExpect(jsonPath("$.email").exists())
-                                .andExpect(jsonPath("$.password").exists());
+                                .andExpect(jsonPath("$.message", containsString("username=")))
+                                .andExpect(jsonPath("$.message", containsString("email=")))
+                                .andExpect(jsonPath("$.message", containsString("password=")));
 
                 // Service se nesmí zavolat, validace to stopne dřív
                 verify(userService, times(0)).registerNewUser(any(User.class));
@@ -214,6 +215,6 @@ class AuthControllerTest {
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andDo(print())
                                 .andExpect(status().isBadRequest()) // GlobalHandler mapuje IllegalArgument -> 400
-                                .andExpect(jsonPath("$.error").value("Email již existuje"));
+                                .andExpect(jsonPath("$.message").value("Email již existuje"));
         }
 }

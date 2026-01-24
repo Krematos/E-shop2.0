@@ -25,12 +25,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      */
 
     Product findByDescription(String description);
-    /**
-     * Najde produkt podle jeho ceny.
-     *
-     * @param price cena produktu
-     * @return produkt, pokud existuje
-     */
 
-    Product findByPrice(BigDecimal price);
+
 }
