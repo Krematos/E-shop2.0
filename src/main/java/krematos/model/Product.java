@@ -54,7 +54,7 @@ public class Product {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))
     @Column(name = "images_filename", length = 500)
-    @Builder.Default
+    @Size(max = 10, message = "Produkt může mít maximálně 5 obrázků")
     private List<String> images = new ArrayList<>();
 
     private boolean active = true;

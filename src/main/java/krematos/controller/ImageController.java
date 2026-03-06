@@ -7,8 +7,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +28,9 @@ import java.nio.file.Paths;
 @Tag(name = "Obrázky", description = "API pro správu a získávání obrázků produktů")
 public class ImageController {
 
+    @Value("${app.upload.dir:uploads}")
+    private String uploadDir;
+
     /**
      * 🖼️ Získání obrázku podle názvu souboru.
      *
@@ -33,7 +38,7 @@ public class ImageController {
      * @return Resource s obrázkem nebo 404 pokud obrázek neexistuje
      */
     @Operation(summary = "Získání obrázku", description = "Vrátí obrázek produktu na základě názvu souboru. " +
-            "Podporované formáty: JPEG, PNG, GIF. " +
+            "Podporované formáty: Webp, JPEG, PNG, GIF. " +
             "Obrázky jsou uloženy v adresáři 'uploads/'.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Obrázek byl úspěšně nalezen a vrácen", content = @Content(mediaType = "image/jpeg", schema = @Schema(type = "string", format = "binary"))),
@@ -44,8 +49,13 @@ public class ImageController {
     public ResponseEntity<Resource> getImage(
             @Parameter(description = "Název souboru obrázku (např. 'produkt-123.jpg')", required = true, example = "uuid_product-image.jpg") @PathVariable String filename) {
         try {
-            String uploadDir = "uploads/";
-            Path filePath = Paths.get(uploadDir).resolve(filename).normalize();
+            Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+            Path filePath = uploadPath.resolve(filename).normalize();
+
+            // Bezpečnostní pojistka proti Directory Traversal
+            if (!filePath.startsWith(uploadPath)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
             Resource resource = new UrlResource(filePath.toUri());
 
             if (resource.exists()) {

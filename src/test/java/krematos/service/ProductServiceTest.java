@@ -68,6 +68,7 @@ class ProductServiceTest {
         ReflectionTestUtils.setField(productService, "uploadDir", "test-uploads");
         Files.createDirectories(Paths.get(TEST_UPLOAD_DIR));
     }
+
     // Smaže testovací složku a její obsah po každém testu
     @AfterEach
     void tearDown() throws IOException {
@@ -118,7 +119,38 @@ class ProductServiceTest {
      * Vytvoří mock MultipartFile pro testování uploadů.
      */
     private MockMultipartFile createMockImageFile(String filename, String contentType, long size) {
-        byte[] content = new byte[(int) size];
+        byte[] content = new byte[(int) Math.max(size, 10)];
+
+        // Nasimulujeme "magic numbers" pro Apache Tika
+        if ("image/jpeg".equals(contentType)) {
+            content[0] = (byte) 0xFF;
+            content[1] = (byte) 0xD8;
+            content[2] = (byte) 0xFF;
+        } else if ("image/png".equals(contentType)) {
+            content[0] = (byte) 0x89;
+            content[1] = (byte) 0x50;
+            content[2] = (byte) 0x4E;
+            content[3] = (byte) 0x47;
+            content[4] = (byte) 0x0D;
+            content[5] = (byte) 0x0A;
+            content[6] = (byte) 0x1A;
+            content[7] = (byte) 0x0A;
+        } else if ("image/webp".equals(contentType)) {
+            content[0] = 'R';
+            content[1] = 'I';
+            content[2] = 'F';
+            content[3] = 'F';
+            content[8] = 'W';
+            content[9] = 'E';
+            content[10] = 'B';
+            content[11] = 'P';
+        } else if ("application/pdf".equals(contentType)) {
+            content[0] = '%';
+            content[1] = 'P';
+            content[2] = 'D';
+            content[3] = 'F';
+        }
+
         return new MockMultipartFile("file", filename, contentType, content);
     }
 
@@ -642,11 +674,11 @@ class ProductServiceTest {
         }
 
         @Test
-        @DisplayName("Měl by přijmout GIF obrázek")
-        void shouldAcceptGifImage() {
+        @DisplayName("Měl by přijmout WebP obrázek")
+        void shouldAcceptWebpImage() {
             // Given
-            MockMultipartFile gifFile = createMockImageFile("test.gif", "image/gif", 3072);
-            List<MultipartFile> files = List.of(gifFile);
+            MockMultipartFile webpFile = createMockImageFile("test.webp", "image/webp", 3072);
+            List<MultipartFile> files = List.of(webpFile);
 
             ProductResponse productDto = new ProductResponse(
                     null, PRODUCT_NAME, PRODUCT_DESCRIPTION, PRODUCT_PRICE,
@@ -655,6 +687,26 @@ class ProductServiceTest {
             Product product = createTestProduct();
             when(productMapper.toEntity(productDto)).thenReturn(product);
             when(productRepository.save(product)).thenReturn(product);
+
+            // When & Then
+            assertThatCode(() -> productService.createProductWithImages(productDto))
+                    .doesNotThrowAnyException();
+        }
+
+        @Test
+        @DisplayName("Měl by přijmout GIF obrázek")
+        void shouldRejectGifImage() {
+            // Given
+            MockMultipartFile gifFile = new MockMultipartFile("file", "test.gif", "image/gif",
+                    new byte[] { 'G', 'I', 'F', '8', '9', 'a', 0, 0 });
+            List<MultipartFile> files = List.of(gifFile);
+
+            ProductResponse productDto = new ProductResponse(
+                    null, PRODUCT_NAME, PRODUCT_DESCRIPTION, PRODUCT_PRICE,
+                    PRODUCT_CATEGORY, files, new ArrayList<>(), null, null);
+
+            Product product = createTestProduct();
+            when(productMapper.toEntity(productDto)).thenReturn(product);
 
             // When & Then
             assertThatCode(() -> productService.createProductWithImages(productDto))
@@ -678,7 +730,7 @@ class ProductServiceTest {
             // When & Then
             assertThatThrownBy(() -> productService.createProductWithImages(productDto))
                     .isInstanceOf(InvalidFileException.class)
-                    .hasMessageContaining("Nepovolený typ souboru: image/bmp");
+                    .hasMessageContaining("Nepovolený typ souboru");
         }
 
         @Test
@@ -770,12 +822,12 @@ class ProductServiceTest {
 
         @Test
         @DisplayName("Měl by aktualizovat produkt s více validními obrázky")
-        void shouldUpdateProductWithMultipleValidImages() {
+        void  shouldUpdateProductWithMultipleValidImages() {
             // Given
             Product existingProduct = createTestProduct();
             MockMultipartFile file1 = createMockImageFile("image1.jpg", "image/jpeg", 1024);
             MockMultipartFile file2 = createMockImageFile("image2.png", "image/png", 2048);
-            MockMultipartFile file3 = createMockImageFile("image3.gif", "image/gif", 3072);
+            MockMultipartFile file3 = createMockImageFile("image3.webp", "image/webp", 3072);
 
             ProductResponse productDto = new ProductResponse(
                     PRODUCT_ID, PRODUCT_NAME, PRODUCT_DESCRIPTION, PRODUCT_PRICE,

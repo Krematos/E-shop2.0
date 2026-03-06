@@ -47,8 +47,8 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @RestControllerAdvice
-@RestController // Označuje, že tato třída je REST kontroler
-@RequestMapping("/api/auth") // Definuje základní cestu pro všechny metody v tomto kontroleru
+@RestController
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Tag(name = "Autentizace", description = "API pro správu autentizace a autorizace uživatelů (registrace, přihlášení, JWT tokeny)")
 public class AuthController {
@@ -132,8 +132,6 @@ public class AuthController {
                                         userDetails.getAuthorities().toString(),
                                         roles
                                 ));
-
-
         }
 
         /**

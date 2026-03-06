@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
+import org.apache.tika.Tika;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -38,10 +39,12 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
 
+    private final Tika tika = new Tika();
+
     @Value("${app.upload.dir:uploads}")
     private String uploadDir;
 
-    private static final List<String> ALLOWED_IMAGE_TYPES = Arrays.asList("image/jpeg", "image/png", "image/gif");
+    private static final List<String> ALLOWED_IMAGE_TYPES = Arrays.asList("image/jpeg", "image/png", "image/gif", "image/webp");
     private static final long MAX_FILE_SIZE = (long) 5 * 1024 * 1024; // 5MB
 
     // Inicializace složky při startu aplikace
@@ -69,7 +72,9 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findById(id).map(product -> {
 
             // Uloží seznam souborů ke smazání
-            List<String> imagesToDelete = new ArrayList<>(product.getImages());
+            List<String> imagesToDelete = product.getImages() != null
+                    ? new ArrayList<>(product.getImages())
+                    : new ArrayList<>();
             productRepository.delete(product);
 
             // Smazání souborů až PO commitu transakce
@@ -102,10 +107,15 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     @CacheEvict(value = {"productsById", "allProducts"}, allEntries = true)
-    public Product createProductWithImages(ProductResponse productDto) { // IOException řešíme uvnitř
+    public Product createProductWithImages(ProductResponse productDto) { // IOException řeší uvnitř
         Product product = productMapper.toEntity(productDto);
         List<String> savedFiles = processImages(productDto.imagesFilenames());
-        product.getImages().addAll(savedFiles);
+        if (!savedFiles.isEmpty()) {
+            if (product.getImages() == null) {
+                product.setImages(new ArrayList<>());
+            }
+            product.getImages().addAll(savedFiles);
+        }
         return productRepository.save(product);
     }
 
@@ -144,11 +154,20 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private void validateFile(MultipartFile file) {
-        if (!ALLOWED_IMAGE_TYPES.contains(file.getContentType())) {
-            throw new InvalidFileException("Nepovolený typ souboru: " + file.getContentType());
-        }
         if (file.getSize() > MAX_FILE_SIZE) {
             throw new ProductImageFileIsTooBig("Soubor je příliš velký. Max 5MB.");
+        }
+
+        //  Bezpečná kontrola obsahu (Magic numbers)
+        try {
+            String detectedContentType = tika.detect(file.getInputStream());
+
+            if (!ALLOWED_IMAGE_TYPES.contains(detectedContentType)) {
+                log.warn("Pokus o nahrání nebezpečného souboru: {} (detekováno jako {})", file.getOriginalFilename(), detectedContentType);
+                throw new InvalidFileException("Nepovolený typ souboru");
+            }
+        } catch (IOException e) {
+            throw new InvalidFileException("Došlo k chybě při čtení obsahu souboru.");
         }
     }
 
@@ -168,9 +187,9 @@ public class ProductServiceImpl implements ProductService {
         );
 
         String fileName = UUID.randomUUID() + "_" + sanitizedName;
-        Path filePath = Paths.get(uploadDir).resolve(fileName);
+        Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize().resolve(fileName);
 
-        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(file.getInputStream(), uploadPath, StandardCopyOption.REPLACE_EXISTING);
 
         log.info("Soubor {} byl uložen", fileName);
         return fileName;
@@ -191,13 +210,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     public void deleteImageFile(String fileName) {
-        // 1. Validace
+        // Validace
         if (fileName == null || fileName.isBlank()) {
             log.warn("Pokus o smazání souboru s prázdným názvem - ignoruji.");
             return;
         }
 
-        // 2. Sanitizace: Odstraní mezery na začátku a na konci
+        // Sanitizace: Odstraní mezery na začátku a na konci
         String sanitizedName = fileName.trim();
 
         try {
@@ -205,7 +224,7 @@ public class ProductServiceImpl implements ProductService {
             Files.deleteIfExists(filePath);
             log.info("Soubor {} byl smazán z disku", sanitizedName);
         } catch (java.nio.file.InvalidPathException e) {
-            // 3. Záchranná síť: Pokud je jméno i po ořezání neplatné (např. obsahuje nepovolené znaky)
+            // Záchranná síť: Pokud je jméno i po ořezání neplatné (např. obsahuje nepovolené znaky)
             log.warn("Neplatný formát cesty k souboru '{}': {}", fileName, e.getMessage());
         } catch (IOException e) {
             log.error("Nepodařilo se smazat soubor {}: {}", sanitizedName, e.getMessage());

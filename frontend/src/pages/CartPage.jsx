@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { createOrder } from '../services/orderService';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useState } from 'react';
+import { getImageUrl } from '../utils/urlUtils';
 
 const CartPage = () => {
   const { cartItems, updateQuantity, removeFromCart, getTotalPrice, clearCart } = useCart();
@@ -78,9 +79,9 @@ const CartPage = () => {
             return (
               <div key={item.id} className="card flex flex-col md:flex-row gap-4">
                 <div className="w-full md:w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                  {item.image ? (
+                  {item.images?.[0] ? (
                     <img
-                      src={item.image}
+                      src={getImageUrl(item.images[0])}
                       alt={item.name}
                       className="w-full h-full object-cover rounded-lg"
                     />

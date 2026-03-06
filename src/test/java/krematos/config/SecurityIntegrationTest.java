@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.not;
 import krematos.repository.ProductRepository;
 import krematos.service.impl.UserDetailsServiceImpl;
 import krematos.model.Product;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +15,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 // Import statických metod pro čitelnější testy
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -33,6 +36,11 @@ class SecurityIntegrationTest {
 
     @MockBean
     private UserDetailsServiceImpl userDetailsService;
+
+    @BeforeEach
+    void setUP() {
+        productRepository.deleteAll();
+    }
 
     // --- 1. TESTY VEŘEJNÝCH ENDPOINTŮ (PUBLIC) ---
 
@@ -90,12 +98,13 @@ class SecurityIntegrationTest {
     }
 
     @Test
+    @Transactional
     @DisplayName("Uživatel s rolí ADMIN může mazat produkty (200 OK)")
     @WithMockUser(username = "admin", roles = { "ADMIN" })
     void shouldAllowAdminRoleAccessToAdminEndpoints() throws Exception {
         // Vytvoření testovacího produktu
         Product product = new Product();
-        product.setName("Produkt na smazání");
+        product.setName("Produkt na smazání - " + UUID.randomUUID().toString());
         product.setDescription("Popis");
         product.setPrice(BigDecimal.TEN);
         product.setCategory("Kategorie");

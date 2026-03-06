@@ -49,3 +49,8 @@ build/
 application.properties
 data.sql
 DataInitializer.java
+
+node_modules
+.idea
+
+

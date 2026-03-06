@@ -64,9 +64,9 @@ const ProductDetailPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Obrázek produktu */}
         <div className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
-          {product.image ? (
+          {product.images?.[0] ? (
             <img
-              src={getImageUrl(product.image)}
+              src={getImageUrl(product.images[0])}
               alt={product.name}
               className="w-full h-full object-cover"
             />

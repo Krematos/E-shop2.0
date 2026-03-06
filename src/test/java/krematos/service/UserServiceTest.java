@@ -8,7 +8,6 @@ import krematos.model.User;
 import krematos.model.enums.Role;
 import krematos.repository.UserRepository;
 import krematos.service.user.UserService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

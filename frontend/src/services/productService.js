@@ -1,5 +1,7 @@
 import api from './api';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+
 /**
  * Získání všech produktů
  */
@@ -22,15 +24,11 @@ export const getProductById = async (id) => {
 export const createProduct = async (productData) => {
   const formData = new FormData();
 
-  // 1. Append flat fields (backend uses @ModelAttribute)
   if (productData.name) formData.append('name', productData.name);
   if (productData.description) formData.append('description', productData.description);
   if (productData.price) formData.append('price', productData.price);
   if (productData.category) formData.append('category', productData.category);
-  // Add other fields if necessary
 
-  // 2. Append Images
-  // Backend expects 'imagesFilenames' as the key for the list of files
   if (productData.images && Array.isArray(productData.images)) {
     productData.images.forEach((imgObj) => {
       if (imgObj.file) {
@@ -39,12 +37,13 @@ export const createProduct = async (productData) => {
     });
   }
 
-  // 3. Send Request
   const response = await api.post('/products', formData, {
+    withCredentials: true,
     headers: {
-      'Content-Type': 'multipart/form-data',
-    },
+      'Content-Type': undefined, //  prohlížeč nastaví správný Content-Type s boundary pro multipart/form-data
+    }
   });
+
   return response.data;
 };
 
@@ -54,14 +53,11 @@ export const createProduct = async (productData) => {
 export const updateProduct = async (id, productData) => {
   const formData = new FormData();
 
-  // Flat fields for @ModelAttribute
   if (productData.name) formData.append('name', productData.name);
   if (productData.description) formData.append('description', productData.description);
   if (productData.price) formData.append('price', productData.price);
   if (productData.category) formData.append('category', productData.category);
-  // Add other fields if necessary
 
-  // Append Images
   if (productData.images && Array.isArray(productData.images)) {
     productData.images.forEach((imgObj) => {
       if (imgObj.file) {
@@ -70,12 +66,12 @@ export const updateProduct = async (id, productData) => {
     });
   }
 
-  const response = await api.put(`/products/${id}`, formData, {
+  const response = await api.put(`/products/${id}`, formData,{
     headers: {
-      'Content-Type': 'multipart/form-data',
-    },
+      'Content-Type': undefined //  prohlížeč nastaví správný Content-Type s boundary pro multipart/form-data
+    }
   });
-  return response.data;
+    return response.data;
 };
 
 /**
