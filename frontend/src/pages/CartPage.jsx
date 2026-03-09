@@ -72,7 +72,7 @@ const CartPage = () => {
         <div className="lg:col-span-2 space-y-4">
           {cartItems.map((item) => {
             const price = typeof item.price === 'string'
-              ? parseFloat(item.price)
+              ? Number.parseFloat(item.price)
               : item.price;
             const itemTotal = price * item.quantity;
 

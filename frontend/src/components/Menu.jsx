@@ -6,7 +6,6 @@ const Menu = () => {
       display: "flex",
       gap: "40px",
       justifyContent: "center",
-      padding: "10px",
       background: "#f4f4f4",
       border: "1px solid #ddd",
       padding: "15px",

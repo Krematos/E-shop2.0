@@ -1,7 +1,7 @@
 /**
  * Základní URL pro obrázky.
- * * 1. Zkouší načíst hodnotu z .env souboru (pro produkci/konfiguraci).
- * 2. Pokud není definována, použije fallback na localhost (pro vývoj).
+ * * Zkouší načíst hodnotu z .env souboru (pro produkci/konfiguraci).
+ * Pokud není definována, použije fallback na localhost (pro vývoj).
  */
 export const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL || 'http://localhost:8080/api/images/';
 
@@ -11,18 +11,18 @@ export const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL || 'http://loc
  * @returns {string|null} - Kompletní URL nebo null
  */
 export const getImageUrl = (filename) => {
-  // 1. Ochrana proti null/undefined/prázdným stringům
+  // Ochrana proti null/undefined/prázdným stringům
   if (!filename || typeof filename !== 'string') {
-    return null; // Nebo vraťte cestu k placeholderu: '/assets/placeholder.png'
+    return null;
   }
 
-  // 2. Podpora pro stará data (pokud už je v DB celá URL)
+  // Podpora pro stará data (pokud už je v DB celá URL)
   // Toto zabrání vytvoření nesmyslu typu "http://localhost.../http://..."
   if (filename.startsWith('http://') || filename.startsWith('https://')) {
     return filename;
   }
 
-  // 3. Sestavení finální URL
+  // Sestavení finální URL
   // Ošetření, aby nevzniklo dvojité lomítko (např. ...uploads//obrazek.jpg)
   const cleanBase = IMAGE_BASE_URL.endsWith('/')
     ? IMAGE_BASE_URL

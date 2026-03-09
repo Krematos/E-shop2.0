@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -98,7 +99,7 @@ class ImageControllerTest {
             String filename = "product-photo.jpg";
             createTestFile(filename, jpegMagicBytes());
 
-            mockMvc.perform(get("/api/images/{filename}", filename))
+            mockMvc.perform(get("/api/images/{filename}", filename).with(csrf()))
                     .andExpect(status().isOk())
                     .andExpect(content().contentTypeCompatibleWith(MediaType.IMAGE_JPEG));
         }
@@ -109,7 +110,7 @@ class ImageControllerTest {
             String filename = "product-photo.png";
             createTestFile(filename, pngMagicBytes());
 
-            mockMvc.perform(get("/api/images/{filename}", filename))
+            mockMvc.perform(get("/api/images/{filename}", filename).with(csrf()))
                     .andExpect(status().isOk())
                     .andExpect(content().contentTypeCompatibleWith(MediaType.IMAGE_PNG));
         }
@@ -120,7 +121,7 @@ class ImageControllerTest {
             String filename = "product-photo.webp";
             createTestFile(filename, webpMagicBytes());
 
-            mockMvc.perform(get("/api/images/{filename}", filename))
+            mockMvc.perform(get("/api/images/{filename}", filename).with(csrf()))
                     .andExpect(status().isOk())
                     .andExpect(content().contentTypeCompatibleWith(MediaType.parseMediaType("image/webp")));
         }
@@ -132,7 +133,7 @@ class ImageControllerTest {
             String filename = "550e8400-e29b-41d4-a716-446655440000_produkt.jpg";
             createTestFile(filename, jpegMagicBytes());
 
-            mockMvc.perform(get("/api/images/{filename}", filename))
+            mockMvc.perform(get("/api/images/{filename}", filename).with(csrf()))
                     .andExpect(status().isOk())
                     .andExpect(content().contentTypeCompatibleWith(MediaType.IMAGE_JPEG));
         }
@@ -144,7 +145,7 @@ class ImageControllerTest {
             byte[] expectedContent = jpegMagicBytes();
             createTestFile(filename, expectedContent);
 
-            mockMvc.perform(get("/api/images/{filename}", filename))
+            mockMvc.perform(get("/api/images/{filename}", filename).with(csrf()))
                     .andExpect(status().isOk())
                     .andExpect(content().bytes(expectedContent));
         }
@@ -157,7 +158,7 @@ class ImageControllerTest {
             String filename = "binary-data";
             createTestFile(filename, new byte[] { 0x00, 0x01, 0x02, 0x03 });
 
-            mockMvc.perform(get("/api/images/{filename}", filename))
+            mockMvc.perform(get("/api/images/{filename}", filename).with(csrf()))
                     .andExpect(status().isOk())
                     .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_OCTET_STREAM));
         }
@@ -174,14 +175,14 @@ class ImageControllerTest {
         @Test
         @DisplayName("Měl by vrátit 404 pro neexistující soubor")
         void shouldReturn404_WhenFileDoesNotExist() throws Exception {
-            mockMvc.perform(get("/api/images/{filename}", "neexistujici-obrazek.jpg"))
+            mockMvc.perform(get("/api/images/{filename}", "neexistujici-obrazek.jpg").with(csrf()))
                     .andExpect(status().isNotFound());
         }
 
         @Test
         @DisplayName("Měl by vrátit 404 pro soubor s UUID prefixem, který neexistuje")
         void shouldReturn404_ForNonexistentUuidPrefixedFile() throws Exception {
-            mockMvc.perform(get("/api/images/{filename}", "00000000-0000-0000-0000-000000000000_phantom.jpg"))
+            mockMvc.perform(get("/api/images/{filename}", "00000000-0000-0000-0000-000000000000_phantom.jpg").with(csrf()))
                     .andExpect(status().isNotFound());
         }
     }
@@ -198,17 +199,16 @@ class ImageControllerTest {
         @DisplayName("Měl by vrátit 403 při URL-enkódovaném pokusu o Directory Traversal (../)")
         void shouldReturn403_ForUrlEncodedDirectoryTraversal() throws Exception {
             // %2E%2E%2F => ../ – cesta mimo uploads/ → controller vrátí 403
-            mockMvc.perform(get("/api/images/%2E%2E%2Fetc%2Fpasswd"))
+            mockMvc.perform(get("/api/images/%2E%2E%2Fetc%2Fpasswd").with(csrf()))
                     .andExpect(status().isForbidden());
         }
 
         @Test
         @DisplayName("Měl by vrátit 404 při double-encoded traversal sekvenci (normalize() cestu srovná)")
         void shouldReturn404_ForDoubleEncodedTraversal() throws Exception {
-            // %252E%252E%252F = double-encoded "../"
             // Spring dekóduje pouze jednou → literální řetězec "%2E%2E%2Fsecret.txt"
             // normalize() ho srovná jako platné jméno souboru → soubor nenalezen → 404
-            mockMvc.perform(get("/api/images/%252E%252E%252Fsecret.txt"))
+            mockMvc.perform(get("/api/images/%252E%252E%252Fsecret.txt").with(csrf()))
                     .andExpect(status().isNotFound());
         }
     }

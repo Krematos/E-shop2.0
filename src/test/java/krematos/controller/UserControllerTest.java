@@ -28,6 +28,7 @@ import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -113,7 +114,7 @@ class UserControllerTest {
         when(userMapper.toDto(adminUser)).thenReturn(adminUserResponse);
 
         // When & Then
-        mockMvc.perform(get("/api/user"))
+        mockMvc.perform(get("/api/user").with(csrf()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
@@ -182,7 +183,7 @@ class UserControllerTest {
         when(userService.findUserByUsername("nonexistent")).thenReturn(Optional.empty());
 
         // When & Then
-        mockMvc.perform(get("/api/user/me"))
+        mockMvc.perform(get("/api/user/me").with(csrf()))
                 .andDo(print())
                 .andExpect(status().isNotFound());
 
@@ -277,7 +278,7 @@ class UserControllerTest {
         when(userMapper.toDto(updatedUser)).thenReturn(updatedResponse);
 
         // When & Then
-        mockMvc.perform(put("/api/user/{userId}", 1L)
+        mockMvc.perform(put("/api/user/{userId}", 1L).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateRequest)))
                 .andDo(print())
@@ -306,7 +307,7 @@ class UserControllerTest {
         when(userMapper.toDto(testUser)).thenReturn(testUserResponse);
 
         // When & Then
-        mockMvc.perform(put("/api/user/{userId}", 1L)
+        mockMvc.perform(put("/api/user/{userId}", 1L).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateRequest)))
                 .andDo(print())
@@ -332,7 +333,7 @@ class UserControllerTest {
         when(userService.findUserById(999L)).thenReturn(Optional.empty());
 
         // When & Then
-        mockMvc.perform(put("/api/user/{userId}", 999L)
+        mockMvc.perform(put("/api/user/{userId}", 999L).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateRequest)))
                 .andDo(print())
@@ -360,7 +361,7 @@ class UserControllerTest {
                 .thenThrow(new IllegalArgumentException("Email již existuje"));
 
         // When & Then
-        mockMvc.perform(put("/api/user/{userId}", 1L)
+        mockMvc.perform(put("/api/user/{userId}", 1L).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateRequest)))
                 .andDo(print())
@@ -386,7 +387,7 @@ class UserControllerTest {
         when(userService.findUserById(1L)).thenReturn(Optional.of(testUser));
 
         // When & Then
-        mockMvc.perform(put("/api/user/{userId}", 1L)
+        mockMvc.perform(put("/api/user/{userId}", 1L).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andDo(print())
@@ -406,7 +407,7 @@ class UserControllerTest {
         doNothing().when(userService).deleteUserById(1L);
 
         // When & Then
-        mockMvc.perform(delete("/api/user/{userId}", 1L))
+        mockMvc.perform(delete("/api/user/{userId}", 1L).with(csrf()))
                 .andDo(print())
                 .andExpect(status().isNoContent());
 
@@ -425,7 +426,7 @@ class UserControllerTest {
         when(userService.findUserById(999L)).thenReturn(Optional.empty());
 
         // When & Then
-        mockMvc.perform(delete("/api/user/{userId}", 999L))
+        mockMvc.perform(delete("/api/user/{userId}", 999L).with(csrf()))
                 .andDo(print())
                 .andExpect(status().isNotFound());
 

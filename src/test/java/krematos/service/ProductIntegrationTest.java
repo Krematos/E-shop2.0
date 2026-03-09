@@ -19,6 +19,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -118,7 +119,7 @@ class ProductIntegrationTest {
     void createProduct_Success() throws Exception {
 
         // Act: Vytvoření produktu přes API
-        mockMvc.perform(post("/api/products")
+        mockMvc.perform(post("/api/products").with(csrf())
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param("name", "New Product")
                 .param("description", "New Description")
@@ -176,7 +177,7 @@ class ProductIntegrationTest {
         Product savedProduct = productRepository.save(product);
 
         // Act: Aktualizace produktu přes API
-        mockMvc.perform(put("/api/products/{id}", savedProduct.getId())
+        mockMvc.perform(put("/api/products/{id}", savedProduct.getId()).with(csrf())
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param("name", "Updated Product")
                 .param("description", "Updated Description")
@@ -203,7 +204,7 @@ class ProductIntegrationTest {
     @DisplayName("PUT /api/products/{id} - Aktualizace neexistujícího produktu (404)")
     void updateProduct_NotFound() throws Exception {
         // Act & Assert: Pokus o aktualizaci neexistujícího produktu
-        mockMvc.perform(put("/api/products/{id}", 999L)
+        mockMvc.perform(put("/api/products/{id}", 999L).with(csrf())
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param("name", "Updated Product")
                 .param("description", "Updated Description")
@@ -240,7 +241,7 @@ class ProductIntegrationTest {
         Product savedProduct = productRepository.save(product);
 
         // Act: Smazání produktu přes API
-        mockMvc.perform(delete("/api/products/{id}", savedProduct.getId()))
+        mockMvc.perform(delete("/api/products/{id}", savedProduct.getId()).with(csrf()))
                 .andExpect(status().isNoContent());
 
         // Assert: Ověření, že produkt byl odstraněn z databáze
@@ -253,7 +254,7 @@ class ProductIntegrationTest {
     @DisplayName("DELETE /api/products/{id} - Smazání neexistujícího produktu (404)")
     void deleteProduct_NotFound() throws Exception {
         // Act & Assert: Pokus o smazání neexistujícího produktu
-        mockMvc.perform(delete("/api/products/{id}", 999L))
+        mockMvc.perform(delete("/api/products/{id}", 999L).with(csrf()))
                 .andExpect(status().isNotFound());
     }
 
@@ -278,7 +279,7 @@ class ProductIntegrationTest {
         Product savedProduct = productRepository.save(product);
 
         // Act & Assert: Pokus o smazání s rolí USER
-        mockMvc.perform(delete("/api/products/{id}", savedProduct.getId()))
+        mockMvc.perform(delete("/api/products/{id}", savedProduct.getId()).with(csrf()))
                 .andExpect(status().isForbidden());
     }
 

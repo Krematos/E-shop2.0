@@ -25,7 +25,7 @@ const ProductCard = ({ product }) => {
   };
 
   const rawPrice = typeof product.price === 'string'
-    ? parseFloat(product.price)
+    ? Number.parseFloat(product.price)
     : product.price;
 
   const formattedPrice = new Intl.NumberFormat('cs-CZ', {

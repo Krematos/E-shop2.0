@@ -79,7 +79,7 @@ const ProfilePage = () => {
                 <tbody>
                   {orders.map((order) => {
                     const price = typeof order.Price === 'string' 
-                      ? parseFloat(order.Price) 
+                      ? Number.parseFloat(order.Price)
                       : order.Price || order.totalPrice || 0;
                     const totalPrice = price * (order.quantity || 1);
 

@@ -7,7 +7,7 @@ const AdminAddProductForm = ({ initialData, onProductSaved, onCancel }) => {
 
   // -- STATE --
   const [formData, setFormData] = useState({
-    name: '',         // V DB se to jmenuje 'name'
+    name: '',
     description: '',
     category: '',
     price: '',

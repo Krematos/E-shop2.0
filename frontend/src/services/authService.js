@@ -16,12 +16,14 @@ export const register = async (userData) => {
  * Přihlášení uživatele
  */
 export const login = async (username, password) => {
+  await api.get('/auth/csrf'); // Získání CSRF tokenu před přihlášením
+
   const response = await api.post('/auth/login', {
     username,
     password,
   });
 
-  // Token je nyní v HttpOnly cookie, ukládáme pouze user data
+  // Token je nyní v HttpOnly cookie, ukládá pouze user data
   if (response.data.username) {
     localStorage.setItem('user', JSON.stringify({
       username: response.data.username,
@@ -36,8 +38,6 @@ export const login = async (username, password) => {
  * Odhlášení uživatele
  */
 export const logout = () => {
-  // Token je v HttpOnly cookie a bude smazán backendem
-  // Mažeme pouze user data z localStorage
   localStorage.removeItem('user');
 };
 
@@ -49,7 +49,8 @@ export const validateToken = async () => {
     const response = await api.get('/auth/validate');
     return response.data;
   } catch (error) {
-    return { valid: false };
+    console.error('Error validating token:', error);
+    throw error;
   }
 };
 
@@ -57,8 +58,7 @@ export const validateToken = async () => {
     * Získání role uživatele
     */
 export const getUserRole = async () => {
-  // Token je v HttpOnly cookie, není potřeba ho manuálně přidávat
-  try {
+try {
     const response = await api.get('/auth/role');
     return response.data.role;
   } catch (error) {

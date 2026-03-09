@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -70,7 +71,7 @@ class PasswordResetControllerTest {
         doNothing().when(passwordResetService).initiatePasswordReset(anyString());
 
         // When & Then
-        mockMvc.perform(post("/api/auth/forgot-password")
+        mockMvc.perform(post("/api/auth/forgot-password").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(validForgotPasswordRequest)))
                 .andDo(print())
@@ -87,7 +88,7 @@ class PasswordResetControllerTest {
         ForgotPasswordRequest invalidRequest = new ForgotPasswordRequest("invalid-email");
 
         // When & Then
-        mockMvc.perform(post("/api/auth/forgot-password")
+        mockMvc.perform(post("/api/auth/forgot-password").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andDo(print())
@@ -103,7 +104,7 @@ class PasswordResetControllerTest {
         ForgotPasswordRequest emptyEmailRequest = new ForgotPasswordRequest("");
 
         // When & Then
-        mockMvc.perform(post("/api/auth/forgot-password")
+        mockMvc.perform(post("/api/auth/forgot-password").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(emptyEmailRequest)))
                 .andDo(print())
@@ -119,7 +120,7 @@ class PasswordResetControllerTest {
         ForgotPasswordRequest invalidRequest = new ForgotPasswordRequest("userexample.com");
 
         // When & Then
-        mockMvc.perform(post("/api/auth/forgot-password")
+        mockMvc.perform(post("/api/auth/forgot-password").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andDo(print())
@@ -132,7 +133,7 @@ class PasswordResetControllerTest {
     @DisplayName("POST /api/auth/forgot-password - Request bez body vrátí 400 Bad Request")
     void forgotPassword_NoRequestBody_ReturnsBadRequest() throws Exception {
         // When & Then
-        mockMvc.perform(post("/api/auth/forgot-password")
+        mockMvc.perform(post("/api/auth/forgot-password").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -149,7 +150,7 @@ class PasswordResetControllerTest {
         doNothing().when(passwordResetService).resetPassword(anyString(), anyString());
 
         // When & Then
-        mockMvc.perform(post("/api/auth/reset-password")
+        mockMvc.perform(post("/api/auth/reset-password").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(validResetPasswordRequest)))
                 .andDo(print())
@@ -167,7 +168,7 @@ class PasswordResetControllerTest {
                 .when(passwordResetService).resetPassword(anyString(), anyString());
 
         // When & Then
-        mockMvc.perform(post("/api/auth/reset-password")
+        mockMvc.perform(post("/api/auth/reset-password").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(validResetPasswordRequest)))
                 .andDo(print())
@@ -185,7 +186,7 @@ class PasswordResetControllerTest {
                 .when(passwordResetService).resetPassword(anyString(), anyString());
 
         // When & Then
-        mockMvc.perform(post("/api/auth/reset-password")
+        mockMvc.perform(post("/api/auth/reset-password").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(validResetPasswordRequest)))
                 .andDo(print())
@@ -203,7 +204,7 @@ class PasswordResetControllerTest {
         ResetPasswordRequest shortPasswordRequest = new ResetPasswordRequest("valid-token", "short");
 
         // When & Then
-        mockMvc.perform(post("/api/auth/reset-password")
+        mockMvc.perform(post("/api/auth/reset-password").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(shortPasswordRequest)))
                 .andDo(print())
@@ -219,7 +220,7 @@ class PasswordResetControllerTest {
         ResetPasswordRequest emptyPasswordRequest = new ResetPasswordRequest("valid-token", "");
 
         // When & Then
-        mockMvc.perform(post("/api/auth/reset-password")
+        mockMvc.perform(post("/api/auth/reset-password").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(emptyPasswordRequest)))
                 .andDo(print())
@@ -235,7 +236,7 @@ class PasswordResetControllerTest {
         ResetPasswordRequest emptyTokenRequest = new ResetPasswordRequest("", "validPassword123");
 
         // When & Then
-        mockMvc.perform(post("/api/auth/reset-password")
+        mockMvc.perform(post("/api/auth/reset-password").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(emptyTokenRequest)))
                 .andDo(print())
@@ -248,7 +249,7 @@ class PasswordResetControllerTest {
     @DisplayName("POST /api/auth/reset-password - Request bez body vrátí 400 Bad Request")
     void resetPassword_NoRequestBody_ReturnsBadRequest() throws Exception {
         // When & Then
-        mockMvc.perform(post("/api/auth/reset-password")
+        mockMvc.perform(post("/api/auth/reset-password").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -263,7 +264,7 @@ class PasswordResetControllerTest {
         String nullValuesJson = "{\"token\": null, \"newPassword\": null}";
 
         // When & Then
-        mockMvc.perform(post("/api/auth/reset-password")
+        mockMvc.perform(post("/api/auth/reset-password").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(nullValuesJson))
                 .andDo(print())

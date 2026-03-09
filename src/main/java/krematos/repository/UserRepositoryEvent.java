@@ -10,5 +10,5 @@ import java.util.List;
 public interface UserRepositoryEvent extends MongoRepository<UserEvent, String> {
     List<UserEvent> findByUserId(Long userId);
 
-    List<UserEvent> findByProductIDAndEventType(Long productId, String eventType);
+    List<UserEvent> findByProductIdAndEventType(Long productId, String eventType);
 }

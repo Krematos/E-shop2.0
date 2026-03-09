@@ -33,7 +33,7 @@ const AdminPage = () => {
     setLoading(true);
     try {
       const productsData = await getProducts(page, 6);
-      if (productsData && productsData.content) {
+      if ( productsData?.content) {
         setProducts(productsData.content);
         setProductTotalPages(productsData.totalPages);
       } else {
@@ -43,7 +43,7 @@ const AdminPage = () => {
       // Fetch orders only if the tab is active or initially
       if (activeTab === 'orders') {
         const ordersData = await getAllOrders();
-        if (ordersData && ordersData.content) {
+        if (ordersData?.content) {
           setOrders(ordersData.content);
         } else {
           setOrders([]);
@@ -64,7 +64,7 @@ const AdminPage = () => {
       const productData = {
         name: formData.name,
         description: formData.description,
-        price: parseFloat(formData.price),
+        price: Number.parseFloat(formData.price),
       };
         console.log('Odesílaná data produktu:', productData);
       if (editingProduct) {
@@ -94,7 +94,7 @@ const AdminPage = () => {
   };
 
   const handleDeleteProduct = async (id) => {
-    if (!window.confirm('Opravdu chcete smazat tento produkt?')) {
+    if (!globalThis.confirm('Opravdu chcete smazat tento produkt?')) {
       return;
     }
 
@@ -189,7 +189,7 @@ const AdminPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {products.map((product) => {
                 const price = typeof product.price === 'string'
-                  ? parseFloat(product.price)
+                  ? Number.parseFloat(product.price)
                   : product.price;
 
                 return (
@@ -263,7 +263,7 @@ const AdminPage = () => {
                   <tbody>
                     {orders.map((order) => {
                       const price = typeof order.Price === 'string'
-                        ? parseFloat(order.Price)
+                        ? Number.parseFloat(order.Price)
                         : order.Price || order.totalPrice || 0;
                       const totalPrice = price * (order.quantity || 1);
 

@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -47,14 +48,14 @@ class SecurityIntegrationTest {
     @Test
     @DisplayName("Veřejný endpoint /api/products by měl být dostupný bez přihlášení (200 OK)")
     void shouldAllowAccessToPublicEndpoint() throws Exception {
-        mockMvc.perform(get("/api/products"))
+        mockMvc.perform(get("/api/products").with(csrf())) // Přidá CSRF token, pokud je potřeba
                 .andExpect(status().isOk());
     }
 
     @Test
     @DisplayName("Swagger API Docs by měl být veřejně přístupný (Security check)")
     void shouldAllowAccessToSwagger() throws Exception {
-        mockMvc.perform(get("/api-docs"))
+        mockMvc.perform(get("/api-docs").with(csrf())) // Přidá CSRF token, pokud je potřeba
                 .andExpect(status().is(not(401)))
                 .andExpect(status().is(not(403)));
     }
@@ -62,7 +63,7 @@ class SecurityIntegrationTest {
     @Test
     @DisplayName("Login endpoint by měl být dostupný (i když tělo requestu chybí/je špatné, nesmí vrátit 401/403)")
     void shouldAllowAccessToAuthEndpoints() throws Exception {
-        mockMvc.perform(post("/api/auth/login")
+        mockMvc.perform(post("/api/auth/login").with(csrf()) // Přidá CSRF token, pokud je potřeba
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}")) // Posílá prázdné tělo
                 .andExpect(status().is4xxClientError()) // Čeká 400 Bad Request (validace), ale NE 401/403
@@ -74,7 +75,7 @@ class SecurityIntegrationTest {
     @Test
     @DisplayName("Nepřihlášený uživatel nesmí mazat produkty (401/403)")
     void shouldDenyAnonymousAccessToAdminEndpoints() throws Exception {
-        mockMvc.perform(delete("/api/products/admin/123"))
+        mockMvc.perform(delete("/api/products/admin/123").with(csrf())) // Přidá CSRF token, pokud je potřeba
                 .andExpect(status().is(404)); // Očekává 401, protože uživatel není přihlášen
     }
 
@@ -82,9 +83,10 @@ class SecurityIntegrationTest {
     @DisplayName("Nepřihlášený uživatel nesmí přistupovat na obecné chráněné endpointy")
     void shouldDenyAnonymousAccessToProtectedResource() throws Exception {
         // Testuje .anyRequest().authenticated()
-        mockMvc.perform(get("/api/users/me"))
+        mockMvc.perform(get("/api/users/me").with(csrf())) // Přidá CSRF token, pokud je potřeba
                 .andExpect(status().is(401));
     }
+
 
     // --- 3. TESTY ROLÍ (RBAC - Role Based Access Control) ---
 
@@ -93,7 +95,7 @@ class SecurityIntegrationTest {
     @WithMockUser(username = "user", roles = { "USER" })
     // Spring Security automaticky přidá prefix "ROLE_", takže hledá "ROLE_USER"
     void shouldDenyUserRoleAccessToAdminEndpoints() throws Exception {
-        mockMvc.perform(delete("/api/products/admin/123"))
+        mockMvc.perform(delete("/api/products/admin/123").with(csrf())) // Přidá CSRF token, pokud je potřeba
                 .andExpect(status().is(404));
     }
 
@@ -115,7 +117,7 @@ class SecurityIntegrationTest {
         Long productId = savedProduct.getId();
 
         // Smazání produktu přes API
-        mockMvc.perform(delete("/api/products/" + productId))
+        mockMvc.perform(delete("/api/products/" + productId).with(csrf())) // Přidá CSRF token, pokud je potřeba
                 .andExpect(status().isNoContent());
     }
 
@@ -124,7 +126,7 @@ class SecurityIntegrationTest {
     @Test
     @DisplayName("CORS: OPTIONS request z povoleného originu by měl projít")
     void shouldAllowCorsForAllowedOrigin() throws Exception {
-        mockMvc.perform(options("/api/products")
+        mockMvc.perform(options("/api/products").with(csrf()) // Přidá CSRF token, pokud je potřeba
                 .header("Access-Control-Request-Method", "GET")
                 .header("Origin", "http://localhost:5173"))
                 .andExpect(status().isOk())
@@ -134,7 +136,7 @@ class SecurityIntegrationTest {
     @Test
     @DisplayName("CORS: OPTIONS request ze zakázaného originu by měl být zamítnut")
     void shouldDenyCorsForUnknownOrigin() throws Exception {
-        mockMvc.perform(options("/api/products")
+        mockMvc.perform(options("/api/products").with(csrf()) // Přidá CSRF token, pokud je potřeba
                 .header("Access-Control-Request-Method", "GET")
                 .header("Origin", "http://evil-hacker.com"))
                 .andExpect(status().isForbidden());
