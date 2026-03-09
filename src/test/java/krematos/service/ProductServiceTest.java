@@ -376,6 +376,43 @@ class ProductServiceTest {
         }
 
         @Test
+        @DisplayName("Měl by vytvořit produkt s obrázkem a fyzicky ho uložit na disk (důkaz složky /uploads)")
+        void shouldCreateProduct_WithImageAndSaveToDisk() {
+            // Given
+            MockMultipartFile validFile = createMockImageFile("test.jpg", "image/jpeg", 1024);
+            List<MultipartFile> files = List.of(validFile);
+
+            ProductResponse productDto = new ProductResponse(
+                    null, PRODUCT_NAME, PRODUCT_DESCRIPTION, PRODUCT_PRICE,
+                    PRODUCT_CATEGORY, files, new ArrayList<>(), null, null);
+
+            Product product = createTestProduct();
+            when(productMapper.toEntity(productDto)).thenReturn(product);
+            when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+            // When
+            Product result = productService.createProductWithImages(productDto);
+
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result.getImages()).hasSize(1);
+
+            // Získání uloženého jména souboru, které si služba vygeneruje (UUID_test.jpg)
+            String savedFilename = result.getImages().get(0);
+            Path savedFilePath = Paths.get(TEST_UPLOAD_DIR).resolve(savedFilename);
+
+            // ASSERT: Zde je fyzický test, že soubor byl opravdu uložen ve filesystému
+            // (/uploads nebo test-uploads), a ne v DB!
+            assertThat(Files.exists(savedFilePath))
+                    .withFailMessage(
+                            "DŮKAZ: Soubor by měl fyzicky existovat na disku v nastavené složce, nikoliv v DB!")
+                    .isTrue();
+
+            verify(productMapper, times(1)).toEntity(productDto);
+            verify(productRepository, times(1)).save(any(Product.class));
+        }
+
+        @Test
         @DisplayName("Měl by vyhodit InvalidFileException pro nepovolený typ souboru")
         void shouldThrowInvalidFileException_ForInvalidFileType() {
             // Given
@@ -822,7 +859,7 @@ class ProductServiceTest {
 
         @Test
         @DisplayName("Měl by aktualizovat produkt s více validními obrázky")
-        void  shouldUpdateProductWithMultipleValidImages() {
+        void shouldUpdateProductWithMultipleValidImages() {
             // Given
             Product existingProduct = createTestProduct();
             MockMultipartFile file1 = createMockImageFile("image1.jpg", "image/jpeg", 1024);

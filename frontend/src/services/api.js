@@ -7,6 +7,8 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
   withCredentials: true, // Důležité pro posílání cookies
+  xsrfCookieName: 'XSRF-TOKEN', // Název cookie obsahující CSRF token (default Spring Security)
+  xsrfHeaderName: 'X-XSRF-TOKEN', // Hlavička, do které se má CSRF vložit (default Spring Security)
 });
 
 // Interceptor pro zpracování chyb
