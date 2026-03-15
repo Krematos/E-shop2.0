@@ -45,7 +45,7 @@ public class ImageController {
             @ApiResponse(responseCode = "404", description = "Obrázek nebyl nalezen", content = @Content),
             @ApiResponse(responseCode = "500", description = "Interní chyba serveru při načítání obrázku", content = @Content)
     })
-    @GetMapping("/{filename}")
+    @GetMapping("/{filename:.+}")
     public ResponseEntity<Resource> getImage(
             @Parameter(description = "Název souboru obrázku (např. 'produkt-123.jpg')", required = true, example = "uuid_product-image.jpg") @PathVariable String filename) {
         try {

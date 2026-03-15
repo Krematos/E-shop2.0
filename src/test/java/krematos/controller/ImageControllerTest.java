@@ -12,9 +12,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -25,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = ImageController.class)
 @AutoConfigureMockMvc(addFilters = false) // Vypne bezpečnostní filtry, aby testy nebyly závislé na autentizaci
 @TestPropertySource(properties = "app.upload.dir=${java.io.tmpdir}/image-controller-test")
+@TestPropertySource(properties = "app.upload.dir=test-uploads/")
 @DisplayName("ImageController – testy GET /api/images/{filename}")
 class ImageControllerTest {
 
@@ -49,6 +53,11 @@ class ImageControllerTest {
     /** Sdílený dočasný adresář – shoduje se s app.upload.dir nastaveným výše. */
     @TempDir
     static Path uploadDir;
+
+    @DynamicPropertySource
+    static void overrideUploadDir(DynamicPropertyRegistry registry) {
+        registry.add("app.upload.dir", () -> uploadDir.toString());
+    }
 
     // -----------------------------------------------------------------------
     // Helper metody
@@ -199,7 +208,8 @@ class ImageControllerTest {
         @DisplayName("Měl by vrátit 403 při URL-enkódovaném pokusu o Directory Traversal (../)")
         void shouldReturn403_ForUrlEncodedDirectoryTraversal() throws Exception {
             // %2E%2E%2F => ../ – cesta mimo uploads/ → controller vrátí 403
-            mockMvc.perform(get("/api/images/%2E%2E%2Fetc%2Fpasswd").with(csrf()))
+            URI uri = URI.create("/api/images/%2E%2E%2Fetc%2Fpasswd");
+            mockMvc.perform(get(uri))
                     .andExpect(status().isForbidden());
         }
 

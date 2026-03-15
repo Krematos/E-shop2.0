@@ -29,6 +29,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -53,6 +54,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false) // Vypnutí security filtrů pro unit testy
 @DisplayName("ProductController Tests")
 @Import(SecurityConfig.class)
+@ActiveProfiles("test") // Použije application-test.properties pro testy
 class ProductControllerTest {
 
         @Autowired
@@ -179,12 +181,12 @@ class ProductControllerTest {
 
                         // When & Then
                         mockMvc.perform(get(API_PRODUCTS_PATH)
-                                        .contentType(MediaType.APPLICATION_JSON))
+                                        .contentType("application/hal+json"))
                                         .andExpect(status().isOk())
-                                        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                                        .andExpect(jsonPath("$.content", hasSize(1)))
-                                        .andExpect(jsonPath("$.content[0].id").value(VALID_PRODUCT_ID))
-                                        .andExpect(jsonPath("$.content[0].name").value(PRODUCT_NAME));
+                                        .andExpect(content().contentType("application/hal+json"))
+                                        .andExpect(jsonPath("$._embedded.productResponseList", hasSize(1)))
+                                        .andExpect(jsonPath("$._embedded.productResponseList[0].id").value(VALID_PRODUCT_ID))
+                                        .andExpect(jsonPath("$._embedded.productResponseList[0].name").value(PRODUCT_NAME));
 
                         verify(productService, times(1)).findAllProducts(any(Pageable.class));
                         verify(productMapper, times(1)).toDto(product);
@@ -201,8 +203,9 @@ class ProductControllerTest {
                         mockMvc.perform(get(API_PRODUCTS_PATH)
                                         .contentType(MediaType.APPLICATION_JSON))
                                         .andExpect(status().isOk())
-                                        .andExpect(jsonPath("$.content", hasSize(0)))
-                                        .andExpect(jsonPath("$.totalElements").value(0));
+                                        .andExpect(jsonPath("$._embedded").doesNotExist())
+                                        .andExpect(jsonPath("$.page.totalElements").value(0))
+                                        .andExpect(jsonPath("$.page.number").value(0));
 
                         verify(productService, times(1)).findAllProducts(any(Pageable.class));
                         verify(productMapper, never()).toDto(any());
@@ -230,10 +233,10 @@ class ProductControllerTest {
                                         .param("size", String.valueOf(size))
                                         .contentType(MediaType.APPLICATION_JSON))
                                         .andExpect(status().isOk())
-                                        .andExpect(jsonPath("$.content", hasSize(1)))
-                                        .andExpect(jsonPath("$.number").value(page))
-                                        .andExpect(jsonPath("$.size").value(size))
-                                        .andExpect(jsonPath("$.totalElements").value(10));
+                                        .andExpect(jsonPath("$._embedded.productResponseList", hasSize(1)))
+                                        .andExpect(jsonPath("$.page.number").value(page))
+                                        .andExpect(jsonPath("$.page.size").value(size))
+                                        .andExpect(jsonPath("$.page.totalElements").value(10));
 
                         verify(productService, times(1)).findAllProducts(any(Pageable.class));
                 }
@@ -258,10 +261,10 @@ class ProductControllerTest {
                         mockMvc.perform(get(API_PRODUCTS_PATH)
                                         .contentType(MediaType.APPLICATION_JSON))
                                         .andExpect(status().isOk())
-                                        .andExpect(jsonPath("$.content", hasSize(3)))
-                                        .andExpect(jsonPath("$.content[0].id").value(1L))
-                                        .andExpect(jsonPath("$.content[1].id").value(2L))
-                                        .andExpect(jsonPath("$.content[2].id").value(3L));
+                                        .andExpect(jsonPath("$._embedded.productResponseList", hasSize(3)))
+                                        .andExpect(jsonPath("$._embedded.productResponseList[0].id").value(1L))
+                                        .andExpect(jsonPath("$._embedded.productResponseList[1].id").value(2L))
+                                        .andExpect(jsonPath("$._embedded.productResponseList[2].id").value(3L));
 
                         verify(productService, times(1)).findAllProducts(any(Pageable.class));
                         verify(productMapper, times(3)).toDto(any(Product.class));

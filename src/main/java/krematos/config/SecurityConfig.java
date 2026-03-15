@@ -67,6 +67,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, PUT, DELETE, "/api/products/admin/**").hasRole("ADMIN")// Vytváření, úprava a mazání produktů pouze pro ADMin
                         .requestMatchers("/api/auth/forgot-password", "/api/auth/reset-password").permitAll() // Povolit přístup k resetu hesla
                         .requestMatchers("/error/**").permitAll() // Povolit přístup k chybovým stránkám
+                        .requestMatchers("GET", "/api/analytics/**").hasRole("ADMIN") // Přístup k analytice pouze pro ADMIN
+                        .requestMatchers("POST", "/api/analytics/**").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(e -> e
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))

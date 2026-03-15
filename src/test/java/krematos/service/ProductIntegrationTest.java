@@ -11,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test") // Použije application-test.properties s H2 databází
 @Transactional // Rollback změn v databázi po každém testu
 class ProductIntegrationTest {
 
@@ -94,11 +96,11 @@ class ProductIntegrationTest {
                 .param("page", "0")
                 .param("size", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(3)))
-                .andExpect(jsonPath("$.content[0].name").value("Product 1"))
-                .andExpect(jsonPath("$.content[1].name").value("Product 2"))
-                .andExpect(jsonPath("$.content[2].name").value("Product 3"))
-                .andExpect(jsonPath("$.totalElements").value(3));
+                .andExpect(jsonPath("$._embedded.productResponseList", hasSize(3)))
+                .andExpect(jsonPath("$._embedded.productResponseList[0].name").value("Product 1"))
+                .andExpect(jsonPath("$._embedded.productResponseList[1].name").value("Product 2"))
+                .andExpect(jsonPath("$._embedded.productResponseList[2].name").value("Product 3"))
+                .andExpect(jsonPath("$.page.totalElements").value(3));
     }
 
     @Test
@@ -107,8 +109,8 @@ class ProductIntegrationTest {
         // Act & Assert: Žádné produkty v databázi
         mockMvc.perform(get("/api/products"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(0)))
-                .andExpect(jsonPath("$.totalElements").value(0));
+                .andExpect(jsonPath("$._embedded.productResponseList").doesNotExist())
+                .andExpect(jsonPath("$.page.totalElements").value(0));
     }
 
     // --- 3. TESTY PRO VYTVOŘENÍ PRODUKTU ---

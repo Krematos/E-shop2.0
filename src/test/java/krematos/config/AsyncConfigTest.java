@@ -3,6 +3,7 @@ package krematos.config;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -15,7 +16,6 @@ import java.util.concurrent.Executor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-// 1. Nastartuje jen lehký kontext s AsyncConfig a naší pomocnou konfigurací
 @SpringJUnitConfig({AsyncConfig.class, AsyncConfigTest.TestServiceConfig.class})
 class AsyncConfigTest {
 
@@ -33,7 +33,7 @@ class AsyncConfigTest {
 
         ThreadPoolTaskExecutor executor = (ThreadPoolTaskExecutor) taskExecutor;
 
-        // Ověří parametry, které jsi nastavil v configu
+        // Ověří parametry z AsyncConfig
         assertEquals(4, executor.getCorePoolSize());
         assertEquals(8, executor.getMaxPoolSize());
         assertEquals(25, executor.getQueueCapacity());
@@ -51,11 +51,10 @@ class AsyncConfigTest {
         String asyncThreadName = future.get();
         System.out.println("Main thread: " + mainThreadName);
         System.out.println("Async thread: " + asyncThreadName);
-        // OVĚŘENÍ:
-        // 1. Vlákna musí být rozdílná
-        assertThat(asyncThreadName).isNotEqualTo(mainThreadName);
-        // 2. Vlákno musí začínat prefixem("AsyncExecutor-")
-        assertThat(asyncThreadName).startsWith("AsyncExecutor-");
+
+        // Vlákna musí být rozdílná
+        assertThat(asyncThreadName).isNotEqualTo(mainThreadName).startsWith("AsyncExecutor-");
+
     }
 
     // --- Pomocná třída a konfigurace pro testování funkčnosti ---
@@ -67,7 +66,7 @@ class AsyncConfigTest {
         }
     }
 
-    @org.springframework.boot.test.context.TestConfiguration
+    @TestConfiguration
     static class TestServiceConfig {
         @Bean
         public DummyAsyncService dummyAsyncService() {

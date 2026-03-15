@@ -14,6 +14,7 @@ import krematos.dto.product.ProductResponse;
 import krematos.mapper.ProductMapper;
 import krematos.model.Product;
 import krematos.service.ProductService;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -162,11 +163,12 @@ public class ProductController {
             @ApiResponse(responseCode = "200", description = "Seznam produktů byl úspěšně vrácen", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class)))
     })
     @GetMapping
-    public Page<ProductResponse> getAllProducts(
+    public PagedModel<ProductResponse> getAllProducts(
             @Parameter(description = "Parametry paginace a řazení (page, size, sort)", example = "page=0&size=10&sort=name,asc") Pageable pageable) {
         log.info("GET /api/products - Získání seznamu všech produktů s paginací: {}", pageable);
-        return productService.findAllProducts(pageable)
-                .map(productMapper::toDto);
+        Page<Product> page = productService.findAllProducts(pageable);
+        return PagedModel.of(page.map(productMapper::toDto).getContent(),
+                new PagedModel.PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages()));
     }
 
 }

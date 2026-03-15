@@ -57,7 +57,7 @@ class LoginControllerIntegrationTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    private User testUser;
+    private User Usertest;
     private static final String TEST_USERNAME = "testuser";
     private static final String TEST_PASSWORD = "password123";
     private static final String TEST_EMAIL = "test@example.com";
@@ -73,7 +73,7 @@ class LoginControllerIntegrationTest {
         userRepository.deleteAll();
 
         // Vytvořit testovacího uživatele
-        testUser = User.builder()
+        Usertest = User.builder()
                 .username(TEST_USERNAME)
                 .email(TEST_EMAIL)
                 .password(passwordEncoder.encode(TEST_PASSWORD))
@@ -81,7 +81,7 @@ class LoginControllerIntegrationTest {
                 .build();
 
 
-        userRepository.save(testUser);
+        userRepository.save(Usertest);
     }
 
     /**
