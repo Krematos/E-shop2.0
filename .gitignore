@@ -47,6 +47,7 @@ build/
 .DS_Store
 
 application.properties
+application-test.properties
 data.sql
 DataInitializer.java
 
