@@ -1,9 +1,22 @@
 import api from './api';
 
 /**
+ * Získání CSRF tokenu z nového endpointu /api/csrf/token.
+ * Backend vrátí: { token, headerName, parameterName }
+ * Token se uloží do axios defaults jako záloha (axios ho čte i z cookie automaticky).
+ */
+const ensureCsrfToken = async () => {
+  const response = await api.get('/csrf/token');
+  if (response.data?.token) {
+    api.defaults.headers.common['X-XSRF-TOKEN'] = response.data.token;
+  }
+};
+
+/**
  * Registrace nového uživatele
  */
 export const register = async (userData) => {
+  await ensureCsrfToken(); // Získání CSRF tokenu před registrací
   const response = await api.post('/auth/register', {
     username: userData.username,
     email: userData.email,
@@ -16,7 +29,7 @@ export const register = async (userData) => {
  * Přihlášení uživatele
  */
 export const login = async (username, password) => {
-  await api.get('/auth/csrf'); // Získání CSRF tokenu před přihlášením
+  await ensureCsrfToken(); // Získání CSRF tokenu před přihlášením
 
   const response = await api.post('/auth/login', {
     username,
@@ -68,6 +81,7 @@ try {
 };
 
 export const requestPasswordReset = async (email) => {
+  await ensureCsrfToken(); // Získání CSRF tokenu před odesláním požadavku
   const response = await api.post('/auth/forgot-password', { email });
   return response.data;
 };

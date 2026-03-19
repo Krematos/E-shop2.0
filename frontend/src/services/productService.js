@@ -1,6 +1,17 @@
 import api from './api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+/**
+ * Získání a nastavení CSRF tokenu z endpointu /api/csrf/token.
+ * Musí se volat před každou mutací (POST, PUT, DELETE),
+ * protože u multipart/form-data axios se nepročte token z cookie automaticky.
+ */
+const ensureCsrfToken = async () => {
+  const response = await api.get('/csrf/token');
+  if (response.data?.token) {
+    api.defaults.headers.common['X-XSRF-TOKEN'] = response.data.token;
+  }
+};
+
 
 /**
  * Získání všech produktů
@@ -22,6 +33,8 @@ export const getProductById = async (id) => {
  * Vytvoření nového produktu (pouze ADMIN)
  */
 export const createProduct = async (productData) => {
+  await ensureCsrfToken(); // Musíme mít CSRF token před multipart POST
+
   const formData = new FormData();
 
   if (productData.name) formData.append('name', productData.name);
@@ -38,10 +51,10 @@ export const createProduct = async (productData) => {
   }
 
   const response = await api.post('/products', formData, {
-    withCredentials: true,
     headers: {
-      'Content-Type': undefined, //  prohlížeč nastaví správný Content-Type s boundary pro multipart/form-data
-    }
+      // Nechá browser nastavit Content-Type s boundary pro multipart/form-data automaticky
+      'Content-Type': undefined,
+    },
   });
 
   return response.data;
@@ -51,6 +64,8 @@ export const createProduct = async (productData) => {
  * Aktualizace produktu (pouze ADMIN)
  */
 export const updateProduct = async (id, productData) => {
+  await ensureCsrfToken(); // Musíme mít CSRF token před multipart PUT
+
   const formData = new FormData();
 
   if (productData.name) formData.append('name', productData.name);
@@ -66,18 +81,21 @@ export const updateProduct = async (id, productData) => {
     });
   }
 
-  const response = await api.put(`/products/${id}`, formData,{
+  const response = await api.put(`/products/${id}`, formData, {
     headers: {
-      'Content-Type': undefined //  prohlížeč nastaví správný Content-Type s boundary pro multipart/form-data
-    }
+      // Nechá browser nastavit Content-Type s boundary pro multipart/form-data automaticky
+      'Content-Type': undefined,
+    },
   });
-    return response.data;
+
+  return response.data;
 };
 
 /**
  * Smazání produktu (pouze ADMIN)
  */
 export const deleteProduct = async (id) => {
+  await ensureCsrfToken(); // Musíme mít CSRF token před DELETE
   const response = await api.delete(`/products/${id}`);
   return response.data;
 };

@@ -89,7 +89,7 @@ const ProductDetailPage = () => {
 
           {/* Výběr množství */}
           <div className="mb-6">
-            <label className="block text-sm font-semibold mb-2">Množství></label>
+            <label className="block text-sm font-semibold mb-2">Množství</label>
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}

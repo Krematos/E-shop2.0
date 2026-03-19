@@ -3,6 +3,7 @@ package krematos.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import krematos.dto.user.UserResponse;
 import krematos.dto.user.UserUpdateResponse;
 import krematos.model.User;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
+@Tag(name = "Uživatelé", description = "API pro správu uživatelů (zobrazení, aktualizace, mazání uživatelů)")
 public class UserController {
 
     private final UserService userService;

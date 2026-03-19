@@ -33,6 +33,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;
@@ -60,8 +61,7 @@ public class AuthController {
         private String frontendUrl;
 
         /**
-         * ✅ Registrace nového uživatele
-         * 
+         * Registrace nového uživatele
          * @param request
          * @return
          */
@@ -84,8 +84,7 @@ public class AuthController {
         }
 
         /**
-         * 🔑 Přihlášení uživatele a získání JWT tokenu
-         *
+         * Přihlášení uživatele a získání JWT tokenu
          * @param loginRequest Přihlašovací údaje (username a heslo)
          * @return JWT token a informace o uživateli
          */
@@ -107,14 +106,14 @@ public class AuthController {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-                // 2. Generování JWT tokenu
+                // Generování JWT tokenu
                 String jwt = jwtService.generateAccessToken(userDetails.getUsername());
 
                 Set<String> roles = userDetails.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.toSet());
 
-                // 3. Vytvoření Cookie ✅
+                // Vytvoření Cookie pro uložení JWT tokenu
                 ResponseCookie cookie = ResponseCookie.from("accessToken", jwt)
                                 .httpOnly(true) // Frontend JS ho neuvidí (bezpečnost)
                                 .secure(false) // Na localhostu FALSE, na https://mojeapp.com TRUE
@@ -123,7 +122,7 @@ public class AuthController {
                                 .sameSite("Lax") // Pro localhost Lax, pro prod Strict
                                 .build();
 
-                // 4. Odeslání odpovědi
+                // Odeslání odpovědi
                 return ResponseEntity.ok()
                                 .header(HttpHeaders.SET_COOKIE, cookie.toString()) // Nastavení cookie v hlavičce odpovědi
                                 .body(new UserInfoResponse(
@@ -150,8 +149,12 @@ public class AuthController {
         })
         @GetMapping("/validate")
         public ResponseEntity<TokenValidationResponse> validateToken(
-                        @Parameter(description = "JWT token k validaci (bez 'Bearer ' prefixu)", required = true, example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...") @RequestHeader String token) {
+                        @Parameter(description = "JWT token k validaci - čte se z HttpOnly cookie 'accessToken'", required = false)
+                        @CookieValue(name = "accessToken", required = false) String token) {
                 log.info("GET /api/auth/validate - Pokus o validaci tokenu");
+                if (token == null || token.isBlank()) {
+                        return ResponseEntity.ok(new TokenValidationResponse(false, null, null));
+                }
                 try {
                         // musí vytáhnout username z tokenu, aby mohl zavolat validateToken
                         String username = jwtService.extractUsername(token);

@@ -18,16 +18,22 @@ const HomePage = () => {
 
         console.log('Načtené produkty:', data);
 
-        if (Array.isArray(data)) {
-          setProducts(data);
-          setFeaturedProducts(data.slice(0, 6));
-        } else if (data.content && Array.isArray(data.content)) {
-          // Jedná se o stránkovaný objekt (Page)
-          setProducts(data.content);
-          setFeaturedProducts(data.content.slice(0, 6));
+        // Spring Data REST vrací PagedModel: { _embedded: { products: [...] }, page: {...} }
+        // Spring Page vrací: { content: [...], totalPages: ... }
+        const productsList =
+          data?._embedded?.productResponseList ??
+          data?._embedded?.productList ??
+          data?._embedded?.products ??
+          data?.content ??
+          (Array.isArray(data) ? data : []);
+
+        if (Array.isArray(productsList)) {
+          setProducts(productsList);
+          setFeaturedProducts(productsList.slice(0, 6));
         } else {
           console.error('Neočekávaný formát dat:', data);
           setProducts([]);
+          setFeaturedProducts([]);
         }
       } catch (error) {
         console.error('Chyba při načítání produktů:', error);
@@ -42,7 +48,7 @@ const HomePage = () => {
   }, []);
 
   const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    product?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {

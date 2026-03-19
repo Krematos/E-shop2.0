@@ -1,5 +1,6 @@
 package krematos.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import krematos.dto.EventRequest;
 import krematos.dto.TrendingProductDTO;
 import krematos.service.AnalyticsService;
@@ -15,6 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @RestController
 @RequestMapping("/api/analytics")
+@Tag(name = "Analytika", description = "API pro logování událostí a získávání analytických dat (zobrazení, nákupy, trendy produkty)")
 public class AnalyticsController {
 
     private final AnalyticsService analyticsService;

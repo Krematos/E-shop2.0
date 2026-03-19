@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import api from './services/api';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Header from './components/Header';
@@ -16,26 +18,34 @@ import About from './pages/About';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 
 function App() {
+  useEffect(() => {
+    // Hned po spuštění načteme CSRF token z nového endpointu /api/csrf/token.
+    // Backend vrátí objekt { token, headerName, parameterName }.
+    // Axios si token automaticky přečte z cookie XSRF-TOKEN a přidá ho do headeru.
+    api.get('/csrf/token')
+      .then(() => console.log('CSRF token úspěšně načten'))
+      .catch(err => console.error('Chyba při získávání CSRF:', err));
+  }, []);
   return (
     <AuthProvider>
       <CartProvider>
         <Router>
           <div className="flex flex-col min-h-screen">
-          <Header />
+            <Header />
             <main className="flex-grow">
-            <Routes>
+              <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/products" element={<ProductListPage />} />
                 <Route path="/products/:id" element={<ProductDetailPage />} />
                 <Route path="/cart" element={<CartPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/admin" element={<AdminPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/about" element={<About />} />
-            </Routes>
-          </main>
+              </Routes>
+            </main>
             <Footer />
           </div>
         </Router>

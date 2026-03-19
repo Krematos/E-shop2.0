@@ -7,7 +7,7 @@ import { getImageUrl } from '../utils/urlUtils';
 
 const ProductCard = ({ product }) => {
 
-  console.log("Data produktu:", product.name, product.images);
+  console.log("Data produktu:", product?.name, product?.images);
 
   const { addToCart } = useCart();
   const [imgError, setImgError] = useState(false);
