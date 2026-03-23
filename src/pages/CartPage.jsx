@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { createOrder } from '../services/orderService';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useState } from 'react';
+import { getImageUrl } from '../utils/urlUtils';
 
 const CartPage = () => {
   const { cartItems, updateQuantity, removeFromCart, getTotalPrice, clearCart } = useCart();
@@ -24,18 +25,15 @@ const CartPage = () => {
 
     setLoading(true);
     try {
-      // Vytvoření objednávky pro každý produkt v košíku
-      for (const item of cartItems) {
-        const price = typeof item.price === 'string' 
-          ? parseFloat(item.price) 
-          : item.price;
-        
-        await createOrder({
-          productName: item.name,
-          quantity: item.quantity,
-          Price: price,
-        });
-      }
+      // Příprava dat pro backend (CreateOrderRequest)
+      const orderItems = cartItems.map(item => ({
+        productId: item.id,
+        quantity: item.quantity
+      }));
+
+      await createOrder({
+        orderItems: orderItems
+      });
 
       clearCart();
       alert('Objednávka byla úspěšně vytvořena!');
@@ -73,17 +71,17 @@ const CartPage = () => {
         {/* Seznam produktů */}
         <div className="lg:col-span-2 space-y-4">
           {cartItems.map((item) => {
-            const price = typeof item.price === 'string' 
-              ? parseFloat(item.price) 
+            const price = typeof item.price === 'string'
+              ? Number.parseFloat(item.price)
               : item.price;
             const itemTotal = price * item.quantity;
 
             return (
               <div key={item.id} className="card flex flex-col md:flex-row gap-4">
                 <div className="w-full md:w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                  {item.image ? (
+                  {item.images?.[0] ? (
                     <img
-                      src={item.image}
+                      src={getImageUrl(item.images[0])}
                       alt={item.name}
                       className="w-full h-full object-cover rounded-lg"
                     />

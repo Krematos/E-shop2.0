@@ -18,10 +18,19 @@ const ProductListPage = () => {
       setLoading(true);
       try {
         const data = await getProducts(page);
-        setProducts(data.content);
-        setTotalPages(data.totalPages);
+        // Spring Data REST vrací PagedModel: { _embedded: { products: [...] }, page: { totalPages, totalElements, ... } }
+        // Spring Page vrací: { content: [...], totalPages: ... }
+        const productsList =
+          data?._embedded?.productResponses ??
+          data?._embedded?.productList ??
+          data?._embedded?.products ??
+          data?.content ??
+          [];
+        setProducts(Array.isArray(productsList) ? productsList : []);
+        setTotalPages(data?.page?.totalPages ?? data?.totalPages ?? 0);
       } catch (error) {
         console.error('Chyba při načítání produktů:', error);
+        setProducts([]);
       } finally {
         setLoading(false);
       }
@@ -31,8 +40,9 @@ const ProductListPage = () => {
   }, [page]);
 
   const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ??
+      product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ??
+      false;
     const matchesCategory = !category || product.category === category;
     return matchesSearch && matchesCategory;
   });

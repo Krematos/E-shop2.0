@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { createProduct, updateProduct } from "../services/productService"; // Ujisti se o cestě
+import { getImageUrl } from "../utils/urlUtils";
 
 const AdminAddProductForm = ({ initialData, onProductSaved, onCancel }) => {
   const isEditing = !!initialData;
 
   // -- STATE --
   const [formData, setFormData] = useState({
-    name: '',         // V DB se to jmenuje 'name'
+    name: '',
     description: '',
     category: '',
     price: '',
@@ -25,16 +26,15 @@ const AdminAddProductForm = ({ initialData, onProductSaved, onCancel }) => {
         description: initialData.description || '',
         category: initialData.category || '',
         price: initialData.price || '',
-        currency: 'Kč', // Default, nebo načíst z DB pokud tam je
+        currency: 'Kč',
       });
 
-      // Načtení existujících obrázků (předpokládáme, že z backendu chodí pole stringů 'imageUrls')
-      if (initialData.imageUrls && Array.isArray(initialData.imageUrls)) {
-        const existingImages = initialData.imageUrls.map((url, index) => ({
-          file: null,        // Nemáme soubor, jen URL
-          preview: url,      // URL pro zobrazení
+      if (initialData.images && Array.isArray(initialData.images)) {
+        const existingImages = initialData.images.map((filename, index) => ({
+          file: null,
+          preview: getImageUrl(filename),
           id: `existing-${index}`,
-          isExisting: true   // Příznak, že už je na serveru
+          isExisting: true
         }));
         setImages(existingImages);
       }

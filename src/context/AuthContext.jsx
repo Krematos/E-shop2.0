@@ -17,14 +17,14 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Načtení uživatele z localStorage při startu
-    const token = localStorage.getItem('token');
+    // Token je v HttpOnly cookie, není přístupný přes JavaScript
     const userStr = localStorage.getItem('user');
-    
-    if (token && userStr) {
+
+    if (userStr) {
       try {
         const userData = JSON.parse(userStr);
         setUser(userData);
-        // Ověření tokenu
+        // Ověření tokenu (token je v cookie)
         validateToken().then((result) => {
           if (!result.valid) {
             logout();
@@ -65,7 +65,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const isAuthenticated = () => {
-    return !!user && !!localStorage.getItem('token');
+    // Ověření autentizace na základě přítomnosti user dat
+    // Token je v HttpOnly cookie a není přístupný přes JavaScript
+    return !!user;
   };
 
   const value = {

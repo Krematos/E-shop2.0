@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getProductById } from '../services/productService';
 import { useCart } from '../context/CartContext';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { getImageUrl } from '../utils/urlUtils';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -47,8 +48,8 @@ const ProductDetailPage = () => {
     );
   }
 
-  const price = typeof product.price === 'string' 
-    ? parseFloat(product.price) 
+  const price = typeof product.price === 'string'
+    ? Number.parseFloat(product.price)
     : product.price;
 
   return (
@@ -63,9 +64,9 @@ const ProductDetailPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Obrázek produktu */}
         <div className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
-          {product.image ? (
+          {product.images?.[0] ? (
             <img
-              src={product.image}
+              src={getImageUrl(product.images[0])}
               alt={product.name}
               className="w-full h-full object-cover"
             />

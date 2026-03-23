@@ -78,7 +78,7 @@ frontend/
 
 ### Přihlášení (`/login`)
 - Připojení k `/api/auth/login`
-- Uložení JWT tokenu do localStorage
+- JWT token je nastaven jako **HttpOnly cookie** (bezpečnější než localStorage)
 - Automatické přesměrování po přihlášení
 
 ### Registrace (`/register`)
@@ -87,7 +87,7 @@ frontend/
 - Přesměrování na přihlášení po úspěšné registraci
 
 ### Profil uživatele (`/profile`)
-- Informace o uživateli z localStorage
+- Informace o uživateli z localStorage (JWT token je v HttpOnly cookie)
 - Historie objednávek z `/api/orders` (objednávky přihlášeného uživatele)
 - Chráněná stránka (vyžaduje přihlášení)
 
@@ -144,11 +144,17 @@ frontend/
 
 ## 🔐 Autentizace a JWT
 
-Aplikace automaticky:
-- Přidává JWT token do hlavičky `Authorization: Bearer <token>` u všech API požadavků
-- Ukládá token do `localStorage` po přihlášení
-- Odstraňuje token při odhlášení
+Aplikace používá **HttpOnly cookies** pro JWT tokeny (bezpečnější než localStorage):
+- JWT token je nastaven jako **HttpOnly cookie** backendem při přihlášení
+- Token je automaticky přidán do všech API požadavků (prostřednictvím `withCredentials: true`)
+- Cookie je smazána backendem při odhlášení
 - Přesměrovává na `/login` při 401 chybě (neplatný/vypršený token)
+- Uživatelská data (username, role) jsou uložena v localStorage pro rychlý přístup
+
+**Výhody HttpOnly cookies:**
+- 🔒 Ochrana proti XSS útokům - token není přístupný přes JavaScript
+- 🔒 Ochrana proti CSRF - SameSite atribut
+- 🔒 Automatické posílání s každým požadavkem
 
 ## 🛒 Správa košíku
 
@@ -210,7 +216,8 @@ Aplikace používá Tailwind CSS s vlastními utility třídami:
 
 **Token se neukládá:**
 - Zkontrolujte konzoli prohlížeče pro chyby
-- Ověřte, zda backend vrací token v odpovědi na `/api/auth/login`
+- Ověřte, že backend nastavuje HttpOnly cookie v odpovědi na `/api/auth/login`
+- Zkontrolujte, zda je CORS nakonfigurován s `allowCredentials: true`
 
 ## 📄 Licence
 

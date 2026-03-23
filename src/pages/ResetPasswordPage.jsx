@@ -17,33 +17,7 @@ const ResetPasswordPage = () => {
       return;
     }
 
-    // In a real application, you would extract a token from the URL
-    // and send it along with the new password to your backend API.
-    // Example: const token = new URLSearchParams(window.location.search).get('token');
-    // if (!token) {
-    //   setError('Password reset token is missing.');
-    //   return;
-    // }
-
     try {
-      // Replace with your actual API call
-      // const response = await fetch('/api/reset-password', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({ token, newPassword: password }),
-      // });
-
-      // const data = await response.json();
-
-      // if (response.ok) {
-      //   setMessage(data.message || 'Your password has been reset successfully!');
-      //   setPassword('');
-      //   setConfirmPassword('');
-      // } else {
-      //   setError(data.message || 'Failed to reset password. Please try again.');
-      // }
 
       // Mock success for demonstration
       setMessage('Your password has been reset successfully!');

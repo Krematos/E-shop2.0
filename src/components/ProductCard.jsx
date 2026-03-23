@@ -1,48 +1,90 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 
+
+import { getImageUrl } from '../utils/urlUtils';
+
 const ProductCard = ({ product }) => {
+
+  console.log("Data produktu:", product?.name, product?.images);
+
   const { addToCart } = useCart();
+  const [imgError, setImgError] = useState(false);
+
+  // Získání názvu hlavního obrázku
+  const mainImageFilename = product.images?.[0];
+
+  // Sestavení URL obrázku
+  const imageUrl = getImageUrl(mainImageFilename);
 
   const handleAddToCart = (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Zabrání prokliku na detail produktu při kliknutí na tlačítko
+    e.stopPropagation(); // Zastaví šíření události
     addToCart(product, 1);
   };
 
-  const price = typeof product.price === 'string' 
-    ? parseFloat(product.price) 
+  const rawPrice = typeof product.price === 'string'
+    ? Number.parseFloat(product.price)
     : product.price;
 
+  const formattedPrice = new Intl.NumberFormat('cs-CZ', {
+    style: 'currency',
+    currency: 'CZK',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(rawPrice || 0);
+
+
+
   return (
-    <div className="card hover:shadow-lg transition-shadow duration-200">
-      <Link to={`/products/${product.id}`}>
-        <div className="aspect-square bg-gray-200 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-          {product.image ? (
+    <div className="card group hover:shadow-xl transition-all duration-300 border border-gray-100 rounded-xl bg-white flex flex-col h-full">
+      <Link to={`/products/${product.id}`} className="flex-1 flex flex-col">
+        {/* Kontejner obrázku */}
+        <div className="aspect-square bg-gray-50 rounded-t-xl overflow-hidden relative">
+          {!imgError && mainImageFilename ? (
             <img
-              src={product.image}
+              src={imageUrl}
               alt={product.name}
-              className="w-full h-full object-cover"
+              loading="lazy" // Optimalizace výkonu
+              onError={() => setImgError(true)} // Pokud server vrátí 404, přepne na fallback
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
-            <div className="text-gray-400 text-4xl">📦</div>
+            // Fallback ikona, pokud obrázek chybí nebo se nenačetl
+            <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-300">
+              <span className="text-5xl">📦</span>
+            </div>
           )}
         </div>
-        <h3 className="text-xl font-semibold mb-2 line-clamp-2">{product.name}</h3>
-        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-          {product.description}
-        </p>
-        <div className="flex items-center justify-between">
-          <span className="text-2xl font-bold text-primary-600">
-            {price?.toFixed(2) || '0.00'} Kč
-          </span>
+
+        {/* Obsah karty */}
+        <div className="p-4 flex flex-col flex-1">
+          <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-2 leading-tight group-hover:text-primary-600 transition-colors">
+            {product.name}
+          </h3>
+
+          <p className="text-gray-500 text-sm mb-4 line-clamp-3 flex-1">
+            {product.description || "Bez popisu"}
+          </p>
+
+          <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
+            <span className="text-xl font-bold text-primary-600">
+              {formattedPrice}
+            </span>
+          </div>
         </div>
       </Link>
-      <button
-        onClick={handleAddToCart}
-        className="btn-primary w-full mt-4"
-      >
-        Přidat do košíku
-      </button>
+
+      {/* Tlačítko je oddělené, ale vizuálně v kartě */}
+      <div className="p-4 pt-0">
+        <button
+          onClick={handleAddToCart}
+          className="btn-primary w-full py-2.5 rounded-lg font-medium shadow-sm hover:shadow-md active:scale-95 transition-all"
+        >
+          Přidat do košíku
+        </button>
+      </div>
     </div>
   );
 };

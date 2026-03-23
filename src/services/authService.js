@@ -16,87 +16,50 @@ export const register = async (userData) => {
  * Přihlášení uživatele
  */
 export const login = async (username, password) => {
-  const response = await api.post('/auth/login', {
-    username,
-    password,
-  });
-  
-  if (response.data.token) {
-    localStorage.setItem('token', response.data.token);
-    localStorage.setItem('user', JSON.stringify({
-      username: response.data.username,
-      roles: response.data.roles,
-    }));
+  const response = await api.post('/auth/login', { username, password });
+
+  // JWT je v HttpOnly cookie, ukládáme jen zobrazitelná user data
+  if (response.data.username) {
+    localStorage.setItem(
+      'user',
+      JSON.stringify({
+        username: response.data.username,
+        roles: response.data.roles,
+      })
+    );
   }
-  
+
   return response.data;
 };
 
 /**
- * Odhlášení uživatele
+ * Odhlášení uživatele – čistí lokální stav.
+ * Backend session (HttpOnly cookie) se invaliduje přes /auth/logout.
  */
 export const logout = () => {
-  localStorage.removeItem('token');
   localStorage.removeItem('user');
 };
 
 /**
- * Ověření tokenu
+ * Ověření platnosti tokenu (JWT cookie)
  */
 export const validateToken = async () => {
-  try {
-    const response = await api.get('/auth/validate');
-    return response.data;
-  } catch (error) {
-    return { valid: false };
-  }
+  const response = await api.get('/auth/validate');
+  return response.data;
 };
 
 /**
-    * Získání role uživatele
-    */
+ * Získání role přihlášeného uživatele
+ */
 export const getUserRole = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        throw new Error('No token found');
-    }
-    try {
-        const response = await api.get('/auth/role', {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        return response.data.role;
-    } catch (error) {
-        console.error('Error fetching user role:', error);
-        throw error;
-    }
+  const response = await api.get('/auth/role');
+  return response.data.role;
 };
 
+/**
+ * Odeslání žádosti o reset hesla
+ */
 export const requestPasswordReset = async (email) => {
-    const response = await api.post('/auth/forgot-password', {
-    method: 'POST' ,
-    headers: {
-    'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ email }),
-      });
-
-      if (!response.ok) {
-        // Můžeš zkusit přečíst chybovou zprávu ze serveru
-        const errorText = await response.text();
-        throw new Error(errorText || 'Chyba při žádosti o obnovu hesla');
-      }
-
-
-    return true;
+  const response = await api.post('/auth/forgot-password', { email });
+  return response.data;
 };
-
-export default {
-    register,
-    login,
-    logout,
-    validateToken,
-    getUserRole,
-};
-

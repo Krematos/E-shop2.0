@@ -15,12 +15,12 @@ const ForgotPasswordPage = () => {
     setMessage(null);
 
     try {
-      // Zavoláme API
+      // Zavolá API
       await requestPasswordReset(email);
 
       // Úspěch
       setMessage('Pokud je tento e-mail registrován, byl na něj odeslán odkaz pro obnovu hesla.');
-      setEmail(''); // Vyčistíme pole
+      setEmail(''); // Vyčistí pole
     } catch (err) {
       // Chyba (např. server neodpovídá)
       setError('Chyba při odesílání požadavku. Zkuste to prosím později.');

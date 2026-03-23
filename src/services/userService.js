@@ -1,21 +1,12 @@
 import api from './api';
 
 /**
- * Získání informací o přihlášeném uživateli
+ * Získání informací o přihlášeném uživateli.
+ * Chyby (vč. 401) se propagují – 401 zachytí interceptor v api.js a přesměruje na /login.
  */
 export const getCurrentUser = async () => {
-  try {
-    const response = await api.get('/user/me');
-    return response.data;
-  } catch (error) {
-    console.error('Chyba při načítání uživatele:', error);
-    // Fallback na localStorage pokud API selže
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      return JSON.parse(userStr);
-    }
-    return null;
-  }
+  const response = await api.get('/user/me');
+  return response.data;
 };
 
 /**
@@ -34,3 +25,10 @@ export const updateUser = async (userId, userData) => {
   return response.data;
 };
 
+/**
+ * Smazání vlastního účtu přihlášeného uživatele
+ */
+export const deleteAccount = async () => {
+  const response = await api.delete('/user/me');
+  return response.data;
+};

@@ -7,7 +7,7 @@ const About = () => {
     const [loopNum, setLoopNum] = useState(0);
     const [typingSpeed, setTypingSpeed] = useState(150);
 
-    const words = ['Vývojář', 'Houževnatý', 'Nadšenec do AI', 'Týmový hráč', 'Věčný student'];
+    const words = ['Vývojář', 'Nadšenec do AI', 'Týmový hráč', 'Věčný student'];
 
     useEffect(() => {
         const handleType = () => {
@@ -23,10 +23,10 @@ const About = () => {
             setTypingSpeed(isDeleting ? 100 : 150);
 
             if (!isDeleting && text === fullText) {
-                // Slovo je dopsáno, čekáme chvíli, pak začneme mazat
+                // Slovo je dopsáno, čeká chvíli, pak začne mazat
                 setTimeout(() => setIsDeleting(true), 2000);
             } else if (isDeleting && text === '') {
-                // Slovo je smazáno, jdeme na další
+                // Slovo je smazáno, jde na další
                 setIsDeleting(false);
                 setLoopNum(loopNum + 1);
             }
