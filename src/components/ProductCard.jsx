@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../context/useCart';
+import { Package } from 'lucide-react';
 
-
-import { getImageUrl } from '../utils/urlUtils';
+import { getImageUrl, getResponsiveSrcSet, defaultImageSizes } from '../utils/urlUtils';
 
 const ProductCard = ({ product }) => {
 
@@ -12,8 +12,11 @@ const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
   const [imgError, setImgError] = useState(false);
 
-  // Získání názvu hlavního obrázku
-  const mainImageFilename = product.images?.[0];
+  const mainImageFilename = product?.mainImage || product?.mainImageUrl || product?.images?.find?.(img => img?.main || img?.isMain)?.url || product?.images?.[0]?.url || product?.images?.[0];
+
+  // Aktuální stav skladu
+  const currentStock = product?.availableStock === undefined ? product?.stockQuantity : product.availableStock;
+  const isOutOfStock = currentStock === undefined || currentStock <= 0;
 
   // Sestavení URL obrázku
   const imageUrl = getImageUrl(mainImageFilename);
@@ -41,10 +44,14 @@ const ProductCard = ({ product }) => {
     <div className="card group hover:shadow-xl transition-all duration-300 border border-gray-100 rounded-xl bg-white flex flex-col h-full">
       <Link to={`/products/${product.id}`} className="flex-1 flex flex-col">
         {/* Kontejner obrázku */}
-        <div className="aspect-square bg-gray-50 rounded-t-xl overflow-hidden relative">
+        <div className="aspect-[4/3] bg-gray-50 rounded-t-xl overflow-hidden relative">
           {!imgError && mainImageFilename ? (
             <img
               src={imageUrl}
+              srcSet={getResponsiveSrcSet(mainImageFilename)}
+              sizes={defaultImageSizes}
+              width="440"
+              height="330"
               alt={product.name}
               loading="lazy" // Optimalizace výkonu
               onError={() => setImgError(true)} // Pokud server vrátí 404, přepne na fallback
@@ -52,8 +59,8 @@ const ProductCard = ({ product }) => {
             />
           ) : (
             // Fallback ikona, pokud obrázek chybí nebo se nenačetl
-            <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-300">
-              <span className="text-5xl">📦</span>
+            <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
+              <Package size={48} className="stroke-1" />
             </div>
           )}
         </div>
@@ -80,9 +87,14 @@ const ProductCard = ({ product }) => {
       <div className="p-4 pt-0">
         <button
           onClick={handleAddToCart}
-          className="btn-primary w-full py-2.5 rounded-lg font-medium shadow-sm hover:shadow-md active:scale-95 transition-all"
+          disabled={isOutOfStock}
+          className={`w-full py-2.5 rounded-lg font-medium shadow-sm transition-all ${
+            isOutOfStock
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
+              : 'btn-primary hover:shadow-md active:scale-95'
+          }`}
         >
-          Přidat do košíku
+          {isOutOfStock ? 'Vyprodáno' : 'Přidat do košíku'}
         </button>
       </div>
     </div>

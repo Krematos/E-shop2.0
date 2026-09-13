@@ -10,6 +10,14 @@ export const getCurrentUser = async () => {
 };
 
 /**
+ * Získání adres přihlášeného uživatele.
+ */
+export const getUserAddresses = async () => {
+  const response = await api.get('/user/me/address');
+  return response.data;
+};
+
+/**
  * Získání uživatele podle ID
  */
 export const getUserById = async (userId) => {
@@ -22,6 +30,14 @@ export const getUserById = async (userId) => {
  */
 export const updateUser = async (userId, userData) => {
   const response = await api.put(`/user/${userId}`, userData);
+  return response.data;
+};
+
+/**
+ * Přidání nové adresy
+ */
+export const addUserAddress = async (addressData) => {
+  const response = await api.post('/user/me/address', addressData);
   return response.data;
 };
 

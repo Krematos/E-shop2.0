@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 const Footer = () => {
   return (
     <footer className="bg-gray-800 text-white mt-auto">
@@ -8,6 +10,11 @@ const Footer = () => {
             <p className="text-gray-400">
               Váš spolehlivý e-shop s širokým výběrem produktů.
             </p>
+            <div className="mt-3">
+              <Link to="/about" className="text-sm text-blue-400 hover:text-blue-300 transition-colors">
+                Více informací &rarr;
+              </Link>
+            </div>
           </div>
           <div>
             <h3 className="text-lg font-semibold mb-4">Kontakt</h3>
@@ -18,20 +25,20 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">Odkazy</h3>
             <ul className="space-y-2 text-gray-400">
               <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <Link to="/terms" className="hover:text-white transition-colors">
                   Obchodní podmínky
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <Link to="/privacy" className="hover:text-white transition-colors">
                   Ochrana osobních údajů
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
         </div>
         <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-          <p>&copy; 2024 E-Shop. Všechna práva vyhrazena.</p>
+          <p>&copy; {new Date().getFullYear()} E-Shop. Všechna práva vyhrazena.</p>
         </div>
       </div>
     </footer>
@@ -39,4 +46,3 @@ const Footer = () => {
 };
 
 export default Footer;
-

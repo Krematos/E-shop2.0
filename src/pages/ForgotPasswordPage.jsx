@@ -21,10 +21,13 @@ const ForgotPasswordPage = () => {
       // Úspěch
       setMessage('Pokud je tento e-mail registrován, byl na něj odeslán odkaz pro obnovu hesla.');
       setEmail(''); // Vyčistí pole
-    } catch (err) {
-      // Chyba (např. server neodpovídá)
-      setError('Chyba při odesílání požadavku. Zkuste to prosím později.');
-      console.error(err);
+    } catch (error) {
+      console.error('Chyba při odesílání požadavku na reset hesla:', error);
+      if (!error.response) {
+        setError('Nepodařilo se připojit k serveru. Zkontrolujte připojení k internetu.');
+      } else {
+        setError(error.response.data?.message || error.response.data?.error || 'Při odesílání požadavku došlo k chybě. Zkuste to prosím později.');
+      }
     } finally {
       setIsSubmitting(false);
     }

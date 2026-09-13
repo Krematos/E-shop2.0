@@ -4,6 +4,9 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api',
   headers: {
     'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
   },
   withCredentials: true,
   xsrfCookieName: 'XSRF-TOKEN',
@@ -21,7 +24,9 @@ const fetchAndSetCsrfToken = async () => {
   const response = await api.get('/csrf/token');
   if (response.data?.token) {
     api.defaults.headers.common['X-XSRF-TOKEN'] = response.data.token;
+    return response.data.token;
   }
+  return null;
 };
 
 // Request interceptor – načte token se, pokud ještě není k dispozici
@@ -30,8 +35,17 @@ api.interceptors.request.use(async (config) => {
   const isMutation = MUTATION_METHODS.has(method);
   const isCsrfEndpoint = config.url?.includes('/csrf/token');
 
-  if (isMutation && !isCsrfEndpoint && !api.defaults.headers.common['X-XSRF-TOKEN']) {
-    await fetchAndSetCsrfToken();
+  // Zajistíme token z default hlaviček nebo jej rovnou vyzvedneme
+  let currentToken = api.defaults.headers.common['X-XSRF-TOKEN'];
+
+  if (isMutation && !isCsrfEndpoint && !currentToken) {
+    currentToken = await fetchAndSetCsrfToken();
+  }
+
+  // Explicitně přidáme hlavičku do aktuálního configu (axios sloučil defaulty při vzniku requestu,
+  // takže pokud v defaults token předtím nebyl, config ho ještě nemá)
+  if (isMutation && !isCsrfEndpoint && currentToken) {
+    config.headers['X-XSRF-TOKEN'] = currentToken;
   }
 
   return config;
@@ -45,16 +59,25 @@ api.interceptors.response.use(
 
     // Session vypršela nebo přístup odepřen bez přihlášení
     if (status === 401) {
-      localStorage.removeItem('user');
-      window.location.replace('/login');
+      // Ignorovat automatický redirect, pokud jde o samotný pokus o přihlášení
+      const isLoginRequest = error.config.url && error.config.url.includes('/auth/login');
+      
+      if (!isLoginRequest) {
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.replace('/login');
+      }
       return Promise.reject(error);
     }
 
-    // CSRF token vypršel – obnov a zopakuj request (max 1 retry)
+    // CSRF token vypršel nebo byl neplatný – obnov a zopakuj request (max 1 retry)
     if (status === 403 && !error.config._csrfRetried) {
       error.config._csrfRetried = true;
       delete api.defaults.headers.common['X-XSRF-TOKEN']; // vymaž starý token
-      await fetchAndSetCsrfToken();
+      const newToken = await fetchAndSetCsrfToken();
+      if (newToken) {
+        error.config.headers['X-XSRF-TOKEN'] = newToken; // aktualizuj token v chybném requestu!
+      }
       return api.request(error.config);
     }
 

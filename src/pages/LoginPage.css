@@ -2,7 +2,7 @@
 .login-container {
     display: flex;
     min-height: 100vh; /* Zajišťuje plnou výšku */
-    font-family: Arial, sans-serif; /* Může být tvoje značkové písmo */
+    font-family: Arial, sans-serif;
 }
 
 /* --- Vizuální/Desktop část (Skrytá na mobilu) --- */
@@ -10,7 +10,7 @@
     flex: 1;
     background-color: #f0f2f5; /* Světle šedé pozadí */
     color: #333;
-    display: none; /* Skryjeme na mobilu */
+    display: none; /* Skryje na mobilu */
     padding: 40px;
     align-items: center;
     justify-content: center;
@@ -19,7 +19,7 @@
 }
 
 .login-visual-side .logo {
-    color: var(--primary-color, #007bff); /* Použij primární barvu z tématiky */
+    color: var(--primary-color, #007bff); /* Použije primární barvu z tématiky */
     font-size: 2.5rem;
     margin-bottom: 20px;
 }
@@ -100,7 +100,7 @@
 
 /* Primární CTA tlačítko */
 .btn-primary {
-    background-color: var(--accent-color, #ff6b00); /* Zde zadej svou akcentní barvu */
+    background-color: var(--accent-color, #ff6b00);
     color: white;
 }
 
@@ -190,7 +190,7 @@
     }
 
     .login-visual-side {
-        display: flex; /* Zobrazíme na desktopu */
+        display: flex; /* Zobrazení na desktopu */
     }
 
     .login-form-side {

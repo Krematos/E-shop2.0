@@ -34,3 +34,25 @@ export const getImageUrl = (filename) => {
 
   return `${cleanBase}${cleanFilename}`;
 };
+
+/**
+ * Vygeneruje srcset atribut pro responsivní obrázky.
+ * Nabízí různé varianty velikostí pro lepší LCP na mobilních zařízeních.
+ */
+export const getResponsiveSrcSet = (filename) => {
+  const base = getImageUrl(filename);
+  if (!base) return undefined;
+
+  // Podpora jen pro API (pro externí URL necháme beze změny)
+  if (base.startsWith(IMAGE_BASE_URL)) {
+    return `${base}?w=330 330w, ${base}?w=660 660w, ${base}?w=1200 1200w`;
+  }
+
+  return undefined; // Pro externí URL nepoužíváme srcset z API serveru
+};
+
+/**
+ * Výchozí pravidla pro atribut sizes.
+ * Na mobilu zobrazeno na 100vw, na desktopu max 330px šířky (odpovídá kontejneru 440x330).
+ */
+export const defaultImageSizes = "(max-width: 768px) 100vw, 330px";

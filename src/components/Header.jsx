@@ -1,14 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/useAuth';
 
 const Header = () => {
   const { user, logout, isAuthenticated } = useAuth();
-  const { getTotalItems } = useCart();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/');
   };
 
@@ -29,25 +27,12 @@ const Header = () => {
             </Link>
             {isAuthenticated() && (
               <>
-                <Link to="/cart" className="text-gray-700 hover:text-primary-600 transition-colors relative">
-                  Košík
-                  {getTotalItems() > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {getTotalItems()}
-                    </span>
-                  )}
-                </Link>
-                <Link to="/profile" className="text-gray-700 hover:text-primary-600 transition-colors">
-                  Profil
-                </Link>
                 {user && user.roles && user.roles.some(
                   (r) => r.authority === 'ROLE_ADMIN' || r === 'ROLE_ADMIN'
                 ) && (
-                <>
                   <Link to="/admin" className="text-gray-700 hover:text-primary-600 transition-colors">
                     Administrace
                   </Link>
-                 </>
                 )}
               </>
             )}
@@ -56,9 +41,9 @@ const Header = () => {
           <div className="flex items-center space-x-4">
             {isAuthenticated() ? (
               <>
-                <span className="text-gray-700 hidden md:inline">
-                  {user?.username}
-                </span>
+                <Link to="/profile" className="text-gray-700 hover:text-primary-600 font-medium hidden md:inline">
+                  {user?.username || 'Profil'}
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="btn-secondary text-sm"
@@ -87,17 +72,19 @@ const Header = () => {
           <Link to="/products" className="text-sm text-gray-700 hover:text-primary-600">
             Produkty
           </Link>
-          <Link to="/ads/create" className="text-sm text-gray-700 hover:text-primary-600">
-            Vložit inzerát
-          </Link>
           {isAuthenticated() && (
             <>
-              <Link to="/cart" className="text-sm text-gray-700 hover:text-primary-600 relative">
-                Košík ({getTotalItems()})
-              </Link>
+
               <Link to="/profile" className="text-sm text-gray-700 hover:text-primary-600">
-                Profil
+                {user?.username || 'Profil'}
               </Link>
+              {user.roles && user.roles.some(
+                (r) => r.authority === 'ROLE_ADMIN' || r === 'ROLE_ADMIN'
+              ) && (
+                <Link to="/admin" className="text-sm text-gray-700 hover:text-primary-600">
+                  Administrace
+                </Link>
+              )}
             </>
           )}
         </nav>

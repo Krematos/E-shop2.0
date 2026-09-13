@@ -36,8 +36,15 @@ export const login = async (username, password) => {
  * Odhlášení uživatele – čistí lokální stav.
  * Backend session (HttpOnly cookie) se invaliduje přes /auth/logout.
  */
-export const logout = () => {
-  localStorage.removeItem('user');
+export const logout = async () => {
+  try {
+    await api.post('/auth/logout');
+  } catch (error) {
+    console.error('Došlo k chybě při odhlašování na serveru:', error);
+  } finally {
+    localStorage.clear();
+    sessionStorage.clear();
+  }
 };
 
 /**

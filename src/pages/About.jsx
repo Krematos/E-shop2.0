@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+const WORDS = ['Vývojář', 'Nadšenec do AI', 'Týmový hráč', 'Věčný student'];
+
 const About = () => {
     // --- Logika pro Typewriter efekt (čistý JS/React) ---
     const [text, setText] = useState('');
@@ -7,12 +9,10 @@ const About = () => {
     const [loopNum, setLoopNum] = useState(0);
     const [typingSpeed, setTypingSpeed] = useState(150);
 
-    const words = ['Vývojář', 'Nadšenec do AI', 'Týmový hráč', 'Věčný student'];
-
     useEffect(() => {
         const handleType = () => {
-            const i = loopNum % words.length;
-            const fullText = words[i];
+            const i = loopNum % WORDS.length;
+            const fullText = WORDS[i];
 
             setText(isDeleting
                 ? fullText.substring(0, text.length - 1)
@@ -28,14 +28,14 @@ const About = () => {
             } else if (isDeleting && text === '') {
                 // Slovo je smazáno, jde na další
                 setIsDeleting(false);
-                setLoopNum(loopNum + 1);
+                setLoopNum(prev => prev + 1);
             }
         };
 
         const timer = setTimeout(handleType, typingSpeed);
 
         return () => clearTimeout(timer);
-    }, [text, isDeleting, loopNum]); // Závislosti efektu
+    }, [text, isDeleting, loopNum, typingSpeed]); // Závislosti efektu
 
     // --- Renderování komponenty ---
     return (
@@ -235,10 +235,12 @@ const About = () => {
                                     <span className="cursor-blink">&nbsp;</span>
                                 </h4>
                                 <p>
-                                    Zdravím, jsem Jan Macner, nadšený vývojář se specializací na back-end.
-                                    Umím programovat v Java, HTML, CSS a JavaScript. Umím používat SQL databáze.
-                                    Ovládám také vizualizace v PowerBi a MS Office. Aktivně ve svých projektech
-                                    využívám umělou inteligenci k zefektivnění práce. Rád se vzdělávám a učím novým věcem.
+                                    Jsem mladý a ambiciózní vývojář, který se rychle učí a přebírá zodpovědnost. Mé schopnosti nejsou jen deklarované — lze je konkrétně posoudit na mých projektech na GitHubu:
+                                    👉 https://github.com/Krematos
+
+                                    Efektivně pracuji s AI nástroji pro dosažení lepších výsledků, urychlení vývoje a automatizaci vybraných procesů a mého učení a porozumění. Neustále hledám způsoby, jak dělat věci chytřeji a přinášet vyšší hodnotu.
+
+                                    Jsem zvyklý jít nad rámec očekávání — ať už formou účastí v soutěžích během studia, nebo aktivním zapojením do týmové práce. Dokážu fungovat v týmu, převzít iniciativu a podávat stabilní výkon i pod časovým tlakem.
                                 </p>
                                 <div className="btn">
                                     <button>Stáhnout CV</button>
@@ -248,7 +250,7 @@ const About = () => {
                         <div className="col-6">
                             <div className="right">
                                 <div className="profile">
-                                    <img src="/images/Já1.jpg" alt="profilovka" />
+                                    <img src="/images/Já1.jpg" alt="profilovka" width="350" height="350" />
                                 </div>
                             </div>
                         </div>
