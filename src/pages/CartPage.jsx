@@ -1,66 +1,73 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/useCart';
-import { useAuth } from '../context/useAuth';
-import { getImageUrl, getResponsiveSrcSet } from '../utils/urlUtils';
-import { ShoppingCart } from 'lucide-react';
+import { getImageUrl, getResponsiveSrcSet, defaultImageSizes } from '../utils/urlUtils';
+import SEO from '../components/SEO';
 
 const CartPage = () => {
-  const { cartItems, updateQuantity, removeFromCart, getTotalPrice } = useCart();
-  const { isAuthenticated } = useAuth();
+  const { cartItems, removeFromCart, updateQuantity, getTotalPrice, clearCart } = useCart();
   const navigate = useNavigate();
-
-  const handleCheckout = () => {
-    if (isAuthenticated()) {
-      navigate('/checkout');
-    } else {
-      navigate('/login', { state: { redirect: '/checkout' } })
-    }
-  };
 
   if (cartItems.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-12 max-w-4xl">
-        <h1 className="text-4xl font-extrabold mb-8 text-gray-900 tracking-tight">Košík</h1>
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 text-center py-16 px-6">
-          <ShoppingCart className="mx-auto h-16 w-16 text-gray-400 mb-6 stroke-1" />
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Váš košík zeje prázdnotou</h2>
-          <p className="text-gray-500 mb-8 max-w-md mx-auto">Vyberte si něco hezkého z naší nabídky, zásoby se tenčí!</p>
-          <button
-            onClick={() => navigate('/')}
-            className="bg-blue-600 text-white hover:bg-blue-700 font-semibold py-3 px-8 rounded-full transition-all hover:shadow-lg active:scale-95"
+      <div className="container mx-auto px-4 py-16">
+        <SEO title="Nákupní košík" noindex={true} />
+        <div className="max-w-md mx-auto text-center bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+          <div className="text-6xl mb-4">🛒</div>
+          <h2 className="text-2xl font-bold mb-2 text-gray-800">Váš košík je prázdný</h2>
+          <p className="text-gray-500 mb-6">Prozkoumejte naši nabídku a vyberte si zboží.</p>
+          <Link
+            to="/products"
+            className="inline-block bg-blue-600 text-white font-semibold px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-sm"
           >
-            Procházet produkty
-          </button>
+            Přejít k nákupu
+          </Link>
         </div>
       </div>
     );
   }
 
+  const handleCheckout = () => {
+    navigate('/checkout');
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 lg:py-12 max-w-6xl">
-      <h1 className="text-3xl font-extrabold mb-8 text-gray-900 tracking-tight">Váš nákupní košík</h1>
+      <SEO title="Nákupní košík" noindex={true} />
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 border-b border-gray-100 pb-6">
+        <div>
+          <h1 className="text-3xl font-extrabold text-gray-900">Nákupní košík</h1>
+          <p className="text-gray-500 text-sm mt-1">Zkontrolujte si své vybrané položky před objednáním</p>
+        </div>
+        <button
+          onClick={clearCart}
+          className="text-red-500 hover:text-red-700 text-sm font-medium flex items-center gap-1 transition-colors"
+        >
+          <span>🗑️</span> Vysypat košík
+        </button>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Seznam produktů */}
+        {/* Seznam položek v košíku */}
         <div className="lg:col-span-2 space-y-4">
           {cartItems.map((item) => {
             const price = typeof item.price === 'string'
               ? Number.parseFloat(item.price)
               : item.price;
             const itemTotal = price * item.quantity;
-            
-            const mainImageFilename = item?.mainImage || item?.mainImageUrl || item?.images?.find?.(img => img?.main || img?.isMain)?.url || item?.images?.[0]?.url || item?.images?.[0];
+            const imageFilename = item.mainImage || item.mainImageUrl || item.images?.[0]?.url || item.images?.[0];
+            const imageUrl = getImageUrl(imageFilename);
 
             return (
-              <div key={item.id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-6 items-center transition-shadow hover:shadow-md">
-                <div className="w-full md:w-32 h-32 bg-gray-50 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
-                  {mainImageFilename ? (
+              <div
+                key={item.id}
+                className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row items-center gap-6"
+              >
+                <div className="w-24 h-24 bg-gray-50 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden border border-gray-100">
+                  {imageFilename ? (
                     <img
-                      src={getImageUrl(mainImageFilename)}
-                      srcSet={getResponsiveSrcSet(mainImageFilename)}
-                      sizes="128px"
-                      width="128"
-                      height="128"
+                      src={imageUrl}
+                      srcSet={getResponsiveSrcSet(imageFilename)}
+                      sizes={defaultImageSizes}
                       alt={item.name}
                       className="w-full h-full object-cover"
                     />
@@ -71,7 +78,9 @@ const CartPage = () => {
 
                 <div className="flex-1 w-full">
                   <h3 className="text-lg font-bold text-gray-800 mb-1 line-clamp-2">{item.name}</h3>
-                  <p className="text-gray-500 text-sm mb-4">{price?.toFixed(2) || '0.00'} Kč za kus</p>
+                  <p className="text-gray-500 text-sm mb-4">
+                    {price?.toFixed(2) || '0.00'} Kč za kus <span className="text-xs text-gray-400 font-normal">(vč. DPH)</span>
+                  </p>
 
                   <div className="flex flex-wrap items-center gap-4">
                     <div className="flex items-center bg-gray-100 rounded-lg p-1">
@@ -102,6 +111,7 @@ const CartPage = () => {
                   <p className="text-xl font-extrabold text-blue-600 whitespace-nowrap">
                     {itemTotal.toFixed(2)} Kč
                   </p>
+                  <span className="text-xs text-gray-400 block">včetně DPH</span>
                 </div>
               </div>
             );

@@ -75,10 +75,13 @@ const ProductCard = ({ product }) => {
             {product.description || "Bez popisu"}
           </p>
 
-          <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
-            <span className="text-xl font-bold text-primary-600">
-              {formattedPrice}
-            </span>
+          <div className="mt-auto pt-4 border-t border-gray-100 flex items-baseline justify-between gap-2">
+            <div>
+              <span className="text-xl font-bold text-primary-600">
+                {formattedPrice}
+              </span>
+              <span className="text-xs text-gray-400 font-normal ml-1.5">včetně DPH</span>
+            </div>
           </div>
         </div>
       </Link>

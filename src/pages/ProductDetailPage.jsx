@@ -123,6 +123,11 @@ const ProductDetailPage = () => {
         image={currentImageUrl}
         type="product"
         schema={productSchema}
+        productData={{
+          price: price,
+          currency: 'CZK',
+          availability: product.stockQuantity > 0 ? 'instock' : 'oos'
+        }}
       />
 
       <button
@@ -204,9 +209,12 @@ const ProductDetailPage = () => {
         {/* Informace o produktu */}
         <div>
           <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
-          <p className="text-3xl font-bold text-primary-600 mb-6">
-            {price?.toFixed(2) || '0.00'} Kč
-          </p>
+          <div className="mb-6">
+            <p className="text-3xl font-bold text-primary-600">
+              {price?.toFixed(2) || '0.00'} Kč
+            </p>
+            <span className="text-xs text-gray-500 font-medium">Cena je konečná včetně DPH</span>
+          </div>
 
           <div className="mb-6">
             <h2 className="text-xl font-semibold mb-2">Popis</h2>
