@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import SEO from '../components/SEO';
 
 const WORDS = ['Vývojář', 'Nadšenec do AI', 'Týmový hráč', 'Věčný student'];
 
@@ -40,6 +41,11 @@ const About = () => {
     // --- Renderování komponenty ---
     return (
         <>
+            <SEO
+                title="O nás"
+                description="Poznejte příběh projektu SecondEl. Férový nákup a prodej prověřené elektroniky se zárukou a důrazem na udržitelnost."
+                canonical="https://secondel.cz/about"
+            />
             <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
 
@@ -58,205 +64,291 @@ const About = () => {
 
                 /* Layout Grid (vlastní náhrada za Bootstrap) */
                 .container-fluid {
-                    padding: 40px 10% 0 10%;
                     width: 100%;
-                    max-width: 100%;
+                    padding-right: 15px;
+                    padding-left: 15px;
+                    margin-right: auto;
+                    margin-left: auto;
                 }
-
                 .row {
                     display: flex;
                     flex-wrap: wrap;
-                    width: 100%;
+                    margin-right: -15px;
+                    margin-left: -15px;
                 }
-
-                .col-6 {
-                    flex: 0 0 50%;
-                    max-width: 50%;
+                .col-12 {
+                    flex: 0 0 100%;
+                    max-width: 100%;
                     padding: 0 15px;
                 }
-
-                /* Home Section */
-                .home {
-                    position: relative;
-                    width: 100%;
-                    min-height: 100vh;
-                    padding: 100px 0 50px;
-                    display: flex;
-                    align-items: center;
+                @media (min-width: 992px) {
+                    .col-lg-6 {
+                        flex: 0 0 50%;
+                        max-width: 50%;
+                        padding: 0 15px;
+                    }
                 }
 
-                .left h3 {
-                    color: #fff;
-                    font-size: 2.5rem;
-                    font-weight: bold;
-                    letter-spacing: 0.5px;
-                }
+                /* Typografie a barvy */
+                .text-brand-orange { color: #f4623a !important; }
+                .text-brand-teal { color: #20c997 !important; }
+                .text-brand-yellow { color: #ffc107 !important; }
+                .text-brand-cyan { color: #0dcaf0 !important; }
 
-                .left h1 {
-                    color: #fff;
-                    font-size: 4.5rem;
-                    margin: 10px 0;
+                .display-2 {
+                    font-size: clamp(2.5rem, 5vw, 4.5rem);
+                    font-weight: 700;
                     line-height: 1.1;
                 }
-
-                .left h4 {
-                    color: #fff;
-                    font-size: 2.2rem;
-                    font-weight: bold;
-                    margin-bottom: 20px;
+                .lead {
+                    font-size: 1.15rem;
+                    font-weight: 300;
+                    line-height: 1.7;
                 }
 
-                .left p {
-                    color: #fff;
-                    font-size: 16px;
-                    margin: 15px 0 20px 0;
-                    width: 90%;
-                    font-weight: 400;
-                    line-height: 25px;
-                    text-align: justify;
-                }
-
-                .left .btn {
+                /* Specifické sekce */
+                .portfolio-header {
+                    min-height: 85vh;
                     display: flex;
                     align-items: center;
-                    gap: 20px;
-                    margin: 25px 0;
                 }
 
-                .left .btn button {
-                    font-size: 15px;
-                    font-weight: 600;
-                    padding: 12px 24px;
-                    border-radius: 25px;
-                    background: #45b8ac;
-                    border: 2px solid #45b8ac;
-                    color: #000;
-                    outline: none;
-                    cursor: pointer;
-                    transition: 0.3s ease-in;
-                }
-
-                .left .btn button:hover {
-                    transform: translateY(-5px);
-                    background: transparent;
-                    color: #45b8ac;
-                }
-
-                .right {
-                    display: flex;
-                    justify-content: flex-end; /* Zarovnání doprava */
-                    align-items: center;
-                    height: 100%;
-                }
-
-                .right .profile {
+                .profile-img-container {
                     position: relative;
+                    width: 280px;
+                    height: 280px;
+                    margin: 0 auto;
+                }
+                @media (min-width: 768px) {
+                    .profile-img-container {
+                        width: 380px;
+                        height: 380px;
+                    }
                 }
 
-                .right .profile img {
-                    width: 450px;
-                    height: 450px;
+                .profile-img {
+                    width: 100%;
+                    height: 100%;
                     object-fit: cover;
                     border-radius: 50%;
-                    box-shadow: 0 0 40px rgba(7, 165, 37, 0.6);
-                    border: 3px solid rgba(7, 165, 37, 1);
+                    border: 4px solid #f4623a;
+                    box-shadow: 0 0 35px rgba(244, 98, 58, 0.4);
                 }
 
-                /* Text efekt */
-                .multiple {
-                    color: #bc243c;
-                    text-shadow: 0 -1px 4px #FFF, 0 -2px 10px #ff0, 0 -10px 20px #ff8000, 0 -18px 40px #F00;
+                /* Typewriter efekt */
+                .typewrite > .wrap {
+                    border-right: 0.08em solid #fff;
+                    animation: blink 0.7s infinite;
                 }
-
-                /* Blikající kurzor za textem */
-                .cursor-blink {
-                    display: inline-block;
-                    margin-left: 2px;
-                    width: 3px;
-                    background-color: #bc243c;
-                    animation: blink 1s infinite;
-                }
-
                 @keyframes blink {
-                    0% { opacity: 0; }
-                    50% { opacity: 1; }
-                    100% { opacity: 0; }
+                    0%, 100% { border-color: transparent; }
+                    50% { border-color: #fff; }
                 }
 
-                /* Responsivita */
-                @media screen and (max-width: 1280px) {
-                    .container-fluid {
-                        padding: 100px 50px;
-                    }
-                    .left h1 {
-                        font-size: 3.5rem;
-                    }
-                    .right .profile img {
-                        width: 350px;
-                        height: 350px;
-                    }
+                /* Karty */
+                .custom-card {
+                    background: #111;
+                    border: 1px solid #222;
+                    border-radius: 12px;
+                    padding: 24px;
+                    height: 100%;
+                    transition: transform 0.3s ease, border-color 0.3s ease;
+                }
+                .custom-card:hover {
+                    transform: translateY(-5px);
+                    border-color: #444;
                 }
 
-                @media screen and (max-width: 992px) {
-                    .col-6 {
-                        flex: 0 0 100%;
-                        max-width: 100%;
-                    }
-                    .home {
-                        padding-top: 50px;
-                        flex-direction: column;
-                    }
-                    .right {
-                        justify-content: center;
-                        margin-top: 50px;
-                    }
-                    .left {
-                        text-align: center;
-                    }
-                    .left p {
-                        width: 100%;
-                        text-align: center;
-                    }
-                    .left .btn {
-                        justify-content: center;
-                    }
+                /* Responzivní video */
+                .video-responsive {
+                    overflow: hidden;
+                    padding-bottom: 56.25%;
+                    position: relative;
+                    height: 0;
+                    border-radius: 12px;
+                    border: 1px solid #222;
+                }
+                .video-responsive iframe {
+                    left: 0;
+                    top: 0;
+                    height: 100%;
+                    width: 100%;
+                    position: absolute;
+                }
+
+                /* Tlačítka */
+                .btn-custom {
+                    display: inline-block;
+                    padding: 12px 28px;
+                    border-radius: 30px;
+                    font-weight: 500;
+                    text-decoration: none;
+                    transition: all 0.3s ease;
+                    cursor: pointer;
+                }
+                .btn-solid-orange {
+                    background-color: #f4623a;
+                    color: #fff;
+                    border: 2px solid #f4623a;
+                }
+                .btn-solid-orange:hover {
+                    background-color: #d94d26;
+                    border-color: #d94d26;
+                }
+                .btn-outline-white {
+                    background-color: transparent;
+                    color: #fff;
+                    border: 2px solid #fff;
+                }
+                .btn-outline-white:hover {
+                    background-color: #fff;
+                    color: #000;
+                }
+
+                /* Utilities */
+                .bg-dark-secondary { background-color: #0a0a0a; }
+                .text-muted { color: #888 !important; }
+                .badge {
+                    display: inline-block;
+                    padding: 4px 8px;
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    border-radius: 4px;
+                    text-transform: uppercase;
                 }
             `}</style>
 
-            <section className="home">
-                <div className="container-fluid">
-                    <div className="row">
-                        <div className="col-6">
-                            <div className="left">
-                                <h3>Ahoj, jsem</h3>
-                                <h1>Jan Macner</h1>
-                                <h4>
-                                    Jsem <span className="multiple">{text}</span>
-                                    <span className="cursor-blink">&nbsp;</span>
-                                </h4>
-                                <p>
-                                    Jsem mladý a ambiciózní vývojář, který se rychle učí a přebírá zodpovědnost. Mé schopnosti nejsou jen deklarované — lze je konkrétně posoudit na mých projektech na GitHubu:
-                                    👉 https://github.com/Krematos
-
-                                    Efektivně pracuji s AI nástroji pro dosažení lepších výsledků, urychlení vývoje a automatizaci vybraných procesů a mého učení a porozumění. Neustále hledám způsoby, jak dělat věci chytřeji a přinášet vyšší hodnotu.
-
-                                    Jsem zvyklý jít nad rámec očekávání — ať už formou účastí v soutěžích během studia, nebo aktivním zapojením do týmové práce. Dokážu fungovat v týmu, převzít iniciativu a podávat stabilní výkon i pod časovým tlakem.
+            <div style={{ backgroundColor: '#000', color: '#fff', minHeight: '100vh' }}>
+                {/* --- 1. HERO SEKCIA --- */}
+                <header className="portfolio-header">
+                    <div className="container-fluid" style={{ maxWidth: '1200px' }}>
+                        <div className="row align-items-center">
+                            <div className="col-12 col-lg-6" style={{ marginBottom: '40px' }}>
+                                <span className="badge text-brand-orange" style={{ border: '1px solid #f4623a', marginBottom: '15px' }}>
+                                    Portfolio
+                                </span>
+                                <h1 className="display-2" style={{ marginBottom: '15px' }}>
+                                    Jan Macner
+                                </h1>
+                                <div style={{ fontSize: 'clamp(1.2rem, 3vw, 1.8rem)', minHeight: '45px', marginBottom: '20px', fontWeight: 300 }}>
+                                    Jsem{' '}
+                                    <span className="typewrite text-brand-orange" style={{ fontWeight: 600 }}>
+                                        <span className="wrap">{text}</span>
+                                    </span>
+                                </div>
+                                <p className="lead text-muted" style={{ marginBottom: '30px', maxWidth: '500px' }}>
+                                    Vítejte na mém webu. Tady najdete přehled mých projektů, dovedností a technologií, se kterými pracuji. Můžete se podívat na to, co mě baví a čemu se věnuji.
                                 </p>
-                                <div className="btn">
-                                    <button>Stáhnout CV</button>
+                                <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+                                    <a href="#about" className="btn-custom btn-solid-orange">Více o mně</a>
+                                    <a href="#contact" className="btn-custom btn-outline-white">Kontakt</a>
                                 </div>
                             </div>
-                        </div>
-                        <div className="col-6">
-                            <div className="right">
-                                <div className="profile">
-                                    <img src="/images/Já1.jpg" alt="profilovka" width="350" height="350" />
+                            <div className="col-12 col-lg-6" style={{ textAlign: 'center' }}>
+                                <div className="profile-img-container">
+                                    <img
+                                        src="/uploads/20251121_211246.jpg"
+                                        alt="profilovka"
+                                        className="profile-img"
+                                    />
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </section>
+                </header>
+
+                {/* --- 2. O MNĚ --- */}
+                <section id="about" style={{ padding: '80px 0', borderTop: '1px solid #1a1a1a' }} className="bg-dark-secondary">
+                    <div className="container-fluid" style={{ maxWidth: '1200px' }}>
+                        <div className="row">
+                            <div className="col-12 col-lg-6" style={{ marginBottom: '40px' }}>
+                                <h2 style={{ fontSize: '2rem', fontWeight: 600, marginBottom: '20px' }}>O mně</h2>
+                                <p className="text-muted" style={{ lineHeight: '1.8', marginBottom: '20px' }}>
+                                    Věnuji se vývoji webových aplikací s důrazem na čistý kód, moderní architekturu a uživatelský zážitek.
+                                    Mám zkušenosti s frontendem i backendem, rád propojuji technologie a hledám funkční řešení pro reálné problémy.
+                                </p>
+                                <p className="text-muted" style={{ lineHeight: '1.8' }}>
+                                    Stále se učím nové věci, zajímám se o integraci umělé inteligence do běžného vývoje a baví mě pracovat
+                                    v týmu lidí, kteří se navzájem posouvají kupředu.
+                                </p>
+                            </div>
+                            <div className="col-12 col-lg-6">
+                                <div className="row" style={{ rowGap: '20px' }}>
+                                    <div className="col-12" style={{ flex: '0 0 50%', maxWidth: '50%' }}>
+                                        <div className="custom-card">
+                                            <h3 className="text-brand-orange" style={{ fontSize: '2rem', fontWeight: 700, margin: '0 0 5px 0' }}>Java</h3>
+                                            <p className="text-muted" style={{ margin: 0, fontSize: '0.9rem' }}>Backend vývoj & Spring</p>
+                                        </div>
+                                    </div>
+                                    <div className="col-12" style={{ flex: '0 0 50%', maxWidth: '50%' }}>
+                                        <div className="custom-card">
+                                            <h3 className="text-brand-teal" style={{ fontSize: '2rem', fontWeight: 700, margin: '0 0 5px 0' }}>React</h3>
+                                            <p className="text-muted" style={{ margin: 0, fontSize: '0.9rem' }}>Moderní frontend</p>
+                                        </div>
+                                    </div>
+                                    <div className="col-12" style={{ flex: '0 0 50%', maxWidth: '50%' }}>
+                                        <div className="custom-card">
+                                            <h3 className="text-brand-yellow" style={{ fontSize: '2rem', fontWeight: 700, margin: '0 0 5px 0' }}>Git</h3>
+                                            <p className="text-muted" style={{ margin: 0, fontSize: '0.9rem' }}>Správa verzí & CI/CD</p>
+                                        </div>
+                                    </div>
+                                    <div className="col-12" style={{ flex: '0 0 50%', maxWidth: '50%' }}>
+                                        <div className="custom-card">
+                                            <h3 className="text-brand-cyan" style={{ fontSize: '2rem', fontWeight: 700, margin: '0 0 5px 0' }}>AI</h3>
+                                            <p className="text-muted" style={{ margin: 0, fontSize: '0.9rem' }}>Automatizace a modely</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* --- 3. VIDEO SEKCIA --- */}
+                <section style={{ padding: '80px 0', borderTop: '1px solid #1a1a1a' }}>
+                    <div className="container-fluid" style={{ maxWidth: '900px', textAlign: 'center' }}>
+                        <span className="badge text-brand-orange" style={{ border: '1px solid #f4623a', marginBottom: '15px' }}>
+                            Ukázka
+                        </span>
+                        <h2 style={{ fontSize: '2rem', fontWeight: 600, marginBottom: '15px' }}>Moje práce v akci</h2>
+                        <p className="text-muted" style={{ marginBottom: '40px', maxWidth: '600px', margin: '0 auto 40px auto' }}>
+                            Krátké video představující ukázku mých projektů, vývojového prostředí nebo mého přístupu k řešení úkolů.
+                        </p>
+                        <div className="video-responsive">
+                            <iframe
+                                src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                                title="Video ukázka"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                            />
+                        </div>
+                    </div>
+                </section>
+
+                {/* --- 4. KONTAKT --- */}
+                <footer id="contact" style={{ padding: '80px 0 40px 0', borderTop: '1px solid #1a1a1a' }} className="bg-dark-secondary">
+                    <div className="container-fluid" style={{ maxWidth: '1200px' }}>
+                        <div className="row align-items-center" style={{ marginBottom: '60px' }}>
+                            <div className="col-12 col-lg-6" style={{ marginBottom: '30px' }}>
+                                <h2 style={{ fontSize: '2rem', fontWeight: 600, marginBottom: '15px' }}>Máte zájem o spolupráci?</h2>
+                                <p className="text-muted" style={{ margin: 0 }}>
+                                    Neváhejte se mi ozvat, rád si popovídám o nových příležitostech, projektech nebo nápadech.
+                                </p>
+                            </div>
+                            <div className="col-12 col-lg-6" style={{ textAlign: 'right' }}>
+                                <a href="mailto:jan.macner@example.com" className="btn-custom btn-solid-orange">
+                                    Napsat e-mail
+                                </a>
+                            </div>
+                        </div>
+                        <div style={{ borderTop: '1px solid #1a1a1a', paddingTop: '30px', textAlign: 'center' }}>
+                            <p className="text-muted" style={{ margin: 0, fontSize: '0.85rem' }}>
+                                &copy; {new Date().getFullYear()} Jan Macner. Všechna práva vyhrazena.
+                            </p>
+                        </div>
+                    </div>
+                </footer>
+            </div>
         </>
     );
 };

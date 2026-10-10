@@ -8,6 +8,7 @@ import {
 } from '../services/productService';
 import LoadingSpinner from '../components/LoadingSpinner';
 import AdminAddProductForm from '../components/AdminAddProductForm';
+import SEO from '../components/SEO';
 
 const AdminPage = () => {
   const location = useLocation();
@@ -112,6 +113,7 @@ const AdminPage = () => {
   return (
     <ProtectedRoute requireAdmin={true}>
       <div className="container mx-auto px-4 py-8">
+        <SEO title="Administrace e-shopu" noindex={true} />
         <h1 className="text-3xl font-bold mb-6">Administrace</h1>
 
         {/* Tabs */}

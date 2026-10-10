@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 
 const ResetPasswordPage = () => {
   const [password, setPassword] = useState('');
@@ -34,6 +35,7 @@ const ResetPasswordPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <SEO title="Nastavení nového hesla" noindex={true} />
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h2 className="text-2xl font-bold text-center mb-6">Obnovení hesla</h2>
         <form onSubmit={handleSubmit}>

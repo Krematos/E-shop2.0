@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
+import SEO from '../components/SEO';
 import './LoginPage.css';
 
 const LoginPage = () => {
@@ -45,6 +46,7 @@ const LoginPage = () => {
 
   return (
     <div className="login-container">
+      <SEO title="Přihlášení" noindex={true} />
 
       {/* Pravá strana - formulář */}
       <div className="login-form-side">
@@ -93,7 +95,7 @@ const LoginPage = () => {
           </div>
 
           <div className="forgot-password">
-            <a href="/forgot-password">Zapomněli jste heslo?</a>
+            <Link to="/forgot-password">Zapomněli jste heslo?</Link>
           </div>
 
           {/* Hlavní CTA - výrazné */}

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { register } from '../services/authService';
+import SEO from '../components/SEO';
 import './LoginPage.css';
 
 const RegisterPage = () => {
@@ -10,6 +11,7 @@ const RegisterPage = () => {
     password: '',
     confirmPassword: '',
   });
+  const [agreeTerms, setAgreeTerms] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -44,24 +46,55 @@ const RegisterPage = () => {
         email: formData.email,
         password: formData.password,
       });
-      alert('Registrace proběhla úspěšně! Nyní se můžete přihlásit.');
-      navigate('/login', { state: location.state });
+
+      // Po úspěšné registraci přesměrujeme na login se zprávou
+      navigate('/login', {
+        state: {
+          message: 'Registrace proběhla úspěšně! Nyní se můžete přihlásit.',
+          redirect: location.state?.redirect,
+        },
+      });
     } catch (error) {
       if (!error.response) {
+        // Síťová chyba (backend neběží, výpadek sítě)
         setError('Nepodařilo se připojit k serveru. Zkontrolujte připojení k internetu.');
       } else {
-        const { status, data } = error.response;
-        
-        if (status === 409) {
-          setError('Uživatel s tímto uživatelským jménem nebo e-mailem již existuje.');
-        } else if (status === 400) {
-          if (data && typeof data === 'object' && !data.error && !data.message) {
-            const validationMessages = Object.values(data).filter(msg => typeof msg === 'string');
-            setError(validationMessages.length > 0 ? validationMessages.join(' • ') : 'Zadaná data nejsou platná.');
+        const data = error.response.data;
+        if (typeof data === 'string') {
+          // Backend někdy vrací např. "Chyba: Email již existuje" nebo Spring chybu
+          let msg = data;
+          // Pokud je to Spring Generic Exception formát jako "Bad Request: [Validation failed... default message [Text]]"
+          const match = data.match(/default message \[([^\]]+)\]/);
+          if (match && match[1]) {
+            msg = match[1];
+          }
+          setError(msg);
+        } else if (data && typeof data === 'object') {
+          // Spring Validation errors pole nebo objekt
+          if (data.errors && Array.isArray(data.errors)) {
+            setError(data.errors.map(err => err.defaultMessage || err.message || err).join(', '));
           } else {
-            let msg = data?.message || data?.error || 'Zadaná data nejsou platná. Zkontrolujte je prosím.';
-            if (typeof msg === 'string' && msg.includes('{') && msg.includes('}')) {
-              const innerText = msg.substring(msg.indexOf('{') + 1, msg.lastIndexOf('}'));
+            let msg = data.message || data.error || 'Při registraci došlo k chybě.';
+            if (msg.includes('Validation failed') || msg.includes('default message')) {
+              const match = msg.match(/default message \[([^\]]+)\]/);
+              if (match && match[1]) {
+                msg = match[1];
+              }
+            } else if (msg.includes('Failed to convert') || msg.includes('JSON parse error')) {
+              msg = 'Neplatný formát odeslaných dat.';
+            } else if (msg.includes('with root cause')) {
+              // Vytáhnout čitelnou zprávu z root cause
+              const parts = msg.split('with root cause');
+              msg = parts[parts.length - 1].replace(/^[\s:]+/, '').trim();
+            }
+            // Odstranění technického názvu výjimky z textu (např. "CustomException: ...")
+            if (msg.includes(': ')) {
+              const subParts = msg.split(': ');
+              msg = subParts[subParts.length - 1];
+            }
+            // Odstranění technických závorek Springu typu [pole=hodnota]
+            if (msg.startsWith('[') && msg.endsWith(']')) {
+              const innerText = msg.slice(1, -1);
               msg = innerText.replace(/[a-zA-Z0-9_]+=/g, '').trim();
             }
             setError(msg);
@@ -77,6 +110,7 @@ const RegisterPage = () => {
 
   return (
     <div className="login-container">
+      <SEO title="Registrace nového účtu" noindex={true} />
       <div className="login-form-side">
         <h2 className="login-title">Vytvořit účet</h2>
         <p className="login-subtitle">Rychlá registrace bez zbytečných polí.</p>
@@ -94,30 +128,6 @@ const RegisterPage = () => {
           </div>
         )}
 
-        {/* Přihlášení přes sociální sítě */}
-        <div className="social-login" style={{ marginBottom: '30px' }}>
-          <button type="button" className="btn btn-social btn-google flex items-center justify-center gap-2">
-            <svg className="w-5 h-5 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
-              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
-            </svg>
-            Registrovat se přes Google
-          </button>
-          <button type="button" className="btn btn-social btn-facebook flex items-center justify-center gap-2">
-            <svg className="w-5 h-5 mr-1" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-            </svg>
-            Registrovat se přes Facebook
-          </button>
-        </div>
-
-        <div className="divider">
-          <span>nebo s emailem</span>
-        </div>
-
-        {/* Formulář */}
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
             <label htmlFor="username">Uživatelské jméno</label>
@@ -127,36 +137,35 @@ const RegisterPage = () => {
               name="username"
               value={formData.username}
               onChange={handleChange}
-              placeholder="Uživatelské jméno"
+              placeholder="Zvolte uživatelské jméno"
               required
               disabled={loading}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">E-mail</label>
             <input
               type="email"
               id="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="vasedres@email.cz"
+              placeholder="vas@email.cz"
               required
               disabled={loading}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Heslo (min. 6 znaků)</label>
+            <label htmlFor="password">Heslo</label>
             <input
               type="password"
               id="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="••••••••"
-              minLength="6"
+              placeholder="Alespoň 6 znaků"
               required
               disabled={loading}
             />
@@ -170,34 +179,34 @@ const RegisterPage = () => {
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
-              placeholder="••••••••"
+              placeholder="Zopakujte heslo"
               required
               disabled={loading}
             />
           </div>
 
-          {/* Checkbox pro souhlas s podmínkami */}
-          <div className="form-group" style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '20px' }}>
-            <input 
-              type="checkbox" 
-              id="terms" 
-              required 
+          <div className="form-group-checkbox" style={{ display: 'flex', alignItems: 'flex-start', margin: '15px 0' }}>
+            <input
+              type="checkbox"
+              id="terms"
+              checked={agreeTerms}
+              onChange={(e) => setAgreeTerms(e.target.checked)}
+              required
               style={{ marginTop: '5px', marginRight: '10px', cursor: 'pointer' }}
               disabled={loading}
             />
             <label htmlFor="terms" style={{ display: 'inline', fontWeight: 'normal', fontSize: '0.9rem', color: '#555', cursor: 'pointer' }}>
-              Souhlasím s <Link to="/about" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-color, #007bff)', textDecoration: 'underline' }}>Obchodními podmínkami</Link> a <Link to="/about" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-color, #007bff)', textDecoration: 'underline' }}>Zásadami ochrany osobních údajů</Link>.
+              Souhlasím s <Link to="/terms" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-color, #007bff)', textDecoration: 'underline' }}>Obchodními podmínkami</Link> a <Link to="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-color, #007bff)', textDecoration: 'underline' }}>Zásadami ochrany osobních údajů</Link>.
             </label>
           </div>
 
-          {/* Hlavní CTA - akcentní barva */}
           <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'Registrace...' : 'Registrovat se'}
+            {loading ? 'Registruji...' : 'Registrovat se'}
           </button>
         </form>
 
         <div className="register-link" style={{ marginTop: '20px', textAlign: 'center' }}>
-          Už máte účet? <Link to="/login" state={location.state}>Přihlaste se</Link>
+          Již máte účet? <Link to="/login" state={location.state}>Přihlaste se</Link>
         </div>
       </div>
     </div>

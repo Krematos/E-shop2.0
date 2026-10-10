@@ -6,6 +6,7 @@ import { deleteAccount, updateUser, addUserAddress, getUserAddresses } from '../
 import { sendWebhook } from '../services/webhookService';
 import ProtectedRoute from '../components/ProtectedRoute';
 import LoadingSpinner from '../components/LoadingSpinner';
+import SEO from '../components/SEO';
 import { 
   Eye, 
   RotateCcw, 
@@ -298,6 +299,7 @@ const ProfilePage = () => {
   return (
     <ProtectedRoute>
       <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <SEO title="Můj zákaznický účet" noindex={true} />
         <h1 className="text-3xl font-bold mb-6 text-gray-900">Můj zákaznický účet</h1>
 
         {/* Informace o uživateli */}
