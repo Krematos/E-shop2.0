@@ -8,6 +8,7 @@ import Footer from './components/Footer';
 import LoadingSpinner from './components/LoadingSpinner';
 import { CookieConsentProvider } from './context/CookieConsentProvider';
 import CookieConsentBanner from './components/CookieConsentBanner';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Dynamické importy stránek (Code Splitting podle routy)
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -27,6 +28,7 @@ const CheckoutPaymentPage = lazy(() => import('./pages/CheckoutPaymentPage'));
 const CheckoutConfirmPage = lazy(() => import('./pages/CheckoutConfirmPage'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 function App() {
   useEffect(() => {
@@ -37,6 +39,7 @@ function App() {
       .then(() => console.log('CSRF token úspěšně načten'))
       .catch(err => console.error('Chyba při získávání CSRF:', err));
   }, []);
+
   return (
     <AuthProvider>
       <CartProvider>
@@ -57,12 +60,27 @@ function App() {
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
-                    <Route path="/admin" element={<AdminPage />} />
-                    <Route path="/admin/orders" element={<AdminOrdersPage />} />
+                    <Route
+                      path="/admin"
+                      element={
+                        <ProtectedRoute requireAdmin={true}>
+                          <AdminPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/orders"
+                      element={
+                        <ProtectedRoute requireAdmin={true}>
+                          <AdminOrdersPage />
+                        </ProtectedRoute>
+                      }
+                    />
                     <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/terms" element={<TermsPage />} />
                     <Route path="/privacy" element={<PrivacyPage />} />
+                    <Route path="*" element={<NotFoundPage />} />
                   </Routes>
                 </Suspense>
               </main>

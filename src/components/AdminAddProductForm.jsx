@@ -273,11 +273,9 @@ const AdminAddProductForm = ({ initialData, onProductSaved, onCancel }) => {
         globalThis.alert("Nepodařilo se smazat obrázek. " + msg);
         return;
       }
-    } else {
+    } else if (imgToRemove.preview) {
       // Uvolnění paměti prohlížeče pro lokální náhled
-      if (imgToRemove.preview) {
-        URL.revokeObjectURL(imgToRemove.preview);
-      }
+      URL.revokeObjectURL(imgToRemove.preview);
     }
 
     setImages(prev => {
@@ -515,16 +513,16 @@ const AdminAddProductForm = ({ initialData, onProductSaved, onCancel }) => {
 
         {/* Obrázky - Upload & Preview */}
         <div>
-          <label htmlFor="image-upload" className="block text-sm font-medium text-gray-700 mb-2 cursor-pointer">
+          <span className="block text-sm font-medium text-gray-700 mb-2">
             Obrázky
-          </label>
+          </span>
 
           {/* Dropzone */}
-          <div
+          <label
+            htmlFor="image-upload"
             onDragOver={handleDragOver}
             onDrop={handleDrop}
-            onClick={() => document.getElementById('image-upload').click()}
-            className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition cursor-pointer bg-gray-50"
+            className="block border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500 transition cursor-pointer bg-gray-50"
           >
             <input
               type="file"
@@ -532,10 +530,10 @@ const AdminAddProductForm = ({ initialData, onProductSaved, onCancel }) => {
               multiple
               accept="image/*"
               onChange={handleImageSelect}
-              className="hidden"
+              className="sr-only"
             />
             <p className="text-gray-500">Klikněte nebo přetáhněte obrázky sem</p>
-          </div>
+          </label>
 
           {/* Náhledy */}
           {images.length > 0 && (
