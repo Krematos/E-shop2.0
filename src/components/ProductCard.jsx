@@ -3,12 +3,9 @@ import { Link } from 'react-router-dom';
 import { useCart } from '../context/useCart';
 import { Package } from 'lucide-react';
 
-import { getImageUrl, getResponsiveSrcSet, defaultImageSizes } from '../utils/urlUtils';
+import { getImageUrl, getResponsiveSrcSet, defaultImageSizes, getProductUrl } from '../utils/urlUtils';
 
 const ProductCard = ({ product }) => {
-
-  console.log("Data produktu:", product?.name, product?.images);
-
   const { addToCart } = useCart();
   const [imgError, setImgError] = useState(false);
 
@@ -38,11 +35,11 @@ const ProductCard = ({ product }) => {
     maximumFractionDigits: 2,
   }).format(rawPrice || 0);
 
-
+  const productLink = getProductUrl(product);
 
   return (
     <div className="card group hover:shadow-xl transition-all duration-300 border border-gray-100 rounded-xl bg-white flex flex-col h-full">
-      <Link to={`/products/${product.id}`} className="flex-1 flex flex-col">
+      <Link to={productLink} className="flex-1 flex flex-col">
         {/* Kontejner obrázku */}
         <div className="aspect-[4/3] bg-gray-50 rounded-t-xl overflow-hidden relative">
           {!imgError && mainImageFilename ? (
@@ -53,12 +50,11 @@ const ProductCard = ({ product }) => {
               width="440"
               height="330"
               alt={product.name}
-              loading="lazy" // Optimalizace výkonu
-              onError={() => setImgError(true)} // Pokud server vrátí 404, přepne na fallback
+              loading="lazy"
+              onError={() => setImgError(true)}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
-            // Fallback ikona, pokud obrázek chybí nebo se nenačetl
             <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
               <Package size={48} className="stroke-1" />
             </div>

@@ -5,7 +5,7 @@ import { useCart } from '../context/useCart';
 import ProductCard from '../components/ProductCard';
 import SkeletonCard from '../components/SkeletonCard';
 import SEO from '../components/SEO';
-import { Monitor, Shirt, Home, Trophy } from 'lucide-react';
+import { Monitor, Smartphone, Headphones, Cable } from 'lucide-react';
 
 const HomePage = () => {
   const [products, setProducts] = useState([]);
@@ -22,8 +22,6 @@ const HomePage = () => {
         setFetchError('');
         const data = await getProducts();
 
-        console.log('Načtené produkty:', data);
-
         // Spring Data REST vrací PagedModel: { _embedded: { products: [...] }, page: {...} }
         // Spring Page vrací: { content: [...], totalPages: ... }
         const productsList =
@@ -39,13 +37,11 @@ const HomePage = () => {
           setProducts(productsList);
           setFeaturedProducts(productsList.slice(0, 6));
         } else {
-          console.error('Neočekávaný formát dat:', data);
           setProducts([]);
           setFeaturedProducts([]);
         }
       } catch (error) {
-        console.error('Chyba při načítání produktů:', error);
-        setProducts([]); // I při chybě sítě nastavíme prázdné pole
+        setProducts([]);
         setFeaturedProducts([]);
         if (!error.response) {
           setFetchError('Nepodařilo se připojit k serveru. Zkontrolujte internetové připojení.');
@@ -69,16 +65,17 @@ const HomePage = () => {
       <SEO
         title="SecondEl - Ověřená elektronika a technika se zárukou"
         description="Objevte široký výběr kvalitní a prověřené elektroniky na SecondEl. Bezpečné online platby, rychlá doprava a férové ceny se zárukou."
+        canonical="https://secondel.cz/"
       />
 
       {/* Hero sekce */}
       <section className="bg-gradient-to-r from-primary-600 to-primary-800 text-white py-20">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Vítejte v našem E-Shopu
+            Prověřená elektronika se zárukou
           </h1>
           <p className="text-xl mb-8 text-primary-100">
-            Objevte široký výběr kvalitních produktů
+            Objevte široký výběr otestovaných zařízení se zárukou a rychlým doručením
           </p>
 
           {/* Vyhledávací lišta a košík */}
@@ -93,7 +90,7 @@ const HomePage = () => {
             {/* Košík - přesunut na úroveň vyhledávání vpravo */}
             <Link to="/cart" aria-label="Přejít do košíku" className="relative p-2 text-white hover:text-primary-200 transition-colors flex items-center gap-2 group flex-shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className="w-9 h-9 group-hover:scale-105 transition-transform">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
               </svg>
               <span className="font-semibold text-lg hidden md:inline">Košík</span>
               {getTotalItems() > 0 && (
@@ -106,21 +103,21 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Kategorie */}
+      {/* Kategorie - Relevantní kategorie elektroniky */}
       <section className="container mx-auto px-4 py-12">
         <h2 className="text-3xl font-bold mb-8 text-center">Kategorie</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { name: 'Elektronika', icon: Monitor },
-            { name: 'Oblečení', icon: Shirt },
-            { name: 'Domácnost', icon: Home },
-            { name: 'Sport', icon: Trophy },
+            { name: 'Počítače & PC', slug: 'pocitace-a-notebooky', icon: Monitor },
+            { name: 'Chytré telefony', slug: 'chytre-telefony', icon: Smartphone },
+            { name: 'Audio & Sluchátka', slug: 'audio-a-sluchatka', icon: Headphones },
+            { name: 'Příslušenství', slug: 'prislusenstvi', icon: Cable },
           ].map((category) => {
             const Icon = category.icon;
             return (
               <Link
                 key={category.name}
-                to={`/products?category=${category.name}`}
+                to={`/kategorie/${category.slug}`}
                 className="card flex flex-col items-center justify-center text-center hover:shadow-lg transition-transform hover:-translate-y-1"
               >
                 <div className="mb-3">
@@ -170,13 +167,21 @@ const HomePage = () => {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div>
             {loading ? (
-              [...Array(4)].map((_, i) => <SkeletonCard key={i} />)
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}
+              </div>
+            ) : featuredProducts.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {featuredProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
             ) : (
-              featuredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))
+              <p className="text-center text-gray-500 py-12">
+                Žádné produkty k zobrazení
+              </p>
             )}
           </div>
         )}

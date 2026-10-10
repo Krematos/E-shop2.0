@@ -56,3 +56,38 @@ export const getResponsiveSrcSet = (filename) => {
  * Na mobilu zobrazeno na 100vw, na desktopu max 330px šířky (odpovídá kontejneru 440x330).
  */
 export const defaultImageSizes = "(max-width: 768px) 100vw, 330px";
+
+/**
+ * Převede libovolný text na čistý URL slug (odstraní diakritiku, převede na malá písmena, nahradí mezery pomlčkami).
+ */
+export const slugify = (text) => {
+  if (!text) return '';
+  return text
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
+
+/**
+ * Sestaví SEO-friendly URL pro produkt ve tvaru /products/:slug-:id.
+ * Pokud produkt nemá název, vrátí fallback /products/:id.
+ */
+export const getProductUrl = (product) => {
+  if (!product) return '/products';
+  const id = product.id;
+  const slug = slugify(product.name);
+  return slug ? `/products/${slug}-${id}` : `/products/${id}`;
+};
+
+/**
+ * Extrahuje číselné ID produktu z parametru URL (podporuje jak "42", tak "sluchatka-sony-wh-1000xm4-42").
+ */
+export const extractProductId = (param) => {
+  if (!param) return null;
+  const match = String(param).match(/-?(\d+)$/);
+  return match ? match[1] : param;
+};

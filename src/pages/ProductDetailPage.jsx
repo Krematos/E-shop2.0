@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getProductById } from '../services/productService';
 import { useCart } from '../context/useCart';
-import { getImageUrl } from '../utils/urlUtils';
+import { getImageUrl, extractProductId, getProductUrl } from '../utils/urlUtils';
 import LoadingSpinner from '../components/LoadingSpinner';
 import SEO from '../components/SEO';
 
@@ -17,11 +17,13 @@ const ProductDetailPage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
 
+  const productId = extractProductId(id);
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         setFetchError('');
-        const data = await getProductById(id);
+        const data = await getProductById(productId);
         setProduct(data);
         
         // Find the main image index, default to 0 if not found
@@ -48,7 +50,7 @@ const ProductDetailPage = () => {
     };
 
     fetchProduct();
-  }, [id, navigate]);
+  }, [productId]);
 
   const handleAddToCart = () => {
     if (product) {
@@ -65,13 +67,18 @@ const ProductDetailPage = () => {
   if (fetchError) {
     return (
       <div className="container mx-auto px-4 py-8 mt-8">
+        <SEO
+          title="Produkt nebyl nalezen (404) | SecondEl"
+          description="Požadovaný produkt nebyl na e-shopu SecondEl nalezen."
+          noindex={true}
+        />
         <div role="alert" className="max-w-2xl mx-auto p-4 bg-red-100 border border-red-300 text-red-700 rounded-md text-center">
           {fetchError}
         </div>
         <div className="text-center mt-4">
-          <button onClick={() => navigate('/products')} className="text-primary-600 hover:text-primary-700 font-semibold">
+          <Link to="/products" className="text-primary-600 hover:text-primary-700 font-semibold inline-block">
             ← Zpět na seznam produktů
-          </button>
+          </Link>
         </div>
       </div>
     );
@@ -80,6 +87,11 @@ const ProductDetailPage = () => {
   if (!product) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
+        <SEO
+          title="Produkt nebyl nalezen (404) | SecondEl"
+          description="Požadovaný produkt nebyl na e-shopu SecondEl nalezen."
+          noindex={true}
+        />
         <p className="text-gray-500">Produkt nenalezen</p>
       </div>
     );
@@ -98,6 +110,8 @@ const ProductDetailPage = () => {
     ? (product.description.length > 155 ? `${product.description.substring(0, 152)}...` : product.description)
     : `Kupte ${product.name} za skvělou cenu na e-shopu SecondEl. Rychlé doručení a prověřená kvalita.`;
 
+  const canonicalProductUrl = `https://secondel.cz${getProductUrl(product)}`;
+
   // Schema.org strukturovaná data pro Google Rich Snippets
   const productSchema = {
     '@context': 'https://schema.org',
@@ -111,7 +125,7 @@ const ProductDetailPage = () => {
       price: price,
       priceCurrency: 'CZK',
       availability: product.stockQuantity > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-      url: typeof window !== 'undefined' ? window.location.href : undefined
+      url: canonicalProductUrl
     }
   };
 
@@ -122,15 +136,16 @@ const ProductDetailPage = () => {
         description={productDescription}
         image={currentImageUrl}
         type="product"
+        canonical={canonicalProductUrl}
         schema={productSchema}
       />
       
       {/* Breadcrumb navigation */}
       <nav className="text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
         <ol className="flex items-center space-x-2">
-          <li><button onClick={() => navigate('/')} className="hover:text-primary-600">Domů</button></li>
+          <li><Link to="/" className="hover:text-primary-600">Domů</Link></li>
           <li><span>/</span></li>
-          <li><button onClick={() => navigate('/products')} className="hover:text-primary-600">Produkty</button></li>
+          <li><Link to="/products" className="hover:text-primary-600">Produkty</Link></li>
           <li><span>/</span></li>
           <li className="text-gray-900 font-medium truncate max-w-xs">{product.name}</li>
         </ol>
@@ -261,12 +276,12 @@ const ProductDetailPage = () => {
                 <span>Vyprodáno</span>
               )}
             </button>
-            <button
-              onClick={() => navigate('/products')}
-              className="w-full text-center text-sm text-gray-500 hover:text-gray-800 font-medium py-2"
+            <Link
+              to="/products"
+              className="w-full text-center text-sm text-gray-500 hover:text-gray-800 font-medium py-2 inline-block"
             >
               ← Zpět na výběr produktů
-            </button>
+            </Link>
           </div>
         </div>
       </div>
